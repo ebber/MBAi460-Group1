@@ -176,6 +176,91 @@ class PhotoappTests(unittest.TestCase):
     print("test passed!")
 
 
+  def test_08(self):
+    print()
+    print("** test_08: post_image with rekognition **")
+
+    assetid = photoapp.post_image(80001, "01degu.jpg")
+
+    try:
+      labels = photoapp.get_image_labels(assetid)
+    except AttributeError:
+      self.fail("get_image_labels() not yet implemented")
+
+    self.assertIsInstance(labels, list)
+    self.assertGreater(len(labels), 0)
+
+    label, confidence = labels[0]
+    self.assertIsInstance(label, str)
+    self.assertIsInstance(confidence, int)
+
+    print("test passed!")
+
+
+  def test_09(self):
+    print()
+    print("** test_09: get_image_labels **")
+
+    assetid = photoapp.post_image(80001, "01degu.jpg")
+
+    try:
+      photoapp.get_image_labels(99999)
+      self.fail("Expected ValueError for invalid assetid")
+    except AttributeError:
+      self.fail("get_image_labels() not yet implemented")
+    except ValueError as e:
+      self.assertEqual(str(e), "no such assetid")
+
+    labels = photoapp.get_image_labels(assetid)
+    self.assertIsInstance(labels, list)
+    for row in labels:
+      label, confidence = row
+      self.assertIsInstance(label, str)
+      self.assertIsInstance(confidence, int)
+
+    print("test passed!")
+
+
+  def test_10(self):
+    print()
+    print("** test_10: get_images_with_label **")
+
+    assetid1 = photoapp.post_image(80001, "01degu.jpg")
+    assetid2 = photoapp.post_image(80002, "02earth.jpg")
+
+    result = photoapp.get_images_with_label("zzznomatchzzz")
+    self.assertEqual(result, [])
+
+    try:
+      results = photoapp.get_images_with_label("a")
+    except AttributeError:
+      self.fail("get_images_with_label() not yet implemented")
+
+    for row in results:
+      self.assertEqual(len(row), 3)
+      assetid, label, confidence = row
+      self.assertIsInstance(assetid, int)
+      self.assertIsInstance(label, str)
+      self.assertIsInstance(confidence, int)
+      self.assertIn("a", label.lower())
+
+    self.assertGreater(len(results), 1, "Expected multiple results for 'a' search across 2 images")
+    for i in range(len(results) - 1):
+      curr_assetid, curr_label, _ = results[i]
+      next_assetid, next_label, _ = results[i + 1]
+      self.assertLessEqual(
+        curr_assetid, next_assetid,
+        f"assetid not sorted ASC at index {i}: {curr_assetid} > {next_assetid}"
+      )
+      if curr_assetid == next_assetid:
+        self.assertLessEqual(
+          curr_label, next_label,
+          f"label not sorted ASC within assetid {curr_assetid} at index {i}: '{curr_label}' > '{next_label}'"
+        )
+
+    print("test passed!")
+
+
 ############################################################
 #
 # main

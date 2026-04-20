@@ -378,6 +378,69 @@ def get_ping():
 
 ###################################################################
 #
+# get_images_with_label
+#
+@_retry
+def get_images_with_label(label):
+  dbConn = None
+  dbCursor = None
+  try:
+    dbConn = get_dbConn()
+    dbCursor = dbConn.cursor()
+    search_pattern = "%" + str(label) + "%"
+    dbCursor.execute(
+      """SELECT assetid, label, confidence FROM labels
+         WHERE label LIKE %s
+         ORDER BY assetid ASC, label ASC""",
+      [search_pattern]
+    )
+    return list(dbCursor.fetchall())
+  except Exception as err:
+    logging.error("get_images_with_label():")
+    logging.error(str(err))
+    raise
+  finally:
+    try: dbCursor.close()
+    except: pass
+    try: dbConn.close()
+    except: pass
+
+
+###################################################################
+#
+# get_image_labels
+#
+@_retry
+def get_image_labels(assetid):
+  dbConn = None
+  dbCursor = None
+  try:
+    dbConn = get_dbConn()
+    dbCursor = dbConn.cursor()
+
+    dbCursor.execute("SELECT assetid FROM assets WHERE assetid=%s", [assetid])
+    if dbCursor.fetchone() is None:
+      raise ValueError("no such assetid")
+
+    dbCursor.execute(
+      "SELECT label, confidence FROM labels WHERE assetid=%s ORDER BY label ASC",
+      [assetid]
+    )
+    return list(dbCursor.fetchall())
+
+  except Exception as err:
+    logging.error("get_image_labels():")
+    logging.error(str(err))
+    raise
+  finally:
+    try: dbCursor.close()
+    except: pass
+    try: dbConn.close()
+    except: pass
+
+
+###################################################################
+#
 # delete_images
 #
 def delete_images():
@@ -387,6 +450,7 @@ def delete_images():
     try:
       sql = """
         SET foreign_key_checks = 0;
+        TRUNCATE TABLE labels;
         TRUNCATE TABLE assets;
         SET foreign_key_checks = 1;
         ALTER TABLE assets AUTO_INCREMENT = 1001;
@@ -499,6 +563,24 @@ def post_image(userid, local_filename):
       try: dbCursor.close()
       except: pass
 
+  @_retry
+  def _insert_labels(dbConn, assetid, labels):
+    if not labels:
+      return
+    dbCursor = dbConn.cursor()
+    try:
+      dbCursor.executemany(
+        "INSERT INTO labels (assetid, label, confidence) VALUES (%s, %s, %s)",
+        [(assetid, L['Name'], int(L['Confidence'])) for L in labels]
+      )
+      dbConn.commit()
+    except Exception:
+      dbConn.rollback()
+      raise
+    finally:
+      try: dbCursor.close()
+      except: pass
+
   dbConn = None
   try:
     dbConn = get_dbConn()
@@ -511,6 +593,15 @@ def post_image(userid, local_filename):
     bucket.upload_file(Filename=local_filename, Key=bucketkey)
 
     assetid = _insert_asset(dbConn, userid, bucketkey, local_filename)
+
+    rekog = get_rekognition()
+    response = rekog.detect_labels(
+      Image={'S3Object': {'Bucket': bucket.name, 'Name': bucketkey}},
+      MaxLabels=100,
+      MinConfidence=80,
+    )
+    _insert_labels(dbConn, assetid, response.get('Labels', []))
+
     return assetid
 
   except Exception as err:
