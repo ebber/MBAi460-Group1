@@ -5,17 +5,15 @@
 | Phase | Name | Status |
 |-------|------|--------|
 | 0 | Prep — Audit, divergence, target state, plan | ✅ COMPLETE |
-| 1 | Execution — Environment setup + API implementation | 🟡 ACTIVE |
-| 2 | Submit Loop — Gradescope iteration to 70/70 | ⬜ pending |
-| 3 | Cleanup — Artifacts, repo hygiene, retrospective | ⬜ pending |
+| 1 | Execution — Environment setup + API implementation | ✅ COMPLETE |
+| 2 | Submit Loop — Gradescope iteration to 70/70 | ✅ COMPLETE — 70/70 first shot |
+| 3 | Cleanup — Artifacts, repo hygiene, retrospective | 🟡 ACTIVE |
 
 ## Current State
 
-- **Phase:** 1 — Execution
-- **Step:** Phase 1 environment setup COMPLETE — entering Phase 2 (API TDD)
-- **Key artifacts read:** project01-part02-plan.md, Implementation-Notes.md, photoapp.py, client.py, tests.py, photoapp-config.ini, main.tf
-- **Divergences identified:** 3 (see audit output in conversation)
-- **Blockers:** IAM access keys (TODO placeholders in photoapp-config.ini) — resolved by Phase 1 Terraform apply
+- **Phase:** 3 — Cleanup
+- **Step:** Entering Phase 3 — code quality review, viz promotion, retrospective
+- **Score:** 70/70 Gradescope (2026-04-20, first submission, no iteration needed)
 
 ## Key Decisions / Invariants
 
@@ -73,4 +71,4 @@
 - Retrospective
 
 ---
-*Last updated: Phase 1 environment complete (2026-04-20). IAM users provisioned, labels schema applied, get_ping() verified, rotation script created. Entering Phase 2 — API TDD.*
+*Last updated: 2026-04-20. Phase 1 + Phase 2 complete. 70/70 Gradescope — first submission. Entering Phase 3 — cleanup.*

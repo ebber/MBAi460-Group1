@@ -333,7 +333,7 @@ Already included in Task 1.3 Step 3 commit — add `utils/rotate-access-keys` to
 - Modify: `projects/project01/client/client.py`
 - Modify: `projects/project01/client/tests.py`
 
-- [ ] **Step 1: Add setUpClass + setUp to PhotoappTests**
+- [x] **Step 1: Add setUpClass + setUp to PhotoappTests**
 
 Add these methods to the `PhotoappTests` class (before `test_01`):
 
@@ -365,7 +365,7 @@ class PhotoappTests(unittest.TestCase):
 
 Note: `test_01` still explicitly calls `initialize()` — that is fine, `initialize()` is idempotent and `test_01` is specifically testing its return value. `setUpClass` calling it first does not invalidate the test.
 
-- [ ] **Step 2: Add logging to client.py**
+- [x] **Step 2: Add logging to client.py**
 
 After `import` block, before the `print()` calls:
 
@@ -380,7 +380,7 @@ logging.basicConfig(
 )
 ```
 
-- [ ] **Step 2: Fix test_02 M assertion**
+- [x] **Step 2: Fix test_02 M assertion**
 
 In `tests.py`, change:
 ```python
@@ -393,7 +393,7 @@ self.assertIsInstance(M, int, f"S3 not reachable: {M}")
 self.assertEqual(N, 3)
 ```
 
-- [ ] **Step 3: Confirm test_01 and test_02 pass, test_03 fails cleanly**
+- [x] **Step 3: Confirm test_01 and test_02 pass, test_03 fails cleanly**
 
 Run from repo root:
 ```bash
@@ -410,7 +410,7 @@ Expected: test_01 PASS, test_02 PASS, test_03 FAIL (not ERROR) with message "get
 **Files:**
 - Modify: `projects/project01/client/photoapp.py`
 
-- [ ] **Step 1: Add imports to photoapp.py**
+- [x] **Step 1: Add imports to photoapp.py**
 
 After `from configparser import ConfigParser`, add:
 ```python
@@ -418,7 +418,7 @@ import uuid
 from tenacity import retry, stop_after_attempt, wait_exponential
 ```
 
-- [ ] **Step 2: Add retry decorator constant**
+- [x] **Step 2: Add retry decorator constant**
 
 After imports:
 ```python
@@ -429,7 +429,7 @@ _retry = retry(
 )
 ```
 
-- [ ] **Step 3: Implement get_users()**
+- [x] **Step 3: Implement get_users()**
 
 ```python
 @_retry
@@ -452,7 +452,7 @@ def get_users():
     except: pass
 ```
 
-- [ ] **Step 4: Run test_03**
+- [x] **Step 4: Run test_03**
 
 ```bash
 IMAGE=$(cat docker/_image-name.txt)
@@ -465,7 +465,7 @@ Expected: `test_03` PASS — returns exactly `[(80001, 'p_sarkar', 'Pooja', 'Sar
 
 ### Task 2.2: get_images()
 
-- [ ] **Step 1: Add test_04 to tests.py**
+- [x] **Step 1: Add test_04 to tests.py**
 
 ```python
 def test_04(self):
@@ -488,7 +488,7 @@ def test_04(self):
     print("test passed!")
 ```
 
-- [ ] **Step 2: Run test_04 — confirm FAIL (not ERROR)**
+- [x] **Step 2: Run test_04 — confirm FAIL (not ERROR)**
 
 Expected: FAIL with `AttributeError` caught or "not yet implemented"
 
@@ -500,7 +500,7 @@ Actually get_images doesn't exist yet so it will AttributeError. Add same guard 
         self.fail("get_images() not yet implemented in photoapp.py")
 ```
 
-- [ ] **Step 3: Implement get_images()**
+- [x] **Step 3: Implement get_images()**
 
 ```python
 @_retry
@@ -531,7 +531,7 @@ def get_images(userid=None):
     except: pass
 ```
 
-- [ ] **Step 4: Run test_04**
+- [x] **Step 4: Run test_04**
 
 ```bash
 IMAGE=$(cat docker/_image-name.txt)
@@ -544,7 +544,7 @@ Expected: PASS
 
 ### Task 2.3: post_image()
 
-- [ ] **Step 1: Add test_05 to tests.py**
+- [x] **Step 1: Add test_05 to tests.py**
 
 ```python
 def test_05(self):
@@ -573,7 +573,7 @@ def test_05(self):
     print("test passed!")
 ```
 
-- [ ] **Step 2: Implement post_image()**
+- [x] **Step 2: Implement post_image()**
 
 ```python
 def post_image(userid, local_filename):
@@ -632,7 +632,7 @@ def post_image(userid, local_filename):
     except: pass
 ```
 
-- [ ] **Step 3: Run test_05**
+- [x] **Step 3: Run test_05**
 
 ```bash
 IMAGE=$(cat docker/_image-name.txt)
@@ -645,7 +645,7 @@ Expected: PASS
 
 ### Task 2.4: get_image()
 
-- [ ] **Step 1: Add test_06 to tests.py**
+- [x] **Step 1: Add test_06 to tests.py**
 
 ```python
 def test_06(self):
@@ -687,7 +687,7 @@ def test_06(self):
     print("test passed!")
 ```
 
-- [ ] **Step 2: Implement get_image()**
+- [x] **Step 2: Implement get_image()**
 
 ```python
 def get_image(assetid, local_filename=None):
@@ -727,7 +727,7 @@ def get_image(assetid, local_filename=None):
     except: pass
 ```
 
-- [ ] **Step 3: Run test_06**
+- [x] **Step 3: Run test_06**
 
 ```bash
 IMAGE=$(cat docker/_image-name.txt)
@@ -740,7 +740,7 @@ Expected: PASS
 
 ### Task 2.5: delete_images()
 
-- [ ] **Step 1: Add test_07 to tests.py**
+- [x] **Step 1: Add test_07 to tests.py**
 
 ```python
 def test_07(self):
@@ -767,7 +767,7 @@ def test_07(self):
     print("test passed!")
 ```
 
-- [ ] **Step 2: Implement delete_images() (without labels — labels added in Task 2.6)**
+- [x] **Step 2: Implement delete_images() (without labels — labels added in Task 2.6)**
 
 ```python
 def delete_images():
@@ -811,7 +811,7 @@ def delete_images():
     except: pass
 ```
 
-- [ ] **Step 3: Run test_07**
+- [x] **Step 3: Run test_07**
 
 ```bash
 IMAGE=$(cat docker/_image-name.txt)
@@ -822,7 +822,7 @@ docker run --rm -u user -w /home/user/projects/project01/client \
 
 Expected: PASS
 
-- [ ] **Step 4: Run test_01–test_07 together**
+- [x] **Step 4: Run test_01–test_07 together**
 
 ```bash
 IMAGE=$(cat docker/_image-name.txt)
@@ -834,7 +834,7 @@ docker run --rm -u user -w /home/user/projects/project01/client \
 
 Expected: all PASS
 
-- [ ] **Step 5: Commit Phase 2 partial**
+- [x] **Step 5: Commit Phase 2 partial**
 
 ```bash
 git add projects/project01/client/photoapp.py \
@@ -852,7 +852,7 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 
 ### Task 2.6: Extend post_image with Rekognition + update delete_images
 
-- [ ] **Step 1: Add test_08 to tests.py**
+- [x] **Step 1: Add test_08 to tests.py**
 
 ```python
 def test_08(self):
@@ -876,7 +876,7 @@ def test_08(self):
 
 Note: test_08 calls get_image_labels which is implemented in Task 2.7 — write the stub guard first.
 
-- [ ] **Step 2: Add `_insert_labels` inner fn and Rekognition call to post_image**
+- [x] **Step 2: Add `_insert_labels` inner fn and Rekognition call to post_image**
 
 Update `post_image()` — after `_insert_asset` inner fn, add:
 
@@ -912,7 +912,7 @@ In the main body of `post_image`, after `assetid = _insert_asset(...)`, add:
     _insert_labels(dbConn, assetid, response.get('Labels', []))
 ```
 
-- [ ] **Step 3: Update `_clear_db` in delete_images to truncate labels first**
+- [x] **Step 3: Update `_clear_db` in delete_images to truncate labels first**
 
 Change the SQL in `_clear_db`:
 ```python
@@ -925,13 +925,13 @@ Change the SQL in `_clear_db`:
       """
 ```
 
-- [ ] **Step 4: Run test_07 (delete_images now clears labels too) — confirm PASS**
+- [x] **Step 4: Run test_07 (delete_images now clears labels too) — confirm PASS**
 
-- [ ] **Step 5: Run test_08 once get_image_labels is implemented (Task 2.7)**
+- [x] **Step 5: Run test_08 once get_image_labels is implemented (Task 2.7)**
 
 ### Task 2.7: get_image_labels()
 
-- [ ] **Step 1: Add test_09 to tests.py**
+- [x] **Step 1: Add test_09 to tests.py**
 
 ```python
 def test_09(self):
@@ -960,7 +960,7 @@ def test_09(self):
     print("test passed!")
 ```
 
-- [ ] **Step 2: Implement get_image_labels()**
+- [x] **Step 2: Implement get_image_labels()**
 
 ```python
 @_retry
@@ -993,7 +993,7 @@ def get_image_labels(assetid):
     except: pass
 ```
 
-- [ ] **Step 3: Run test_08 and test_09**
+- [x] **Step 3: Run test_08 and test_09**
 
 ```bash
 IMAGE=$(cat docker/_image-name.txt)
@@ -1006,7 +1006,7 @@ Expected: both PASS
 
 ### Task 2.8: get_images_with_label()
 
-- [ ] **Step 1: Add test_10 to tests.py**
+- [x] **Step 1: Add test_10 to tests.py**
 
 ```python
 def test_10(self):
@@ -1053,7 +1053,7 @@ def test_10(self):
     print("test passed!")
 ```
 
-- [ ] **Step 2: Implement get_images_with_label()**
+- [x] **Step 2: Implement get_images_with_label()**
 
 ```python
 @_retry
@@ -1082,7 +1082,7 @@ def get_images_with_label(label):
     except: pass
 ```
 
-- [ ] **Step 3: Run test_10**
+- [x] **Step 3: Run test_10**
 
 ```bash
 IMAGE=$(cat docker/_image-name.txt)
@@ -1095,11 +1095,11 @@ Expected: PASS
 
 ### Task 2.9: Retry smoke check
 
-- [ ] **Step 1: Temporarily inject bad SQL into get_users (one word, e.g. `SELECTALLTHEUSERS`)**
+- [x] **Step 1: Temporarily inject bad SQL into get_users (one word, e.g. `SELECTALLTHEUSERS`)**
 
 In get_users, change SQL to `"SELECTALLTHEUSERS userid FROM users"` — intentional syntax error.
 
-- [ ] **Step 2: Run tests and check log.txt for 3 retry attempts**
+- [x] **Step 2: Run tests and check log.txt for 3 retry attempts**
 
 ```bash
 # run from client/ dir inside Docker
@@ -1107,11 +1107,11 @@ grep "get_users" log.txt | wc -l
 ```
 Expected: 3 `get_users():` error lines (one per attempt).
 
-- [ ] **Step 3: Revert the bad SQL** — restore correct SELECT
+- [x] **Step 3: Revert the bad SQL** — restore correct SELECT
 
 ### Task 2.10: Full suite
 
-- [ ] **Step 1: Run test_01–test_10**
+- [x] **Step 1: Run test_01–test_10**
 
 ```bash
 IMAGE=$(cat docker/_image-name.txt)
@@ -1121,7 +1121,7 @@ docker run --rm -u user -w /home/user/projects/project01/client \
 ```
 Expected: 10 tests, 10 PASS, 0 FAIL, 0 ERROR
 
-- [ ] **Step 2: Commit Phase 2 complete**
+- [x] **Step 2: Commit Phase 2 complete**
 
 ```bash
 git add projects/project01/client/photoapp.py \
@@ -1140,20 +1140,20 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 
 **→ PAUSE before submitting. Erik confirms all tests green and credentials look correct.**
 
-- [ ] Pre-submit checklist:
+- [x] Pre-submit checklist:
   - `python tests.py` all green
   - `log.txt` has no ERROR lines from happy-path run
   - `photoapp-config.ini` has real `[s3readonly]` and `[s3readwrite]` access keys (not TODO)
   - `photoapp-config.ini` `user_name = photoapp-read-write`
   - No `AKIA...` keys or passwords in any committed file
 
-- [ ] Submit:
+- [x] Submit:
 ```bash
 cd projects/project01/client
 /gradescope/gs submit 1288073 7983365 *.py *.ini
 ```
 
-- [ ] Read Gradescope output. If < 70/70:
+- [x] Read Gradescope output. If < 70/70:
   - Identify failing test name → maps to PDF section
   - Fix, re-run local tests
   - Re-submit
