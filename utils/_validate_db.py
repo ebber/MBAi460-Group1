@@ -10,9 +10,15 @@ _CLASS_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG   = os.path.join(_CLASS_ROOT, "infra/config/photoapp-config.ini")
 PWD_FILE = os.path.join(_CLASS_ROOT, "labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt")
 
-cfg = configparser.ConfigParser()
+cfg = configparser.ConfigParser(interpolation=None)
 cfg.read(CONFIG)
-host = cfg["rds"]["endpoint"]
+host          = cfg["rds"]["endpoint"]
+ro_pwd        = cfg["rds"]["user_pwd"]  # photoapp-read-only password
+
+CLIENT_CONFIG = os.path.join(_CLASS_ROOT, "projects/project01/client/photoapp-config.ini")
+cfg_client = configparser.ConfigParser(interpolation=None)
+cfg_client.read(CLIENT_CONFIG)
+rw_pwd        = cfg_client["rds"]["user_pwd"]  # photoapp-read-write password
 
 with open(PWD_FILE) as f:
     admin_pwd = f.read().strip()
@@ -109,7 +115,7 @@ conn.close()
 # ── App users ─────────────────────────────────────────────────────────────────
 print("\n=== App user: photoapp-read-only ===")
 try:
-    c = pymysql.connect(user="photoapp-read-only", passwd="abc123!!",
+    c = pymysql.connect(user="photoapp-read-only", passwd=ro_pwd,
                         host=host, port=3306, database="photoapp", connect_timeout=10)
     cur2 = c.cursor()
     cur2.execute("SELECT * FROM users")
@@ -121,7 +127,7 @@ except Exception as e:
 
 print("\n=== App user: photoapp-read-write ===")
 try:
-    c = pymysql.connect(user="photoapp-read-write", passwd="def456!!",
+    c = pymysql.connect(user="photoapp-read-write", passwd=rw_pwd,
                         host=host, port=3306, database="photoapp", connect_timeout=10)
     cur3 = c.cursor()
     cur3.execute("SELECT * FROM users")

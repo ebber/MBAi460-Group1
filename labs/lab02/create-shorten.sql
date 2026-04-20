@@ -48,7 +48,7 @@ CREATE TABLE shorten (
 --
 DROP USER IF EXISTS 'shorten-app'@'%';
 
-CREATE USER 'shorten-app'@'%' IDENTIFIED BY 'm#MPIs8#hKwU&H9F!@^PVMoR';
+CREATE USER 'shorten-app'@'%' IDENTIFIED BY '${SHORTEN_APP_PWD}';
 
 GRANT SELECT, INSERT, UPDATE, DELETE
   ON URL_Shortener.*

@@ -69,8 +69,8 @@ INSERT INTO users(username, pwdhash, givenname, familyname)  -- pwd = abc789!!
 DROP USER IF EXISTS 'photoapp-read-only';
 DROP USER IF EXISTS 'photoapp-read-write';
 
-CREATE USER 'photoapp-read-only' IDENTIFIED BY 'abc123!!';
-CREATE USER 'photoapp-read-write' IDENTIFIED BY 'def456!!';
+CREATE USER 'photoapp-read-only' IDENTIFIED BY '${PHOTOAPP_RO_PWD}';
+CREATE USER 'photoapp-read-write' IDENTIFIED BY '${PHOTOAPP_RW_PWD}';
 
 GRANT SELECT, SHOW VIEW ON photoapp.* 
       TO 'photoapp-read-only';
