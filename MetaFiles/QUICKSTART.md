@@ -2,14 +2,6 @@
 
 Stand up the full AWS environment from scratch: secrets → Docker → Terraform → DB schema → verified.
 
-> **⚠️ Known issue: `utils/` bash wrapper scripts are broken for fresh standalone clones.**
-> They compute paths assuming `MBAi460-Group1/` is a *subdirectory* of the repo root, which was
-> true in the original lab layout but is not true after the standalone repo split.
-> **Workaround:** use the direct `docker run` commands shown in each step below — they work
-> correctly from the repo root of a fresh clone.
-> The underlying Python helpers (`utils/_run_sql.py`, `utils/_validate_db.py`) are fine.
-> Fix tracked in `MetaFiles/TODO.md`.
-
 ---
 
 ## Prerequisites
@@ -180,28 +172,20 @@ db_name     = URL_Shortener
 
 ## ✅ Test 2 — Smoke test AWS
 
-> **⚠️ Blocked on utils path fix.** `smoke-test-aws` hardcodes credential paths using `REPO_ROOT`
-> and cannot be overridden from outside. Skip this test for now.
-> Substitute: confirm in the AWS console that your S3 bucket and RDS instance exist and are available.
-> Then proceed — Test 3 (`validate-db`) directly confirms DB connectivity with the app user credentials.
-> Tracked in `MetaFiles/TODO.md`.
+```bash
+export AWS_SHARED_CREDENTIALS_FILE="$(pwd)/secrets/aws-credentials"
+export AWS_CONFIG_FILE="$(pwd)/secrets/aws-config"
+utils/smoke-test-aws --mode live
+```
+Expected: `Mode: live | Checks: 10 | Passed: 10 | Failed: 0`
 
 ---
 
 ## Step 6 — Create DB schema
 
-> Uses direct `docker run` commands — these work correctly from repo root without the bash wrapper.
-
 ```bash
-IMAGE=$(cat docker/_image-name.txt)
-
-# PhotoApp database (users, assets tables + seed data + photoapp-read-only/read-write users)
-docker run --rm -u user -v "$(pwd):/home/user" -w /home/user --network host \
-  "$IMAGE" python3 utils/_run_sql.py projects/project01/create-photoapp.sql
-
-# URL Shortener database (shorten table + shorten-app user)
-docker run --rm -u user -v "$(pwd):/home/user" -w /home/user --network host \
-  "$IMAGE" python3 utils/_run_sql.py labs/lab02/create-shorten.sql
+utils/run-sql projects/project01/create-photoapp.sql
+utils/run-sql labs/lab02/create-shorten.sql
 ```
 
 Passwords are read from the config files you created in Step 5 and substituted automatically.
@@ -212,9 +196,7 @@ Both commands should report `Statements: N | OK: N | Errors: 0`.
 ## ✅ Test 3 — Validate DB
 
 ```bash
-IMAGE=$(cat docker/_image-name.txt)
-docker run --rm -u user -v "$(pwd):/home/user" -w /home/user --network host \
-  "$IMAGE" python3 utils/_validate_db.py
+utils/validate-db
 ```
 Expected: `Checks: 26 | Passed: 26 | Failed: 0`. Validates schema, seed data, AUTO_INCREMENT values, and both app user connections.
 
@@ -229,8 +211,10 @@ export AWS_CONFIG_FILE="$(pwd)/secrets/aws-config"
 cd infra/terraform && terraform destroy && cd ../..
 ```
 
-Verify resources are gone: check the AWS console (S3 + RDS) or — if you have applied the utils path fix — run:
+Verify resources are gone: check the AWS console (S3 + RDS) or run:
 ```bash
+export AWS_SHARED_CREDENTIALS_FILE="$(pwd)/secrets/aws-credentials"
+export AWS_CONFIG_FILE="$(pwd)/secrets/aws-config"
 utils/smoke-test-aws --mode dead
 ```
 Expected: 10/10 checks confirm all resources gone.
