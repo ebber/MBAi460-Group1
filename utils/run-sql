@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 # utils/run-sql <path-to-sql-file>
 # Runs a SQL file against the live RDS instance via Docker.
-# Reads endpoint from MBAi460-Group1/infra/config/photoapp-config.ini
-# Reads admin password from secrets file.
-# Run from lab root.
+# Reads endpoint from infra/config/photoapp-config.ini
+# Reads admin password from labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt
+# SQL file path may be absolute or relative to current working directory.
+# Runnable from any directory.
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-IMAGE=$(cat "${REPO_ROOT}/MBAi460-Group1/docker/_image-name.txt")
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+IMAGE=$(cat "${CLASS_ROOT}/docker/_image-name.txt")
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: utils/run-sql <path-to-sql-file>"
@@ -16,18 +18,31 @@ if [[ $# -ne 1 ]]; then
   exit 1
 fi
 
-SQL_FILE="$1"
+# Resolve SQL file to an absolute path (works regardless of CWD)
+if [[ "$1" = /* ]]; then
+  SQL_ABS="$1"
+else
+  SQL_ABS="$(cd "$(dirname "$1")" 2>/dev/null && pwd)/$(basename "$1")"
+fi
 
-if [[ ! -f "${REPO_ROOT}/${SQL_FILE}" ]]; then
-  echo "[ERROR] SQL file not found: ${SQL_FILE}"
+# Derive path relative to CLASS_ROOT for use inside Docker
+SQL_REL="${SQL_ABS#${CLASS_ROOT}/}"
+if [[ "$SQL_REL" = "$SQL_ABS" ]]; then
+  echo "[ERROR] SQL file must be inside the repo (${CLASS_ROOT})"
+  echo "        Got: $1"
   exit 1
 fi
 
-echo "Running SQL file: ${SQL_FILE}"
+if [[ ! -f "${CLASS_ROOT}/${SQL_REL}" ]]; then
+  echo "[ERROR] SQL file not found: ${CLASS_ROOT}/${SQL_REL}"
+  exit 1
+fi
+
+echo "Running SQL file: ${SQL_REL}"
 echo "Via Docker image: ${IMAGE}"
 echo ""
 
 docker run --rm -u user -w /home/user \
-  -v "${REPO_ROOT}:/home/user" \
+  -v "${CLASS_ROOT}:/home/user" \
   --network host \
-  "$IMAGE" python3 MBAi460-Group1/utils/_run_sql.py "$SQL_FILE"
+  "$IMAGE" python3 utils/_run_sql.py "$SQL_REL"
