@@ -22,14 +22,18 @@ fi
 if [[ "$1" = /* ]]; then
   SQL_ABS="$1"
 else
-  SQL_ABS="$(cd "$(dirname "$1")" 2>/dev/null && pwd)/$(basename "$1")"
+  SQL_DIR="$(dirname "$1")"
+  if ! SQL_ABS="$(cd "$SQL_DIR" 2>/dev/null && pwd)/$(basename "$1")"; then
+    echo "[ERROR] Directory not found: $SQL_DIR"
+    exit 1
+  fi
 fi
 
 # Derive path relative to CLASS_ROOT for use inside Docker
 SQL_REL="${SQL_ABS#${CLASS_ROOT}/}"
 if [[ "$SQL_REL" = "$SQL_ABS" ]]; then
   echo "[ERROR] SQL file must be inside the repo (${CLASS_ROOT})"
-  echo "        Got: $1"
+  echo "        Got: $SQL_ABS  (from argument: $1)"
   exit 1
 fi
 
