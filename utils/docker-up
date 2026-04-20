@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# MBAi460-Group1/utils/docker-up — Start Docker/Colima runtime.
-# Run from repo root.
+# utils/docker-up — Start Docker/Colima runtime.
+# Runnable from any directory.
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 IMAGE_NAME="${LAB_IMAGE:-mbai460-client}"
-RUN_CMD="./MBAi460-Group1/docker/run"
-RUN_8080_CMD="./MBAi460-Group1/docker/run-8080"
+RUN_CMD="${CLASS_ROOT}/docker/run"
+RUN_8080_CMD="${CLASS_ROOT}/docker/run-8080"
 
 pass()    { printf "[PASS] %s\n" "$1"; }
 warn()    { printf "[WARN] %s\n" "$1"; }
@@ -20,8 +22,8 @@ require_cmd() {
   fi
 }
 
-if [[ ! -d "./MBAi460-Group1/docker" ]]; then
-  fail "Must run from repo root (missing ./MBAi460-Group1/docker directory)"; exit 1
+if [[ ! -d "${CLASS_ROOT}/docker" ]]; then
+  fail "Cannot locate docker/ directory under ${CLASS_ROOT}"; exit 1
 fi
 
 section "Docker Lab Startup"
@@ -61,7 +63,7 @@ echo "3. Enter the class environment with:"
 echo "   ${RUN_CMD}"
 echo "   or"
 echo "   ${RUN_8080_CMD}"
-echo "4. Rebuild first with ./MBAi460-Group1/docker/build if image needs refreshing"
+echo "4. Rebuild first with ${CLASS_ROOT}/docker/build if image needs refreshing"
 
 echo
 echo ":)"
