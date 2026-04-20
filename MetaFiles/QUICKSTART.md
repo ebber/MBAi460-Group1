@@ -202,6 +202,26 @@ Expected: `Checks: 26 | Passed: 26 | Failed: 0`. Validates schema, seed data, AU
 
 ---
 
+## Gradescope submission
+
+The `gs` CLI lives inside the Docker image. Submissions run from inside a container. The Gradescope auth token (`.gradescope`) is gitignored and lives **outside** the Class Project repo — typically at the lab repo root or wherever the project owner keeps it.
+
+```bash
+# The token file is NOT inside MBAi460-Group1/ — you must bind-mount it explicitly
+docker run --rm -u user \
+  -w /home/user/projects/project01/client \
+  -v "$(pwd):/home/user" \
+  -v "/path/to/.gradescope:/home/user/.gradescope:ro" \
+  --network host \
+  mbai460-client \
+  bash -c '/gradescope/gs submit <course_id> <assignment_id> *.py *.ini'
+```
+
+> **Token location for this project:** `mbai460-client/.gradescope` (parent lab repo root).
+> Mount path inside container must be `/home/user/.gradescope`.
+
+---
+
 ## Teardown (when done)
 
 ```bash
@@ -232,6 +252,7 @@ Expected: 10/10 checks confirm all resources gone.
 | `infra/config/photoapp-config.ini` | ❌ gitignored | Backbone config — photoapp-read-only password + S3; used by validate-db |
 | `projects/project01/client/photoapp-config.ini` | ❌ gitignored | Client config — photoapp-read-write password; used by project01 code |
 | `labs/lab02/shorten-config.ini` | ❌ gitignored | URL Shortener config — shorten-app password; used by lab02 code |
+| `.gradescope` | ❌ gitignored | Gradescope auth token — required for `gs submit`; NOT inside the repo |
 | `infra/config/photoapp-config.ini.example` | ✅ committed | Template for backbone config |
 | `projects/project01/client/photoapp-config.ini.example` | ✅ committed | Template for client config |
 | `labs/lab02/shorten-config.ini.example` | ✅ committed | Template for URL Shortener config |
