@@ -3,7 +3,7 @@
 ## Active
 
 - [ ] **[Naming] Normalize visualization filenames** — current names mix broad "lab" scope with specific "lab01" scope inconsistently; apply convention `<scope>-<subject>-v<N>.md` uniformly; update README table after rename
-- [ ] **[Stale] lab01-iam-design-v1.md** — Claude-Conjurer shown as AdministratorAccess; actual is PowerUserAccess; regenerate diagram
+- [x] **[Stale] lab01-iam-design-v1.md** — CLOSED 2026-04-20: diagram regenerated, Claude-Conjurer updated to PowerUserAccess throughout.
 
 ## Backlog
 
