@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# utils/run-sql <path-to-sql-file>
+# Runs a SQL file against the live RDS instance via Docker.
+# Reads endpoint from MBAi460-Group1/infra/config/photoapp-config.ini
+# Reads admin password from secrets file.
+# Run from lab root.
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+IMAGE=$(cat "${REPO_ROOT}/MBAi460-Group1/docker/_image-name.txt")
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: utils/run-sql <path-to-sql-file>"
+  echo "Example: utils/run-sql projects/project01/create-photoapp.sql"
+  exit 1
+fi
+
+SQL_FILE="$1"
+
+if [[ ! -f "${REPO_ROOT}/${SQL_FILE}" ]]; then
+  echo "[ERROR] SQL file not found: ${SQL_FILE}"
+  exit 1
+fi
+
+echo "Running SQL file: ${SQL_FILE}"
+echo "Via Docker image: ${IMAGE}"
+echo ""
+
+docker run --rm -u user -w /home/user \
+  -v "${REPO_ROOT}:/home/user" \
+  --network host \
+  "$IMAGE" python3 MBAi460-Group1/utils/_run_sql.py "$SQL_FILE"

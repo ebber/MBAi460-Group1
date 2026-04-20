@@ -1,0 +1,61 @@
+#!/bin/bash
+
+#
+# Pre-reqs:
+#   1. requires zip command-line utility
+#   2. requires python3
+#   3. requires setup of AWSCLI (see project 01, part 01)
+#   4. requires aws EB CLI
+#         pip3 install awsebcli --upgrade --user
+#
+
+#
+# Application variables:
+#
+APP_NAME="calc-web-service"
+ENV_NAME="calc-web-service-env"
+REGION="us-east-2"
+PLATFORM="Node.js"
+ZIPFILE="app.zip"
+VERSION="app.zip"
+
+#
+# start of script:
+#
+echo ""
+echo "1. initializing EB"
+
+eb init $APP_NAME \
+        --platform $PLATFORM \
+        --region $REGION 
+
+#
+# drop down into ./app sub-dir and zip the contents:
+#
+echo ""
+echo "2. packaging app"
+rm -f *.zip &> /dev/null
+pushd ./app &> /dev/null
+rm -f *.zip &> /dev/null
+zip $ZIPFILE *
+mv $ZIPFILE ../$VERSION &> /dev/null
+popd &> /dev/null
+
+#
+# now deploy the .zip:
+#
+# NOTE: the name of the .zip file is changed to be
+# a unique name based on the date. The name has
+# to change for EB to actually deploy (otherwise it
+# thinks this is the same code as before).
+#
+echo ""
+echo "3. Deploying app to EB..."
+
+eb deploy $ENV_NAME \
+         --archive $VERSION \
+         --region $REGION
+
+echo ""
+echo "Done! You can use 'eb status' to check status of web service."
+echo ""

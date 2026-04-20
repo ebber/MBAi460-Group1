@@ -1,0 +1,320 @@
+#!/usr/bin/env bash
+# utils/aws-inventory
+# Full AWS estate scan — enumerates all resources across services we use,
+# cross-references with Terraform state to label [TF] vs [MANUAL].
+# Run from lab root.
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+TF_DIR="${REPO_ROOT}/MBAi460-Group1/infra/terraform"
+
+export AWS_SHARED_CREDENTIALS_FILE="${REPO_ROOT}/claude-workspace/secrets/aws-credentials"
+export AWS_CONFIG_FILE="${REPO_ROOT}/claude-workspace/secrets/aws-config"
+export AWS_PROFILE="Claude-Conjurer"
+
+AWS="aws --output json"
+REGION="us-east-2"
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text 2>/dev/null || echo "unknown")
+
+pass()    { printf "  [PASS]   %s\n" "$1"; }
+warn()    { printf "  [WARN]   %s\n" "$1"; }
+manual()  { printf "  [MANUAL] %s\n" "$1"; }
+tf()      { printf "  [TF]     %s\n" "$1"; }
+section() { printf "\n== %s ==\n" "$1"; }
+none()    { printf "  (none)\n"; }
+
+# Get terraform-managed resource names for cross-referencing
+TF_RESOURCES=""
+if [[ -f "${TF_DIR}/terraform.tfstate" ]]; then
+  TF_RESOURCES=$(python3 -c "
+import json, sys
+with open('${TF_DIR}/terraform.tfstate') as f:
+    state = json.load(f)
+resources = state.get('resources', [])
+for r in resources:
+    for inst in r.get('instances', []):
+        attrs = inst.get('attributes', {})
+        for key in ['id', 'bucket', 'identifier', 'name', 'group_name']:
+            if key in attrs and attrs[key]:
+                print(attrs[key])
+" 2>/dev/null || true)
+fi
+
+is_tf() {
+  local name="$1"
+  if echo "$TF_RESOURCES" | grep -qF "$name" 2>/dev/null; then
+    echo "TF"
+  else
+    echo "MANUAL"
+  fi
+}
+
+label() {
+  local name="$1"
+  local tag
+  tag=$(is_tf "$name")
+  if [[ "$tag" == "TF" ]]; then
+    tf "$name"
+  else
+    manual "$name"
+  fi
+}
+
+printf "\n"
+printf "╔══════════════════════════════════════════════════════╗\n"
+printf "║            AWS Estate Inventory                      ║\n"
+printf "║  Account: %-42s║\n" "$ACCOUNT_ID"
+printf "║  Region:  %-42s║\n" "$REGION"
+printf "║  Profile: %-42s║\n" "$AWS_PROFILE"
+printf "╚══════════════════════════════════════════════════════╝\n"
+
+TF_STATE_COUNT=$(echo "$TF_RESOURCES" | grep -c . 2>/dev/null || echo 0)
+if [[ -f "${TF_DIR}/terraform.tfstate" ]]; then
+  printf "  Terraform state: found (%s managed resource identifiers)\n" "$TF_STATE_COUNT"
+else
+  printf "  Terraform state: NOT FOUND (all resources will show as [MANUAL])\n"
+fi
+
+# ── S3 ────────────────────────────────────────────────────────────────────────
+section "S3 Buckets (global)"
+BUCKETS=$(aws s3api list-buckets --query 'Buckets[*].Name' --output text 2>/dev/null || true)
+if [[ -z "$BUCKETS" ]]; then
+  none
+else
+  for bucket in $BUCKETS; do
+    BUCKET_REGION=$(aws s3api get-bucket-location --bucket "$bucket" \
+      --query 'LocationConstraint' --output text 2>/dev/null || echo "unknown")
+    label "$bucket"
+    printf "           region=%s\n" "${BUCKET_REGION:-us-east-1}"
+  done
+fi
+
+# ── RDS ───────────────────────────────────────────────────────────────────────
+section "RDS Instances (${REGION})"
+RDS_JSON=$(aws rds describe-db-instances --region "$REGION" \
+  --query 'DBInstances[*].{ID:DBInstanceIdentifier,Status:DBInstanceStatus,Engine:Engine,Class:DBInstanceClass,Public:PubliclyAccessible}' \
+  --output json 2>/dev/null || echo "[]")
+RDS_COUNT=$(echo "$RDS_JSON" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+if [[ "$RDS_COUNT" -eq 0 ]]; then
+  none
+else
+  echo "$RDS_JSON" | python3 -c "
+import json, sys
+instances = json.load(sys.stdin)
+for i in instances:
+    print(f\"  id={i['ID']}  status={i['Status']}  engine={i['Engine']}  class={i['Class']}  public={i['Public']}\")
+"
+  # label by ID
+  echo "$RDS_JSON" | python3 -c "
+import json, sys
+instances = json.load(sys.stdin)
+for i in instances:
+    print(i['ID'])
+" | while read -r rid; do
+    tag=$(is_tf "$rid")
+    printf "           [%s]\n" "$tag"
+  done
+fi
+
+# ── EC2: Security Groups ──────────────────────────────────────────────────────
+section "EC2: Security Groups (${REGION})"
+SG_JSON=$(aws ec2 describe-security-groups --region "$REGION" \
+  --query 'SecurityGroups[*].{Name:GroupName,ID:GroupId,VPC:VpcId,Default:contains(GroupName,`default`)}' \
+  --output json 2>/dev/null || echo "[]")
+echo "$SG_JSON" | python3 -c "
+import json, sys, subprocess
+
+sgs = json.load(sys.stdin)
+tf_resources = '''${TF_RESOURCES}'''
+
+for sg in sgs:
+    name = sg['Name']
+    sgid = sg['ID']
+    vpc = sg.get('VPC', 'n/a')
+    tag = '[TF]    ' if (name in tf_resources or sgid in tf_resources) else '[MANUAL]'
+    default_note = ' (account default)' if name == 'default' else ''
+    print(f'  {tag} {name} ({sgid}) vpc={vpc}{default_note}')
+"
+
+# ── EC2: VPCs ─────────────────────────────────────────────────────────────────
+section "EC2: VPCs (${REGION})"
+aws ec2 describe-vpcs --region "$REGION" \
+  --query 'Vpcs[*].{ID:VpcId,CIDR:CidrBlock,Default:IsDefault,State:State}' \
+  --output json 2>/dev/null | python3 -c "
+import json, sys
+vpcs = json.load(sys.stdin)
+for v in vpcs:
+    default_note = ' (account default)' if v['Default'] else ''
+    tag = '[MANUAL]' if v['Default'] else '[MANUAL]'
+    print(f'  {tag} {v[\"ID\"]}  cidr={v[\"CIDR\"]}  state={v[\"State\"]}{default_note}')
+"
+
+# ── EC2: Instances ────────────────────────────────────────────────────────────
+section "EC2: Instances (${REGION})"
+EC2_JSON=$(aws ec2 describe-instances --region "$REGION" \
+  --query 'Reservations[*].Instances[*].{ID:InstanceId,State:State.Name,Type:InstanceType,Name:Tags[?Key==`Name`]|[0].Value}' \
+  --output json 2>/dev/null || echo "[[]]")
+EC2_FLAT=$(echo "$EC2_JSON" | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+instances = [i for r in data for i in r]
+print(json.dumps(instances))
+")
+EC2_COUNT=$(echo "$EC2_FLAT" | python3 -c "import json,sys; data=json.load(sys.stdin); print(len([i for i in data if i['State'] not in ['terminated']]))" 2>/dev/null || echo 0)
+if [[ "$EC2_COUNT" -eq 0 ]]; then
+  none
+else
+  echo "$EC2_FLAT" | python3 -c "
+import json, sys
+instances = json.load(sys.stdin)
+for i in instances:
+    if i['State'] not in ['terminated']:
+        name = i.get('Name') or '(no name tag)'
+        print(f'  [MANUAL] {i[\"ID\"]}  state={i[\"State\"]}  type={i[\"Type\"]}  name={name}')
+"
+fi
+
+# ── EC2: Elastic IPs ──────────────────────────────────────────────────────────
+section "EC2: Elastic IPs (${REGION})"
+EIPS=$(aws ec2 describe-addresses --region "$REGION" \
+  --query 'Addresses[*].{IP:PublicIp,ID:AllocationId,Instance:InstanceId}' \
+  --output json 2>/dev/null || echo "[]")
+EIP_COUNT=$(echo "$EIPS" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+if [[ "$EIP_COUNT" -eq 0 ]]; then
+  none
+else
+  echo "$EIPS" | python3 -c "
+import json, sys
+for e in json.load(sys.stdin):
+    assoc = e.get('Instance') or '(unattached)'
+    print(f\"  [MANUAL] {e['IP']}  alloc={e['ID']}  attached_to={assoc}\")
+"
+fi
+
+# ── IAM: Users ────────────────────────────────────────────────────────────────
+section "IAM: Users (global)"
+# Claude-Conjurer has PowerUserAccess — IAM read is not permitted.
+# IAM is managed by Erik via SSO (ErikTheWizard). Expected behaviour.
+IAM_OUTPUT=$(aws iam list-users \
+  --query 'Users[*].{User:UserName,Created:CreateDate}' \
+  --output json 2>&1 || true)
+if echo "$IAM_OUTPUT" | grep -qiE "AccessDenied|not authorized"; then
+  warn "IAM not visible — PowerUserAccess only (expected; IAM managed via SSO)"
+elif echo "$IAM_OUTPUT" | python3 -c "import json,sys; json.load(sys.stdin)" 2>/dev/null; then
+  IAM_COUNT=$(echo "$IAM_OUTPUT" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+  if [[ "$IAM_COUNT" -eq 0 ]]; then
+    none
+  else
+    echo "$IAM_OUTPUT" | python3 -c "
+import json, sys
+tf_res = '''${TF_RESOURCES}'''
+for u in json.load(sys.stdin):
+    tag = '[TF]    ' if u['User'] in tf_res else '[MANUAL]'
+    print(f\"  {tag} {u['User']}  created={u['Created'][:10]}\")
+"
+  fi
+else
+  warn "IAM query returned unexpected output — check permissions"
+fi
+
+# ── IAM: Customer-managed policies ───────────────────────────────────────────
+section "IAM: Customer-managed Policies (global)"
+POLICIES=$(aws iam list-policies --scope Local \
+  --query 'Policies[*].{Name:PolicyName,ARN:Arn}' \
+  --output json 2>/dev/null || echo "[]")
+POL_COUNT=$(echo "$POLICIES" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+if [[ "$POL_COUNT" -eq 0 ]]; then
+  none
+else
+  echo "$POLICIES" | python3 -c "
+import json, sys
+for p in json.load(sys.stdin):
+    print(f\"  [MANUAL] {p['Name']}\")
+"
+fi
+
+# ── Budgets ───────────────────────────────────────────────────────────────────
+section "Budgets (global)"
+BUDGETS=$(aws budgets describe-budgets --account-id "$ACCOUNT_ID" \
+  --query 'Budgets[*].{Name:BudgetName,Limit:BudgetLimit.Amount,Type:BudgetType}' \
+  --output json 2>/dev/null || echo "[]")
+BUD_COUNT=$(echo "$BUDGETS" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+if [[ "$BUD_COUNT" -eq 0 ]]; then
+  none
+else
+  echo "$BUDGETS" | python3 -c "
+import json, sys
+for b in json.load(sys.stdin):
+    print(f\"  [MANUAL] {b['Name']}  limit=\${b['Limit']}  type={b['Type']}\")
+"
+fi
+
+# ── CloudTrail ────────────────────────────────────────────────────────────────
+section "CloudTrail Trails (${REGION})"
+TRAILS=$(aws cloudtrail describe-trails --include-shadow-trails false --region "$REGION" \
+  --query 'trailList[*].{Name:Name,Bucket:S3BucketName,MultiRegion:IsMultiRegionTrail}' \
+  --output json 2>/dev/null || echo "[]")
+TRAIL_COUNT=$(echo "$TRAILS" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+if [[ "$TRAIL_COUNT" -eq 0 ]]; then
+  none
+else
+  echo "$TRAILS" | python3 -c "
+import json, sys
+for t in json.load(sys.stdin):
+    print(f\"  [MANUAL] {t['Name']}  bucket={t['Bucket']}  multi_region={t['MultiRegion']}\")
+"
+fi
+
+# ── Lambda ────────────────────────────────────────────────────────────────────
+section "Lambda Functions (${REGION})"
+LAMBDAS=$(aws lambda list-functions --region "$REGION" \
+  --query 'Functions[*].{Name:FunctionName,Runtime:Runtime,State:State}' \
+  --output json 2>/dev/null || echo "[]")
+LAM_COUNT=$(echo "$LAMBDAS" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+if [[ "$LAM_COUNT" -eq 0 ]]; then
+  none
+else
+  echo "$LAMBDAS" | python3 -c "
+import json, sys
+for f in json.load(sys.stdin):
+    print(f\"  [MANUAL] {f['Name']}  runtime={f.get('Runtime','n/a')}\")
+"
+fi
+
+# ── CloudFormation ────────────────────────────────────────────────────────────
+section "CloudFormation Stacks (${REGION})"
+CF_JSON=$(aws cloudformation list-stacks --region "$REGION" \
+  --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE ROLLBACK_COMPLETE \
+  --query 'StackSummaries[*].{Name:StackName,Status:StackStatus}' \
+  --output json 2>/dev/null || echo "[]")
+CF_COUNT=$(echo "$CF_JSON" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+if [[ "$CF_COUNT" -eq 0 ]]; then
+  none
+else
+  echo "$CF_JSON" | python3 -c "
+import json, sys
+for s in json.load(sys.stdin):
+    print(f\"  [MANUAL] {s['Name']}  status={s['Status']}\")
+"
+fi
+
+# ── ECS / EKS ─────────────────────────────────────────────────────────────────
+section "ECS Clusters (${REGION})"
+ECS=$(aws ecs list-clusters --region "$REGION" --query 'clusterArns' --output json 2>/dev/null || echo "[]")
+ECS_COUNT=$(echo "$ECS" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+[[ "$ECS_COUNT" -eq 0 ]] && none || echo "$ECS" | python3 -c "import json,sys; [print(f'  [MANUAL] {a.split(\"/\")[-1]}') for a in json.load(sys.stdin)]"
+
+section "EKS Clusters (${REGION})"
+EKS=$(aws eks list-clusters --region "$REGION" --query 'clusters' --output json 2>/dev/null || echo "[]")
+EKS_COUNT=$(echo "$EKS" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+[[ "$EKS_COUNT" -eq 0 ]] && none || echo "$EKS" | python3 -c "import json,sys; [print(f'  [MANUAL] {c}') for c in json.load(sys.stdin)]"
+
+# ── Summary ───────────────────────────────────────────────────────────────────
+printf "\n"
+printf "╔══════════════════════════════════════════════════════╗\n"
+printf "║  Legend: [TF] = Terraform-managed                    ║\n"
+printf "║          [MANUAL] = Created outside Terraform        ║\n"
+printf "║          (none) = Service has no resources           ║\n"
+printf "╚══════════════════════════════════════════════════════╝\n"
+printf "\n:)\n"

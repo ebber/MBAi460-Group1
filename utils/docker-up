@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# MBAi460-Group1/utils/docker-up — Start Docker/Colima runtime.
+# Run from repo root.
+
+set -euo pipefail
+
+IMAGE_NAME="${LAB_IMAGE:-mbai460-client}"
+RUN_CMD="./MBAi460-Group1/docker/run"
+RUN_8080_CMD="./MBAi460-Group1/docker/run-8080"
+
+pass()    { printf "[PASS] %s\n" "$1"; }
+warn()    { printf "[WARN] %s\n" "$1"; }
+fail()    { printf "[FAIL] %s\n" "$1"; }
+section() { printf "\n== %s ==\n" "$1"; }
+
+require_cmd() {
+  local cmd="$1"
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    fail "Required command not found: $cmd"; exit 1
+  fi
+}
+
+if [[ ! -d "./MBAi460-Group1/docker" ]]; then
+  fail "Must run from repo root (missing ./MBAi460-Group1/docker directory)"; exit 1
+fi
+
+section "Docker Lab Startup"
+require_cmd colima
+require_cmd docker
+
+section "Runtime"
+if colima status >/dev/null 2>&1; then pass "Colima already running"
+else echo "Starting Colima..."; colima start; pass "Colima started"; fi
+
+if docker ps >/dev/null 2>&1; then pass "Docker daemon reachable"
+else fail "Docker daemon not reachable"; echo; echo "Try:"; echo "  colima status"; echo "  docker context ls"; exit 1; fi
+
+section "Health Check"
+CURRENT_CONTEXT="$(docker context show 2>/dev/null || true)"
+if [[ -n "${CURRENT_CONTEXT}" ]]; then pass "Docker context: ${CURRENT_CONTEXT}"
+else warn "Could not determine Docker context"; fi
+
+if docker images --format '{{.Repository}}:{{.Tag}}' | grep -q "^${IMAGE_NAME}:latest$"; then
+  pass "Image ${IMAGE_NAME}:latest exists"
+else warn "Image ${IMAGE_NAME}:latest not found"; fi
+
+RUNNING_COUNT="$(docker ps -q | wc -l | tr -d ' ')"
+if [[ "${RUNNING_COUNT}" == "0" ]]; then pass "No containers currently running"
+else warn "${RUNNING_COUNT} container(s) currently running"
+  docker ps --format '  - {{.Names}} ({{.Image}})'; fi
+
+STOPPED_COUNT="$(docker ps -aq -f status=exited | wc -l | tr -d ' ')"
+if [[ "${STOPPED_COUNT}" == "0" ]]; then pass "No stopped containers lingering"
+else warn "${STOPPED_COUNT} stopped container(s) lingering"
+  docker ps -a -f status=exited --format '  - {{.Names}} ({{.Image}})'; fi
+
+section "Next Steps"
+echo "1. Open Cursor"
+echo "2. Attach to running container when ready"
+echo "3. Enter the class environment with:"
+echo "   ${RUN_CMD}"
+echo "   or"
+echo "   ${RUN_8080_CMD}"
+echo "4. Rebuild first with ./MBAi460-Group1/docker/build if image needs refreshing"
+
+echo
+echo ":)"

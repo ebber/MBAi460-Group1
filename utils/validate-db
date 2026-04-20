@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# utils/validate-db
+# Runs the 26-check photoapp database validation suite via Docker.
+# Reads endpoint from MBAi460-Group1/infra/config/photoapp-config.ini
+# Reads admin password from secrets file.
+# Run from lab root.
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+IMAGE=$(cat "${REPO_ROOT}/MBAi460-Group1/docker/_image-name.txt")
+
+echo "Running photoapp DB validation suite..."
+echo "Via Docker image: ${IMAGE}"
+echo ""
+
+docker run --rm -u user -w /home/user \
+  -v "${REPO_ROOT}:/home/user" \
+  --network host \
+  "$IMAGE" python3 MBAi460-Group1/utils/_validate_db.py

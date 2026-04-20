@@ -1,0 +1,15 @@
+# Terraform state — contains sensitive values including RDS password
+*.tfstate
+*.tfstate.backup
+
+# Terraform variable values — contains secrets
+*.tfvars
+*.tfvars.json
+
+# Terraform working directory — provider binaries, large
+.terraform/
+# .terraform.lock.hcl intentionally NOT ignored — commit it for reproducible provider versions
+
+# Crash logs
+crash.log
+crash.*.log

@@ -1,0 +1,17 @@
+# shorten-config.ini.example
+#
+# Template for the URL Shortener service config.
+# Copy to shorten-config.ini and fill in your values.
+# shorten-config.ini is gitignored — never commit the live file.
+#
+# Gradescope submission: submit shorten-config.ini directly (not this file).
+# Command (from inside Docker, in labs/lab02/):
+#   /gradescope/gs submit 1288073 7972436 *.py *.ini
+
+[rds]
+endpoint    = <your RDS endpoint>
+port_number = 3306
+region_name = us-east-2
+user_name   = <db username for URL_Shortener database>
+user_pwd    = <db password>
+db_name     = URL_Shortener

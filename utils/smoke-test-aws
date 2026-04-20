@@ -1,0 +1,230 @@
+#!/usr/bin/env bash
+# utils/smoke-test-aws --mode live|dead
+# S3 + RDS smoke test suite.
+#   --mode live  → expect all resources present and reachable (post-apply)
+#   --mode dead  → expect all resources gone (post-destroy)
+# Run from lab root.
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+CONFIG="${REPO_ROOT}/MBAi460-Group1/infra/config/photoapp-config.ini"
+TF_DIR="${REPO_ROOT}/MBAi460-Group1/infra/terraform"
+
+export AWS_SHARED_CREDENTIALS_FILE="${REPO_ROOT}/claude-workspace/secrets/aws-credentials"
+export AWS_CONFIG_FILE="${REPO_ROOT}/claude-workspace/secrets/aws-config"
+export AWS_PROFILE="Claude-Conjurer"
+
+MODE=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --mode) MODE="$2"; shift 2 ;;
+    *) echo "Usage: $0 --mode live|dead"; exit 1 ;;
+  esac
+done
+
+if [[ "$MODE" != "live" && "$MODE" != "dead" ]]; then
+  echo "Usage: $0 --mode live|dead"
+  exit 1
+fi
+
+PASS=0; FAIL=0; WARN_COUNT=0
+
+pass() { printf "  [PASS] %s\n" "$1"; PASS=$((PASS+1)); }
+fail() { printf "  [FAIL] %s\n" "$1"; FAIL=$((FAIL+1)); }
+warn() { printf "  [WARN] %s\n" "$1"; WARN_COUNT=$((WARN_COUNT+1)); }
+section() { printf "\n== %s ==\n" "$1"; }
+
+# ── Read config values ────────────────────────────────────────────────────────
+BUCKET=$(python3 -c "
+import configparser
+c = configparser.ConfigParser()
+c.read('${CONFIG}')
+print(c['s3']['bucket_name'])
+" 2>/dev/null || echo "")
+
+ENDPOINT=$(python3 -c "
+import configparser
+c = configparser.ConfigParser()
+c.read('${CONFIG}')
+print(c['rds']['endpoint'])
+" 2>/dev/null || echo "")
+
+if [[ -z "$BUCKET" || "$BUCKET" == "TODO" ]]; then
+  echo "[ERROR] Could not read bucket_name from ${CONFIG}"
+  exit 1
+fi
+if [[ -z "$ENDPOINT" || "$ENDPOINT" == "TODO" ]]; then
+  echo "[ERROR] Could not read rds endpoint from ${CONFIG}"
+  exit 1
+fi
+
+printf "\n"
+printf "╔══════════════════════════════════════════════════════╗\n"
+printf "║         AWS Smoke Test — mode: %-22s║\n" "$MODE"
+printf "║  Bucket:   %-42s║\n" "$BUCKET"
+printf "║  Endpoint: %-42s║\n" "$ENDPOINT"
+printf "╚══════════════════════════════════════════════════════╝\n"
+
+# ── S3 Tests ──────────────────────────────────────────────────────────────────
+section "S3"
+
+# 1. Bucket existence
+HTTP=$(aws s3api head-bucket --bucket "$BUCKET" 2>&1 || true)
+if [[ "$MODE" == "live" ]]; then
+  if echo "$HTTP" | grep -qiE "error|NoSuchBucket|404|403" && ! echo "$HTTP" | grep -q "^$"; then
+    fail "S3 bucket exists"
+  else
+    pass "S3 bucket exists"
+  fi
+else
+  if echo "$HTTP" | grep -qiE "NoSuchBucket|404|Not Found"; then
+    pass "S3 bucket is gone"
+  elif echo "$HTTP" | grep -qiE "403|Forbidden"; then
+    pass "S3 bucket is gone (403 — name released)"
+  else
+    fail "S3 bucket still exists (expected gone)"
+  fi
+fi
+
+# 2. Public access block
+if [[ "$MODE" == "live" ]]; then
+  PAB=$(aws s3api get-public-access-block --bucket "$BUCKET" \
+    --query 'PublicAccessBlockConfiguration' --output json 2>/dev/null || echo "{}")
+  ALL_FALSE=$(echo "$PAB" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+print('yes' if all(not v for v in d.values()) else 'no')
+" 2>/dev/null || echo "no")
+  [[ "$ALL_FALSE" == "yes" ]] && pass "S3 public access block all-false" || fail "S3 public access block not all-false"
+else
+  pass "S3 public access block (skipped — bucket gone)"
+fi
+
+# 3. Bucket ACL has AllUsers READ
+if [[ "$MODE" == "live" ]]; then
+  ACL=$(aws s3api get-bucket-acl --bucket "$BUCKET" --output json 2>/dev/null || echo "{}")
+  HAS_PUBLIC=$(echo "$ACL" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+grants=d.get('Grants',[])
+print('yes' if any(g.get('Grantee',{}).get('URI','').endswith('AllUsers') and g.get('Permission')=='READ' for g in grants) else 'no')
+" 2>/dev/null || echo "no")
+  [[ "$HAS_PUBLIC" == "yes" ]] && pass "S3 bucket ACL has AllUsers READ" || fail "S3 bucket ACL missing AllUsers READ"
+else
+  pass "S3 bucket ACL (skipped — bucket gone)"
+fi
+
+# 4. Object ACL
+if [[ "$MODE" == "live" ]]; then
+  OBJ_ACL=$(aws s3api get-object-acl --bucket "$BUCKET" --key "test/degu.jpg" --output json 2>/dev/null || echo "{}")
+  OBJ_PUBLIC=$(echo "$OBJ_ACL" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+grants=d.get('Grants',[])
+print('yes' if any(g.get('Grantee',{}).get('URI','').endswith('AllUsers') and g.get('Permission')=='READ' for g in grants) else 'no')
+" 2>/dev/null || echo "no")
+  [[ "$OBJ_PUBLIC" == "yes" ]] && pass "S3 object test/degu.jpg ACL has AllUsers READ" || fail "S3 object ACL missing AllUsers READ"
+else
+  pass "S3 object ACL (skipped — bucket gone)"
+fi
+
+# 5. Public URL via cURL
+PUBLIC_URL="https://${BUCKET}.s3.us-east-2.amazonaws.com/test/degu.jpg"
+HTTP_CODE=$(curl -sI --connect-timeout 10 "$PUBLIC_URL" | head -1 | awk '{print $2}' || echo "000")
+if [[ "$MODE" == "live" ]]; then
+  [[ "$HTTP_CODE" == "200" ]] && pass "cURL public image URL → 200 OK" || fail "cURL public image URL → ${HTTP_CODE} (expected 200)"
+else
+  [[ "$HTTP_CODE" == "403" || "$HTTP_CODE" == "404" || "$HTTP_CODE" == "000" ]] \
+    && pass "cURL public image URL → ${HTTP_CODE} (gone)" \
+    || fail "cURL public image URL → ${HTTP_CODE} (expected 403/404)"
+fi
+
+# ── RDS Tests ─────────────────────────────────────────────────────────────────
+section "RDS"
+
+RDS_JSON=$(aws rds describe-db-instances \
+  --db-instance-identifier photoapp-db \
+  --query 'DBInstances[0]' \
+  --output json 2>/dev/null || echo "null")
+
+if [[ "$MODE" == "live" ]]; then
+  # 6. Status available
+  STATUS=$(echo "$RDS_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('DBInstanceStatus','missing') if d else 'missing')" 2>/dev/null || echo "missing")
+  [[ "$STATUS" == "available" ]] && pass "RDS status: available" || fail "RDS status: ${STATUS} (expected available)"
+
+  # 7. Publicly accessible
+  PUBLIC=$(echo "$RDS_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(str(d.get('PubliclyAccessible',False)) if d else 'False')" 2>/dev/null || echo "False")
+  [[ "$PUBLIC" == "True" ]] && pass "RDS publicly accessible: True" || fail "RDS publicly accessible: ${PUBLIC} (expected True)"
+
+  # 8. IAM auth enabled
+  IAM=$(echo "$RDS_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(str(d.get('IAMDatabaseAuthenticationEnabled',False)) if d else 'False')" 2>/dev/null || echo "False")
+  [[ "$IAM" == "True" ]] && pass "RDS IAM auth: enabled" || fail "RDS IAM auth: disabled (expected enabled)"
+else
+  if echo "$RDS_JSON" | grep -q "null"; then
+    pass "RDS instance gone (DBInstanceNotFound)"
+    pass "RDS publicly accessible (skipped — instance gone)"
+    pass "RDS IAM auth (skipped — instance gone)"
+  else
+    STATUS=$(echo "$RDS_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('DBInstanceStatus','unknown') if d else 'unknown')" 2>/dev/null || echo "unknown")
+    fail "RDS instance still exists (status: ${STATUS})"
+    fail "RDS publicly accessible (instance still exists)"
+    fail "RDS IAM auth (instance still exists)"
+  fi
+fi
+
+# 9. Security group
+SG=$(aws ec2 describe-security-groups \
+  --filters "Name=group-name,Values=photoapp-rds-sg" \
+  --query 'SecurityGroups[0]' \
+  --output json 2>/dev/null || echo "null")
+
+if [[ "$MODE" == "live" ]]; then
+  HAS_3306=$(echo "$SG" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+if not d: print('no'); exit()
+ingress=d.get('IpPermissions',[])
+found=any(r.get('FromPort')==3306 and any(ip.get('CidrIp')=='0.0.0.0/0' for ip in r.get('IpRanges',[])) for r in ingress)
+print('yes' if found else 'no')
+" 2>/dev/null || echo "no")
+  [[ "$HAS_3306" == "yes" ]] && pass "Security group photoapp-rds-sg with 3306/0.0.0.0/0 inbound" || fail "Security group missing or wrong inbound rule"
+else
+  if echo "$SG" | python3 -c "import json,sys; d=json.load(sys.stdin); sys.exit(0 if d is None else 1)" 2>/dev/null; then
+    pass "Security group photoapp-rds-sg is gone"
+  else
+    fail "Security group photoapp-rds-sg still exists (expected gone)"
+  fi
+fi
+
+# 10. TCP port 3306
+section "Network"
+TCP_RESULT=$(curl -sv --connect-timeout 10 "telnet://${ENDPOINT}:3306" 2>&1 || true)
+if [[ "$MODE" == "live" ]]; then
+  if echo "$TCP_RESULT" | grep -qi "Connected"; then
+    pass "TCP :3306 reachable → Connected"
+  else
+    fail "TCP :3306 not reachable (expected Connected)"
+  fi
+else
+  if echo "$TCP_RESULT" | grep -qiE "Connection refused|timed out|Could not resolve|connect to"; then
+    pass "TCP :3306 unreachable (expected — instance gone)"
+  elif echo "$TCP_RESULT" | grep -qi "Connected"; then
+    fail "TCP :3306 still reachable (expected unreachable)"
+  else
+    warn "TCP :3306 result ambiguous — check manually"
+  fi
+fi
+
+# ── Summary ───────────────────────────────────────────────────────────────────
+TOTAL=$((PASS + FAIL))
+printf "\n══════════════════════════════════════════════════\n"
+printf "  Mode: %s | Checks: %d | Passed: %d | Failed: %d\n" "$MODE" "$TOTAL" "$PASS" "$FAIL"
+if [[ "$FAIL" -eq 0 ]]; then
+  printf "  ALL CHECKS PASSED\n"
+else
+  printf "  %d CHECK(S) FAILED — review above\n" "$FAIL"
+fi
+printf "══════════════════════════════════════════════════\n\n"
+
+[[ "$FAIL" -eq 0 ]]

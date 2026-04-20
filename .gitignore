@@ -1,0 +1,34 @@
+# ============================================================
+# Credential and secret files — NEVER commit these
+# ============================================================
+
+# Agent secrets directory (aws-credentials, aws-config, access key CSVs)
+secrets/aws-credentials
+secrets/aws-config
+secrets/*.csv
+secrets/*.enc
+
+# Lab01 RDS master password
+labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt
+labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt.enc
+
+# Lab02 shorten app config (contains DB credentials)
+labs/lab02/shorten-config.ini
+
+# ============================================================
+# Terraform — also handled by infra/terraform/.gitignore
+# Repeated here as belt-and-suspenders: protects against broad
+# `git add .` from repo root before nested .gitignore takes effect
+# ============================================================
+infra/terraform/*.tfvars
+infra/terraform/*.tfvars.json
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/.terraform/
+
+# ============================================================
+# Standard ignores
+# ============================================================
+**/.DS_Store
+**/__pycache__/
+**/*.pyc

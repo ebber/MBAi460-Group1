@@ -1,0 +1,115 @@
+Goal: "PhotoApp" Application in AWS that lets users upload, download and
+analyze images (and, FUTURESTATE, organize/provide info to organize/have
+organize the resulting extracts/analysis)
+
+Have users/IAM stored cleanly and architected scalably
+
+1. Setup AWS
+2. Make s3 bucket
+3. set up AWS CLI
+4. Set up user for CLI (both for human and Agent - Lab Claude Code)
+5.1 Test AWS CLI
+(5.2) Have Claude Code test CLI, ideally with it's own IAM maybe
+Test it by making an S3 bucket then listing the service
+Use region us-east-2 exclusively (Says the assignment)
+
+
+--------------Making PhotoShop Infra
+1. Make S3 bucket that's public ( note this in a file, public access is
+dangerous AF and we should ALWAYS maintain security ASAP)
+2. Enable ACLs to allow public access to S3 bucket
+3. Confirm we can access the bucket (by listing all contents)
+
+
+-----Try it: upload to folder
+1. Try uploading a folder
+
+------Set up AWS RDS and MySQL DB Server
+
+1. Configure RDS to run MySQL (free Tier)
+2. Set up DB
+2.0 with password, save to a config file that's encrypted (with the key in a
+seperate file in the same file directory) with both files excluded from the
+github. (This is moderate initial security level, so all local devs and agents
+can access the application. TODO is make more secure)
+2.1 Allocate minimum storage, disable storage autoscalling
+2.2 Make it publicly accessible (TODO: this is bad security, make it only
+accessible within a whitelisted zone once we figure out what the whitelist
+should be)
+2.2 Change DB admin to allow password and IAM
+2.3 Uncheck automated backups (TODO: reenable this before moving to prod)
+2.4 Change the VPC with the database to "allow all traffic" as an Inbound Rule
+(TODO: Change this once we know what we should be whitelisting) < Add Rule,
+Type to MySQL/Aurora, then set source to "Anywhere-IPv4" 
+2.5 Create the DB
+3.
+3.1 View! Go into the AWS console and see what we have!
+Should see the s3 bucket and RDS instance!
+3.2 View! Take a look with the AWS CLI, see the same thing
+3.3 View! Have Cursor or Claude Code take a look, make sure the agent can
+correctly identify what's in there!
+
+4 TEST! Use the provided file "test-mysql.py"
+4.1: Update creds in the script
+
+5. Try spinning down and spinning up the instances to confirm protocol
+5.1 mayyybe make a script to do so O.o
+
+-------Create Photoapp DB
+0. Choose the way we want to interact with SQL, this should be both Erik and
+Agent friendly :D (or 1 tool for each type)
+  VSCode plugins recomended include MySQL by Weijan Chen and MySQL Management
+Tool by Jun Han (I want one that has great visuals so I can show this off to
+my nontechnical fiancé easily)
+1. Make users table (by using code in Handout - Extract, review the extract
+for correctness and bc that's good security practice, and put in it's own
+file)
+
+2. Make Assets table (Use script provided, same as above)
+
+3. Insert users
+3.1 Extract SQL scripts from handout
+3.2 Review extract
+3.3 Run file
+3.4 Test to confirm insertion worked
+
+
+-----Control access to the DB
+0. Create some sort of script, excel file or dashboard that shows our current
+IAM structure for the DB (both DB admins and people in the users table, maybe
+as seperate scripts) for super easy access review, even automated access
+review. We will keep track of the categories of Human Accounts, Agent Accounts, and Service
+Accounts)
+
+
+1, Run script:
+1.1 Extract from PDF
+1.2 Review extract
+1.3 Execute script
+1.4 confirm results in DB structure
+1.5 Test by logging in
+
+2. Do same for user that's photoapp-read-write
+2.1 Modify script
+2.2 Review
+2.3 Execute
+2.4 Confirm expected changes
+2.5 test via log in
+
+-----------Gradding and Submission
+1. Update [rds] section of config file (photoapp-config.ini) to fill in the
+endpoint url
+2Submit
+2.1 Run submit script (or manually submit gradescope)
+2.2 Check Gradescope results
+2.3 Fix bugs (updating requirement documents so the whole project stays
+cohesive)
+2.4 repeat untill passing all tests
+2.5 Make any changes that we want to for us, but break GradeScope
+
+3. Wholeistic review
+3.1 review all
+3.2 write memo of current status + what we did, any other useful history or
+artifacts
+3.3 Smile/bask in the goodness/elegance :)
+3.4 Spin down

@@ -1,0 +1,114 @@
+# Lab 01 — required I/O strings (for autograder / assignment parity)
+#
+# Source: restored to the original single-run NU lab pattern from the starter
+# script in this repo. The file lab01.pdf was not present in the workspace;
+# if your course PDF specifies different text, replace the quoted strings below
+# and update client-web-to-s3.py / client-boto-to-s3.py to match exactly.
+# Screenshots of the PDF I/O examples are welcome for a byte-for-byte update.
+
+## Configuration (s3-config.ini)
+
+Canonical user-facing strings for both clients live under **`[ui]`** in
+`s3-config.ini`:
+
+- `banner_start` — first line (default in code: `**Starting**`)
+- `banner_done` — closing line (default: `**Done**`)
+- `prompt_download` — text before the final `> ` for `input()`; the value in the
+  file should omit the trailing space after `>` (ConfigParser strips line ends);
+  the programs append exactly one space so the prompt matches the assignment.
+
+MIME type → extension mapping is shared in `s3_mime_map.py` (`CONTENT_TYPE_TO_EXT`).
+
+## Global sequence (both clients)
+
+1. Output line (exact; from `[ui]` `banner_start`):
+   **Starting**
+
+2. Output line (exact):
+   <empty line>   i.e. print() with no arguments
+
+3. Input prompt (exact string passed to input(); include trailing space after `>`;
+   from `[ui]` `prompt_download` plus one appended space):
+   Enter image to download without extension>
+
+4. Immediately after input() returns, emit one newline to stdout (e.g. print())
+   so the prompt line is separated from later output. input() does not write a
+   trailing newline after the prompt string.
+
+5. After that, the program performs the download (web via HTTP GET; boto via S3
+   API). Then:
+
+## Web client (client-web-to-s3.py) — additional output
+
+- After step 4 (newline following the prompt), print the status line (no extra
+  blank line before it on the HTTP success path):
+  status code: <integer or (no response)>
+
+- Blank line after status, then success or error body:
+  print()
+
+On HTTP 200 success:
+- Success line (exact; use one formatted string, not comma-separated print args):
+  Success, image downloaded to '<local_name>'
+
+  where <local_name> is Path(imagename).stem + extension from Content-Type
+  mapping (see CONTENT_TYPE_TO_EXT in code), or .unknown if MIME not listed.
+
+On HTTP failure (e.g. 404) after retries:
+  ERROR:
+    URL: <full URL requested>
+    Msg: <human-readable message, often S3 XML Message text>
+  (Two leading spaces before "URL:" and "Msg:" on those lines.)
+
+On total network failure (no HTTP response after retries):
+  status code: (no response)
+  ERROR:
+    URL: <full URL requested>
+    Msg: <exception text>
+  (Same two-space indent on URL and Msg lines.)
+
+## Web client — closing
+
+- Blank line:
+  print()
+
+- Output line (exact; from `[ui]` `banner_done`):
+  **Done**
+
+## Boto client (client-boto-to-s3.py) — additional output
+
+On success (after download):
+- One formatted string (no extra spaces around the filename):
+  Success, image downloaded to '<local_filename>'
+
+  where <local_filename> follows the same Content-Type rules as the web client
+  when the S3 key has no file extension; otherwise the key basename is used.
+
+On success only (after download completes):
+
+- Blank line then:
+  **Done**
+
+Do not print **Done** after a formatted resolution error (e.g. 404 / not found,
+ambiguous prefix) or after errors caught by the outer ClientError / BotoCoreError
+handlers.
+
+When HeadObject returns not-found and a follow-up ListObjects fails (e.g. test
+stubs), still print **Msg:** using the original HeadObject ClientError
+(`str(exc)`), not the ListObjects error — grader expects e.g. “(404) …
+HeadObject … Not Found”.
+
+On ClientError / BotoCoreError (formatted error; one leading space on detail lines):
+  ERROR:
+   Bucket: <bucket_name from ini>
+   Region: <region_name from ini>
+   Msg: <message>
+
+(One space before "Bucket:", "Region:", and "Msg:" — not two. No blank line
+between the post-prompt newline and "ERROR:".)
+
+## Not in assignment mode (removed for test parity)
+
+- No interactive loop (no repeated downloads in one process).
+- No "exit", "ls", or "list" keywords in the web client.
+- No bucket listing over HTTP in the web client.

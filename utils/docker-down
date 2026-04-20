@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# MBAi460-Group1/utils/docker-down — Stop Docker/Colima and clean up containers.
+# Run from repo root.
+
+set -euo pipefail
+
+pass()    { printf "[PASS] %s\n" "$1"; }
+warn()    { printf "[WARN] %s\n" "$1"; }
+fail()    { printf "[FAIL] %s\n" "$1"; }
+section() { printf "\n== %s ==\n" "$1"; }
+
+if [[ ! -d "./MBAi460-Group1/docker" ]]; then
+  fail "Must run from repo root (missing ./MBAi460-Group1/docker directory)"; exit 1
+fi
+
+section "Docker Lab Shutdown"
+
+section "Containers"
+if docker ps >/dev/null 2>&1; then
+  RUNNING_IDS="$(docker ps -q)"
+  if [[ -n "$RUNNING_IDS" ]]; then
+    warn "Stopping running containers..."
+    docker stop $RUNNING_IDS >/dev/null
+    pass "Running containers stopped"
+  else pass "No running containers"; fi
+
+  EXITED_IDS="$(docker ps -aq -f status=exited)"
+  if [[ -n "$EXITED_IDS" ]]; then
+    warn "Removing stopped containers..."
+    docker rm $EXITED_IDS >/dev/null
+    pass "Stopped containers removed"
+  else pass "No stopped containers"; fi
+else warn "Docker not reachable (skipping container cleanup)"; fi
+
+section "Colima"
+if colima status >/dev/null 2>&1; then
+  echo "Stopping Colima..."; colima stop; pass "Colima stopped"
+else pass "Colima already stopped"; fi
+
+section "Final State"
+if colima status >/dev/null 2>&1; then fail "Colima is still running"
+else pass "Colima is not running"; fi
+if docker ps >/dev/null 2>&1; then warn "Docker still reachable (unexpected)"
+else pass "Docker daemon not reachable (expected)"; fi
+
+echo
+echo ":)"
