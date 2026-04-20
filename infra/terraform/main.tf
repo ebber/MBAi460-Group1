@@ -9,7 +9,7 @@ terraform {
 
 provider "aws" {
   region  = var.aws_region
-  profile = "Claude-The-Conjurer"
+  profile = "ErikTheWizard"
 
   # Credentials via env vars — set before running terraform (see infra/README.md):
   #   export AWS_SHARED_CREDENTIALS_FILE=<repo-root>/claude-workspace/secrets/aws-credentials
@@ -145,4 +145,60 @@ resource "aws_db_instance" "photoapp" {
     Environment = "lab"
     ManagedBy   = "terraform"
   }
+}
+
+###############################################################################
+# IAM — Project 01 Part 02
+# s3readonly: AmazonS3ReadOnlyAccess — used by read-only API operations
+# s3readwrite: custom S3 full-access + AmazonRekognitionFullAccess — used by
+#              post_image (upload + detect_labels) and delete_images
+###############################################################################
+
+# ── s3readonly ──────────────────────────────────────────────────────────────
+
+resource "aws_iam_user" "s3readonly" {
+  name = "s3readonly"
+  tags = { Course = "mbai460", ManagedBy = "terraform" }
+}
+
+resource "aws_iam_user_policy_attachment" "s3readonly_managed" {
+  user       = aws_iam_user.s3readonly.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+}
+
+resource "aws_iam_access_key" "s3readonly" {
+  user = aws_iam_user.s3readonly.name
+  # Keys are immutable in-place; rotate deliberately via utils/rotate-access-keys
+  # (which uses terraform apply -replace=aws_iam_access_key.s3readonly)
+}
+
+# ── s3readwrite ─────────────────────────────────────────────────────────────
+
+resource "aws_iam_policy" "s3_read_write" {
+  name   = "photoapp-s3-read-write"
+  policy = templatefile(
+    "${path.root}/../../projects/project01/s3-read-write-policy.json.txt",
+    { bucket_name = var.bucket_name }
+  )
+}
+
+resource "aws_iam_user" "s3readwrite" {
+  name = "s3readwrite"
+  tags = { Course = "mbai460", ManagedBy = "terraform" }
+}
+
+resource "aws_iam_user_policy_attachment" "s3readwrite_custom" {
+  user       = aws_iam_user.s3readwrite.name
+  policy_arn = aws_iam_policy.s3_read_write.arn
+}
+
+resource "aws_iam_user_policy_attachment" "s3readwrite_rekognition" {
+  user       = aws_iam_user.s3readwrite.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonRekognitionFullAccess"
+}
+
+resource "aws_iam_access_key" "s3readwrite" {
+  user = aws_iam_user.s3readwrite.name
+  # Keys are immutable in-place; rotate deliberately via utils/rotate-access-keys
+  # (which uses terraform apply -replace=aws_iam_access_key.s3readwrite)
 }

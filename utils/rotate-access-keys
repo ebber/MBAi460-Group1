@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# utils/rotate-access-keys
+# Rotate s3readonly and s3readwrite IAM access keys.
+# Replaces both keys via Terraform, writes new values to photoapp-config.ini,
+# verifies connectivity with get_ping(). Run from repo root.
+#
+# NOTE: requires IAM permissions (iam:CreateAccessKey, iam:DeleteAccessKey).
+# Claude-Conjurer (PowerUserAccess) cannot run this — must be run by Erik
+# or after Claude-Conjurer is granted scoped IAM permissions.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+CONFIG="${CLASS_ROOT}/projects/project01/client/photoapp-config.ini"
+TF_DIR="${CLASS_ROOT}/infra/terraform"
+IMAGE=$(cat "${CLASS_ROOT}/docker/_image-name.txt")
+
+export AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-${CLASS_ROOT}/secrets/aws-credentials}"
+export AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-${CLASS_ROOT}/secrets/aws-config}"
+
+if [[ ! -f "$CONFIG" ]]; then
+  echo "[ERROR] $CONFIG not found — cannot write rotated keys" >&2; exit 1
+fi
+
+echo "[rotate-access-keys] Replacing IAM access keys via terraform apply -replace..."
+terraform -chdir="$TF_DIR" apply \
+  -replace=aws_iam_access_key.s3readonly \
+  -replace=aws_iam_access_key.s3readwrite \
+  -auto-approve
+
+echo "[rotate-access-keys] Writing new keys to $(basename "$CONFIG")..."
+terraform -chdir="$TF_DIR" output -json | python3 -c "
+import json, sys, configparser
+config_path = sys.argv[1]
+data = json.load(sys.stdin)
+ro_id     = data['s3readonly_access_key_id']['value']
+ro_secret = data['s3readonly_secret_access_key']['value']
+rw_id     = data['s3readwrite_access_key_id']['value']
+rw_secret = data['s3readwrite_secret_access_key']['value']
+cfg = configparser.ConfigParser(interpolation=None)
+cfg.read(config_path)
+cfg['s3readonly']['aws_access_key_id']     = ro_id
+cfg['s3readonly']['aws_secret_access_key'] = ro_secret
+cfg['s3readwrite']['aws_access_key_id']    = rw_id
+cfg['s3readwrite']['aws_secret_access_key']= rw_secret
+with open(config_path, 'w') as f:
+    cfg.write(f)
+print(f'  s3readonly:  {ro_id[:8]}...')
+print(f'  s3readwrite: {rw_id[:8]}...')
+" "$CONFIG"
+
+echo "[rotate-access-keys] Verifying connectivity..."
+docker run --rm -u user -w /home/user/projects/project01/client \
+  -v "${CLASS_ROOT}:/home/user" --network host "$IMAGE" \
+  python3 -c "
+import photoapp
+photoapp.initialize('photoapp-config.ini', 's3readwrite', 'photoapp-read-write')
+M, N = photoapp.get_ping()
+assert isinstance(M, int), f'S3 not reachable after rotation: {M}'
+assert N == 3, f'RDS not reachable after rotation: N={N}'
+print(f'  get_ping() = ({M}, {N}) — rotation successful')
+"
+
+echo "[rotate-access-keys] Done."

@@ -44,11 +44,14 @@ class PhotoappTests(unittest.TestCase):
     print()
     print("** test_03: get_users **")
 
-    correct = [(80001, 'p_sarkar', 'Pooja', 'Sarkar'), 
+    try:
+      users = photoapp.get_users()
+    except AttributeError:
+      self.fail("get_users() not yet implemented in photoapp.py")
+
+    correct = [(80001, 'p_sarkar', 'Pooja', 'Sarkar'),
                (80002, 'e_ricci', 'Emanuele', 'Ricci'),
                (80003, 'l_chen', 'Li', 'Chen')]
-
-    users = photoapp.get_users()
 
     self.assertEqual(users, correct)
 

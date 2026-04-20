@@ -27,3 +27,29 @@ output "rds_port" {
   description = "RDS port"
   value       = aws_db_instance.photoapp.port
 }
+
+# IAM access keys — Project 01 Part 02
+# sensitive = true: values hidden in plan/apply output; read via: terraform output -json
+output "s3readonly_access_key_id" {
+  description = "Access key ID for s3readonly IAM user — write to photoapp-config.ini [s3readonly]"
+  value       = aws_iam_access_key.s3readonly.id
+  sensitive   = true
+}
+
+output "s3readonly_secret_access_key" {
+  description = "Secret access key for s3readonly IAM user"
+  value       = aws_iam_access_key.s3readonly.secret
+  sensitive   = true
+}
+
+output "s3readwrite_access_key_id" {
+  description = "Access key ID for s3readwrite IAM user — write to photoapp-config.ini [s3readwrite]"
+  value       = aws_iam_access_key.s3readwrite.id
+  sensitive   = true
+}
+
+output "s3readwrite_secret_access_key" {
+  description = "Secret access key for s3readwrite IAM user"
+  value       = aws_iam_access_key.s3readwrite.secret
+  sensitive   = true
+}
