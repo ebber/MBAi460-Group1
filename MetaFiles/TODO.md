@@ -2,7 +2,8 @@
 
 ## Active
 
-- [ ] **[Hygiene] photoapp-config.ini gitignore gap** — `MBAi460-Group1/infra/config/photoapp-config.ini` is git-tracked despite containing RDS endpoint and credentials; add `.example` template, gitignore the live file
+- [ ] **[Security] Reset photoapp users + passwords** — `photoapp-read-only` (abc123!!) and `photoapp-read-write` (def456!!) passwords were briefly exposed in initial commit before history rewrite; rotate both in RDS + update local `infra/config/photoapp-config.ini` and `projects/project01/client/photoapp-config.ini` (recreate from `.example` templates)
+- [x] **[Hygiene] photoapp-config.ini gitignore gap** — resolved: removed from history via git filter-repo, gitignored, `.example` templates added
 - [ ] **[Design] VCS strategy** — branching model, what gets committed, tfstate remote backend, multi-collaborator gitignore policy (see Lab-root MetaFiles/TODO.md)
 - [ ] **[Tuning] IAM diagram mismatch** — `visualizations/lab01-iam-design-v1.md` shows Claude-Conjurer as AdministratorAccess; actual is PowerUserAccess; update diagram
 
