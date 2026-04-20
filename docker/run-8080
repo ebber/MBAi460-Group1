@@ -1,14 +1,17 @@
 #!/bin/bash
 #
-# BASH script to run docker image in a docker container:
+# BASH script to run docker image in a docker container with port 8080 exposed.
+# Mounts the current working directory as /home/user inside Docker.
+# Run from the directory you want as your Docker home (typically repo root).
 #
-read -r image < ./docker/_image-name.txt
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+read -r image < "${SCRIPT_DIR}/_image-name.txt"
 #
-# Some notes:
-#  -it  => iteractive
-#  -u   => run as this user 
-#  -w   => home dir
-#  -v   => map current dir (.) TO home dir
+#  -it  => interactive
+#  -u   => run as this user
+#  -w   => home dir inside container
+#  -v   => map current dir (.) to home dir
+#  -p   => expose port 8080
 #  --rm => remove container when done
 #
 docker run -it -u user -w /home/user -v .:/home/user -p 8080:8080 --rm "$image" bash
