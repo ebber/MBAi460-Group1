@@ -1,1 +1,0 @@
-2026-04-20 20:04:24,025 - INFO - Found credentials in shared credentials file: photoapp-config.ini

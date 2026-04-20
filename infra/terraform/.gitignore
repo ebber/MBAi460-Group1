@@ -13,3 +13,9 @@
 # Crash logs
 crash.log
 crash.*.log
+
+# Terraform plan output files — save plan, apply it, delete immediately
+*.tfplan
+
+# Editor backup files
+*~

@@ -15,6 +15,9 @@ labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt.enc
 # Lab02 shorten app config (contains DB credentials)
 labs/lab02/shorten-config.ini
 
+# Gradescope auth token — sensitive credential, never commit
+.gradescope
+
 # Backbone + client configs — contain live RDS endpoints and credentials
 # Commit the .example templates; populate live files locally
 infra/config/photoapp-config.ini
@@ -32,8 +35,17 @@ infra/terraform/*.tfstate.backup
 infra/terraform/.terraform/
 
 # ============================================================
+# Terraform plan output files — run `terraform apply planfile` then delete
+# ============================================================
+infra/terraform/*.tfplan
+
+# ============================================================
 # Standard ignores
 # ============================================================
 **/.DS_Store
 **/__pycache__/
 **/*.pyc
+# Editor backup files (vim *~, emacs #file#, etc.)
+**/*~
+# Generated log files — keep on disk for incident response, don't commit
+log.txt
