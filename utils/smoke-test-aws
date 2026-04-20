@@ -3,16 +3,17 @@
 # S3 + RDS smoke test suite.
 #   --mode live  → expect all resources present and reachable (post-apply)
 #   --mode dead  → expect all resources gone (post-destroy)
-# Run from lab root.
+# Runnable from any directory.
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-CONFIG="${REPO_ROOT}/MBAi460-Group1/infra/config/photoapp-config.ini"
-TF_DIR="${REPO_ROOT}/MBAi460-Group1/infra/terraform"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+CONFIG="${CLASS_ROOT}/infra/config/photoapp-config.ini"
+TF_DIR="${CLASS_ROOT}/infra/terraform"
 
-export AWS_SHARED_CREDENTIALS_FILE="${REPO_ROOT}/claude-workspace/secrets/aws-credentials"
-export AWS_CONFIG_FILE="${REPO_ROOT}/claude-workspace/secrets/aws-config"
+export AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-${CLASS_ROOT}/secrets/aws-credentials}"
+export AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-${CLASS_ROOT}/secrets/aws-config}"
 export AWS_PROFILE="Claude-Conjurer"
 
 MODE=""

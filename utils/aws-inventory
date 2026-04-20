@@ -2,15 +2,16 @@
 # utils/aws-inventory
 # Full AWS estate scan — enumerates all resources across services we use,
 # cross-references with Terraform state to label [TF] vs [MANUAL].
-# Run from lab root.
+# Runnable from any directory.
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-TF_DIR="${REPO_ROOT}/MBAi460-Group1/infra/terraform"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+TF_DIR="${CLASS_ROOT}/infra/terraform"
 
-export AWS_SHARED_CREDENTIALS_FILE="${REPO_ROOT}/claude-workspace/secrets/aws-credentials"
-export AWS_CONFIG_FILE="${REPO_ROOT}/claude-workspace/secrets/aws-config"
+export AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-${CLASS_ROOT}/secrets/aws-credentials}"
+export AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-${CLASS_ROOT}/secrets/aws-config}"
 export AWS_PROFILE="Claude-Conjurer"
 
 AWS="aws --output json"
