@@ -72,4 +72,18 @@ Use checkboxes as you **complete** or **reject** items (rejected: note why).
 
 ---
 
+- [ ] **`utils/rebuild-db` — add labels table** — `utils/rebuild-db` should auto-discover `create-photoapp-labels.sql` in addition to `create-photoapp.sql`, running both in dependency order.
+  Currently `run-sql create-photoapp-labels.sql` is a separate manual step after `rebuild-db`.
+  *Triggered by: Phase 1 of Project01-Part02 requiring a second SQL file.*
+
+- [ ] **`@_retry` exception filtering** — current `_retry` fires on ALL exceptions including `ValueError("no such assetid")`, causing 3 log lines per invalid-ID test.
+  Fix: `retry=retry_if_exception_type(pymysql.Error)` to filter. Only relevant if noise in logs is a problem in future phases.
+  *Triggered by: Phase 4 code quality review of photoapp.py.*
+
+- [ ] **Gradescope token mount** — `.gradescope` lives at `mbai460-client/.gradescope`, outside the Class Project Docker mount. Future submissions need `-v /path/to/.gradescope:/home/user/.gradescope:ro`.
+  Fix: document in `QUICKSTART.md`, or investigate embedding token in Docker image.
+  *Triggered by: Phase 3 submit hitting "Could not find token" error.*
+
+---
+
 *Review this file at major milestones (e.g. after Part 01, after Part 02, end of quarter).*

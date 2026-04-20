@@ -7,32 +7,19 @@ Source plan: `plans/project01-part02-plan.md` (extracted from
 
 ## Active — assignment-faithful
 
-- [ ] **[Blocker]** Rotate `photoapp-read-only` / `photoapp-read-write`
-  passwords (inherited from root `MetaFiles/TODO.md`); regenerate
-  `photoapp-config.ini` from `.example` before any PDF step 0 test.
-- [ ] **PDF step 3** — add `log.txt` `logging.basicConfig(...)` to
-  `projects/project01/client/client.py`.
-- [ ] **PDF steps 4–5** — `get_users()`, `get_images(userid=None)` in
-  `photoapp.py`; decorate with `@retry(stop_after_attempt(3),
-  wait_exponential(multiplier=1, min=2, max=30), reraise=True)`; add
-  `test_02`, `test_03` in `tests.py`.
-- [ ] **PDF step 6** — `post_image(userid, local_filename)`; inner fns
-  for MySQL lookups + insert, transaction + `LAST_INSERT_ID()`;
-  `bucket.upload_file` undecorated.
-- [ ] **PDF step 7** — `get_image(assetid, local_filename=None)`.
-- [ ] **PDF step 8** — `delete_images()`; truncate in txn; skip
-  `bucket.delete_objects` when list is empty.
-- [ ] **PDF step 9** — Rekognition label schema: one or two tables keyed
-  on `assetid`; store `label` + `int(confidence)`. Save DDL at
-  `projects/project01/create-photoapp-labels.sql`.
-- [ ] **PDF step 11** — wire Rekognition into `post_image`
-  (`detect_labels(MaxLabels=100, MinConfidence=80)`; bulk insert in txn).
-- [ ] **PDF step 12** — extend `delete_images` to truncate label table(s).
-- [ ] **PDF steps 13–14** — `get_image_labels(assetid)` and
-  `get_images_with_label(label)` (`LIKE '%…%'`, two-level `ORDER BY`).
-- [ ] **PDF step 15** — Gradescope submit
-  (`/gradescope/gs submit 1288073 7983365 *.py *.ini`); iterate to 70 / 70.
-- [ ] **PDF step 16** — `aws rds stop-db-instance` post-submit.
+- [x] **[Blocker]** Rotate `photoapp-read-only` / `photoapp-read-write`
+  passwords — resolved via Phase 1 Terraform apply (2026-04-20).
+- [x] **PDF step 3** — `logging.basicConfig` added to `client.py`.
+- [x] **PDF steps 4–5** — `get_users()`, `get_images(userid=None)` implemented + tested.
+- [x] **PDF step 6** — `post_image()` implemented with inner fns, transaction, LAST_INSERT_ID().
+- [x] **PDF step 7** — `get_image()` implemented.
+- [x] **PDF step 8** — `delete_images()` implemented.
+- [x] **PDF step 9** — `create-photoapp-labels.sql` applied, labels table live.
+- [x] **PDF step 11** — Rekognition wired into `post_image`.
+- [x] **PDF step 12** — `delete_images` truncates labels first.
+- [x] **PDF steps 13–14** — `get_image_labels()` + `get_images_with_label()` implemented.
+- [x] **PDF step 15** — Gradescope submit **70/70** (2026-04-20, first submission).
+- [ ] **PDF step 16** — `aws rds stop-db-instance` post-submit. ← READY (grading confirmed)
 
 ## Environment Validation — Ad-hoc Checks Log
 
