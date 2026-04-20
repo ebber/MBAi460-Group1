@@ -15,6 +15,11 @@ labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt.enc
 # Lab02 shorten app config (contains DB credentials)
 labs/lab02/shorten-config.ini
 
+# Backbone + client configs — contain live RDS endpoints and credentials
+# Commit the .example templates; populate live files locally
+infra/config/photoapp-config.ini
+projects/project01/client/photoapp-config.ini
+
 # ============================================================
 # Terraform — also handled by infra/terraform/.gitignore
 # Repeated here as belt-and-suspenders: protects against broad

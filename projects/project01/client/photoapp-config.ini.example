@@ -1,0 +1,21 @@
+[rds]
+endpoint = <rds-identifier>.c5q4s860smqq.us-east-2.rds.amazonaws.com
+port_number = 3306
+region_name = us-east-2
+user_name = photoapp-read-write
+user_pwd = <read-write-password>
+db_name = photoapp
+
+[s3]
+bucket_name = photoapp-<yourname>-mbai460
+region_name = us-east-2
+
+[s3readonly]
+region_name = us-east-2
+aws_access_key_id = TODO
+aws_secret_access_key = TODO
+
+[s3readwrite]
+region_name = us-east-2
+aws_access_key_id = TODO
+aws_secret_access_key = TODO
