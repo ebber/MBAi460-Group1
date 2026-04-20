@@ -18,6 +18,16 @@ if [[ ! -d "${CLASS_ROOT}/docker" ]]; then
   exit 1
 fi
 
+require_cmd() {
+  local cmd="$1"
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    fail "Required command not found: $cmd"; exit 1
+  fi
+}
+
+require_cmd colima
+require_cmd docker
+
 COLIMA_RUNNING=false
 DOCKER_REACHABLE=false
 

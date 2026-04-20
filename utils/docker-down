@@ -16,6 +16,16 @@ if [[ ! -d "${CLASS_ROOT}/docker" ]]; then
   fail "Cannot locate docker/ directory under ${CLASS_ROOT}"; exit 1
 fi
 
+require_cmd() {
+  local cmd="$1"
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    fail "Required command not found: $cmd"; exit 1
+  fi
+}
+
+require_cmd colima
+require_cmd docker
+
 section "Docker Lab Shutdown"
 
 section "Containers"
@@ -23,6 +33,8 @@ if docker ps >/dev/null 2>&1; then
   RUNNING_IDS="$(docker ps -q)"
   if [[ -n "$RUNNING_IDS" ]]; then
     warn "Stopping running containers..."
+    # Intentional word-split: each line in RUNNING_IDS is a container ID with no spaces
+    echo "  Stopping containers (may take up to 10s)..."
     docker stop $RUNNING_IDS >/dev/null
     pass "Running containers stopped"
   else pass "No running containers"; fi
@@ -30,6 +42,7 @@ if docker ps >/dev/null 2>&1; then
   EXITED_IDS="$(docker ps -aq -f status=exited)"
   if [[ -n "$EXITED_IDS" ]]; then
     warn "Removing stopped containers..."
+    # Intentional word-split: each line in EXITED_IDS is a container ID with no spaces
     docker rm $EXITED_IDS >/dev/null
     pass "Stopped containers removed"
   else pass "No stopped containers"; fi
