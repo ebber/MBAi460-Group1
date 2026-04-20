@@ -10,16 +10,24 @@
 import logging
 import pymysql
 import os
+import uuid
 import boto3
 
 from botocore.client import Config
 from configparser import ConfigParser
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 
 #
 # module-level varibles:
 #
 PHOTOAPP_CONFIG_FILE = 'set via call to initialize()'
+
+_retry = retry(
+  stop=stop_after_attempt(3),
+  wait=wait_exponential(multiplier=1, min=2, max=30),
+  reraise=True,
+)
 
 
 ###################################################################
@@ -366,3 +374,205 @@ def get_ping():
     N = str(err)
 
   return (M, N)
+
+
+###################################################################
+#
+# delete_images
+#
+def delete_images():
+  @_retry
+  def _clear_db(dbConn):
+    dbCursor = dbConn.cursor()
+    try:
+      sql = """
+        SET foreign_key_checks = 0;
+        TRUNCATE TABLE assets;
+        SET foreign_key_checks = 1;
+        ALTER TABLE assets AUTO_INCREMENT = 1001;
+      """
+      dbCursor.execute(sql)
+      dbConn.commit()
+    except Exception:
+      dbConn.rollback()
+      raise
+    finally:
+      try: dbCursor.close()
+      except: pass
+
+  dbConn = None
+  try:
+    dbConn = get_dbConn()
+    _clear_db(dbConn)
+
+    bucket = get_bucket()
+    objects_to_delete = [{'Key': obj.key} for obj in bucket.objects.all()]
+    if objects_to_delete:
+      bucket.delete_objects(Delete={'Objects': objects_to_delete})
+
+    return True
+
+  except Exception as err:
+    logging.error("delete_images():")
+    logging.error(str(err))
+    raise
+  finally:
+    try: dbConn.close()
+    except: pass
+
+
+###################################################################
+#
+# get_image
+#
+def get_image(assetid, local_filename=None):
+  @_retry
+  def _lookup_asset(dbConn, assetid):
+    dbCursor = dbConn.cursor()
+    try:
+      dbCursor.execute(
+        "SELECT bucketkey, localname FROM assets WHERE assetid=%s", [assetid]
+      )
+      row = dbCursor.fetchone()
+      if row is None:
+        raise ValueError("no such assetid")
+      return row[0], row[1]
+    finally:
+      try: dbCursor.close()
+      except: pass
+
+  dbConn = None
+  try:
+    dbConn = get_dbConn()
+    bucketkey, stored_name = _lookup_asset(dbConn, assetid)
+
+    filename = local_filename if local_filename is not None else stored_name
+
+    bucket = get_bucket()
+    bucket.download_file(Key=bucketkey, Filename=filename)
+
+    return filename
+
+  except Exception as err:
+    logging.error("get_image():")
+    logging.error(str(err))
+    raise
+  finally:
+    try: dbConn.close()
+    except: pass
+
+
+###################################################################
+#
+# post_image
+#
+def post_image(userid, local_filename):
+  @_retry
+  def _lookup_user(dbConn, userid):
+    dbCursor = dbConn.cursor()
+    try:
+      dbCursor.execute("SELECT username FROM users WHERE userid=%s", [userid])
+      row = dbCursor.fetchone()
+      if row is None:
+        raise ValueError("no such userid")
+      return row[0]
+    finally:
+      try: dbCursor.close()
+      except: pass
+
+  @_retry
+  def _insert_asset(dbConn, userid, bucketkey, local_filename):
+    dbCursor = dbConn.cursor()
+    try:
+      dbCursor.execute(
+        "INSERT INTO assets (userid, localname, bucketkey) VALUES (%s, %s, %s)",
+        [userid, local_filename, bucketkey]
+      )
+      dbCursor.execute("SELECT LAST_INSERT_ID() AS assetid")
+      assetid = dbCursor.fetchone()[0]
+      dbConn.commit()
+      return assetid
+    except Exception:
+      dbConn.rollback()
+      raise
+    finally:
+      try: dbCursor.close()
+      except: pass
+
+  dbConn = None
+  try:
+    dbConn = get_dbConn()
+    username = _lookup_user(dbConn, userid)
+
+    unique_part = str(uuid.uuid4())
+    bucketkey = username + "/" + unique_part + "-" + local_filename
+
+    bucket = get_bucket()
+    bucket.upload_file(Filename=local_filename, Key=bucketkey)
+
+    assetid = _insert_asset(dbConn, userid, bucketkey, local_filename)
+    return assetid
+
+  except Exception as err:
+    logging.error("post_image():")
+    logging.error(str(err))
+    raise
+  finally:
+    try: dbConn.close()
+    except: pass
+
+
+###################################################################
+#
+# get_images
+#
+@_retry
+def get_images(userid=None):
+  dbConn = None
+  dbCursor = None
+  try:
+    dbConn = get_dbConn()
+    dbCursor = dbConn.cursor()
+    if userid is None:
+      dbCursor.execute(
+        "SELECT assetid, userid, localname, bucketkey FROM assets ORDER BY assetid ASC"
+      )
+    else:
+      dbCursor.execute(
+        "SELECT assetid, userid, localname, bucketkey FROM assets WHERE userid=%s ORDER BY assetid ASC",
+        [userid]
+      )
+    return list(dbCursor.fetchall())
+  except Exception as err:
+    logging.error("get_images():")
+    logging.error(str(err))
+    raise
+  finally:
+    try: dbCursor.close()
+    except: pass
+    try: dbConn.close()
+    except: pass
+
+
+###################################################################
+#
+# get_users
+#
+@_retry
+def get_users():
+  dbConn = None
+  dbCursor = None
+  try:
+    dbConn = get_dbConn()
+    dbCursor = dbConn.cursor()
+    dbCursor.execute("SELECT userid, username, givenname, familyname FROM users ORDER BY userid ASC")
+    return list(dbCursor.fetchall())
+  except Exception as err:
+    logging.error("get_users():")
+    logging.error(str(err))
+    raise
+  finally:
+    try: dbCursor.close()
+    except: pass
+    try: dbConn.close()
+    except: pass

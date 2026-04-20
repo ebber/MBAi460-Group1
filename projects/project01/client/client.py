@@ -7,7 +7,15 @@
 #
 
 import photoapp
+import logging
 import sys
+
+logging.basicConfig(
+  filename='log.txt',
+  level=logging.INFO,
+  format='%(asctime)s - %(levelname)s - %(message)s',
+  filemode='w',
+)
 
 #
 # eliminate traceback so we just get error message:
