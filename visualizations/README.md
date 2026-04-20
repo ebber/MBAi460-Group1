@@ -8,9 +8,9 @@ All diagrams are Mermaid markdown files rendered in-editor or via mermaid.live.
 | File | Covers | Status |
 |------|--------|--------|
 | `docker-environment-v1.md` | Docker image structure | Current |
-| `lab-architecture-v2.md` | Full Lab AWS architecture | Current — needs Rekognition added for Part02 |
+| `lab-architecture-v2.md` | Full Lab AWS architecture | Current — Rekognition added 2026-04-20 |
 | `lab-database-schema-v2.md` | photoapp + URL_Shortener DB schemas | Current |
-| `lab01-iam-design-v1.md` | IAM users, roles, policies | Stale (see MetaFiles/TODO.md) |
+| `lab01-iam-design-v1.md` | IAM users, roles, policies | Current — Claude-Conjurer updated to PowerUserAccess 2026-04-20 |
 | `lab01-part01-architecture.md` | Lab01/Project01-Part01 architecture | Current |
 | `lab02-architecture.md` | Lab02 URL Shortener architecture | Current |
 | `lab-database-schema-v3.md` | photoapp schema + labels table | Current — labels table live, 70/70 |

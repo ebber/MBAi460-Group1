@@ -7,13 +7,13 @@
 | 0 | Prep — Audit, divergence, target state, plan | ✅ COMPLETE |
 | 1 | Execution — Environment setup + API implementation | ✅ COMPLETE |
 | 2 | Submit Loop — Gradescope iteration to 70/70 | ✅ COMPLETE — 70/70 first shot |
-| 3 | Cleanup — Artifacts, repo hygiene, retrospective | 🟡 ACTIVE |
+| 3 | Cleanup — Artifacts, repo hygiene, retrospective | ✅ COMPLETE |
 
 ## Current State
 
-- **Phase:** 3 — Cleanup
-- **Step:** Entering Phase 3 — code quality review, viz promotion, retrospective
+- **Phase:** ALL PHASES COMPLETE
 - **Score:** 70/70 Gradescope (2026-04-20, first submission, no iteration needed)
+- **Outstanding:** PDF step 16 — `aws rds stop-db-instance` (awaiting Erik authorization)
 
 ## Key Decisions / Invariants
 
@@ -24,7 +24,7 @@
 - RDS stays running through grading (do NOT stop-db-instance until Gradescope confirms 70/70)
 - `photoapp-config.ini` is submitted to Gradescope with live credentials — never commit to git
 
-## Phase 1 Execution Plan (pending approval)
+## Phase 1 Execution Plan ✅
 
 ### Step 1.1 — Terraform IAM extension
 - Extend `infra/terraform/main.tf`: aws_iam_user.s3readonly + attachment, aws_iam_policy.s3_read_write via templatefile(), aws_iam_user.s3readwrite + attachments (s3 custom + Rekognition), aws_iam_access_key x2, outputs sensitive=true
@@ -71,4 +71,4 @@
 - Retrospective
 
 ---
-*Last updated: 2026-04-20. Phase 1 + Phase 2 complete. 70/70 Gradescope — first submission. Entering Phase 3 — cleanup.*
+*Last updated: 2026-04-20. All phases complete. 70/70 Gradescope — first submission. RDS stop pending Erik authorization.*
