@@ -9,6 +9,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+if [[ ! -f "${CLASS_ROOT}/docker/_image-name.txt" ]]; then
+  echo "[ERROR] ${CLASS_ROOT}/docker/_image-name.txt not found. Run docker/build first." >&2
+  exit 1
+fi
 IMAGE=$(cat "${CLASS_ROOT}/docker/_image-name.txt")
 
 echo "Running photoapp DB validation suite..."
