@@ -1,11 +1,12 @@
 # Lab Architecture — v2
 
 **Generated:** 2026-04-16
+**Last Updated:** 2026-04-20 (added Rekognition — Project01 Part02)
 **Scope:** Platform infrastructure — all components shared across labs and projects
 **Status:** Current — approved
 **Note:** This is a living document. Update as new labs/services/agents are added.
          Per-project Gradescope flows live in their own architecture files.
-**Related:** `lab-database-schema-v2.md` · `lab01-iam-design-v1.md`
+**Related:** `lab-database-schema-v2.md` · `lab01-iam-design-v1.md` · `Target-State-project01-part02-iam-v1.md`
 
 ---
 
@@ -27,6 +28,7 @@ flowchart TB
 
     subgraph aws["☁️  AWS — us-east-2"]
         bucket["S3: photoapp-erik-mbai460\npublic-read · ACL-enabled ⚠️"]
+        rekog["Rekognition\ndetect_labels — Project01 Part02"]
 
         subgraph vpc["VPC (default)"]
             sg["SG: photoapp-rds-sg\nTCP 3306 / 0.0.0.0/0 ⚠️"]
@@ -35,12 +37,14 @@ flowchart TB
         end
     end
 
-    tf -- "terraform apply\nprovisions RDS · S3 · SG" --> bucket & sg
+    tf -- "terraform apply\nprovisions RDS · S3 · SG · IAM" --> bucket & sg
+    rekog -. "reads image from\n(same-region S3)" .-> bucket
     awsenv -. "loads credentials" .-> cli_a
     cli_e & cli_a -- "inspect · manage" --> aws
     sg --> db_pa & db_sh
     utils -- "SQL · smoke tests · inventory" --> aws
-    runtime -- "pymysql · boto3\nmigration + app scripts" --> aws
+    runtime -- "pymysql · boto3 · rekognition\nmigration + app scripts" --> aws
+    runtime -- "detect_labels (Project01 Part02)" --> rekog
 ```
 
 ---
@@ -53,13 +57,16 @@ flowchart TB
 | S3 | `photoapp-erik-mbai460` | public-read · ACL-enabled |
 | Security Group | `photoapp-rds-sg` | 3306/0.0.0.0/0 inbound — lab only |
 | Docker image | `mbai460-client:latest` | Ubuntu · Python stack |
-| IaC | `infra/lab01/` | Terraform-managed — 7 resources |
+| Rekognition | `us-east-2` | detect_labels — Project01 Part02 |
+| IaC | `infra/terraform/` | Terraform-managed |
 | Region | `us-east-2` | Course requirement — do not change |
 
 ## IAM
-See `lab01-iam-design-v1.md` for full identity model.
+See `lab01-iam-design-v1.md` for current identity model.
+See `Target-State-project01-part02-iam-v1.md` for Part02 target state (s3readonly, s3readwrite).
 - Erik: SSO (`ErikTheWizard`) — AdministratorAccess
 - Agent: `Claude-Conjurer` — PowerUserAccess (no IAM)
+- App users (Part02 Phase 1, pending): `s3readonly`, `s3readwrite`
 
 ## Known Tech Debt (intentional — lab contract)
 - S3 public access — TODO: lock down with CloudFront
