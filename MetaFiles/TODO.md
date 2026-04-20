@@ -9,6 +9,11 @@
 
 ## Backlog
 
+### Tooling candidates (3x rule — see Future-State-Ideal-Lab.md for full list)
+- [ ] **`utils/cred-sweep`** — pre-commit scan for committed secrets; candidate for git hook
+- [ ] **`utils/rebuild-db`** — single command: run all create-*.sql files + validate-db
+- [ ] **`utils/rotate-passwords`** — generate + update configs + rebuild-db in one shot
+
 - [ ] Terraform remote state (S3 + DynamoDB lock) — prerequisite for multi-collaborator GitHub use
 - [ ] Visualization naming convention cleanup (see visualizations/MetaFiles/TODO.md)
 - [ ] **[Low/Security] `labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt`** — plaintext credential inside Class Project tree; untracked now but unprotected against broad `git add`; needs gitignore coverage at MBAi460-Group1/ level (Lab-layer .gitignore change)

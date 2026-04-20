@@ -45,6 +45,31 @@ Use checkboxes as you **complete** or **reject** items (rejected: note why).
 - [ ] **IAM dashboard** (script or markdown generator) listing humans vs agents vs service principals — your human notes called this out; automate when stable.
 - [ ] **Separate agent policies** for “read-only recon” vs “mutate infra” if agents keep gaining tooling.
 
+## Developer tooling (3x rule)
+
+> **Principle:** If an action is done more than 3 times ad-hoc, it belongs in `utils/`. The scripts below were identified as candidates from repeated patterns in the lab workflow.
+
+- [ ] **`utils/cred-sweep`** — scan all git-tracked + staged files for sensitive patterns before committing.
+  Patterns: `IDENTIFIED BY '<literal>'`, `AKIA[A-Z0-9]{16}` (AWS key format), `aws_secret_access_key = <value>`, known password strings.
+  Output: PASS/FAIL per file:line. Natural fit as a git pre-commit hook so the check is automatic.
+  *Triggered by: running cred sweeps manually 3+ times across sessions.*
+
+- [ ] **`utils/rebuild-db`** — run all `create-*.sql` files against RDS then validate in one command.
+  Currently requires two `run-sql` invocations + `validate-db` by hand. Should auto-discover SQL files (`create-photoapp.sql`, `create-shorten.sql`) and run them in dependency order.
+  *Triggered by: rebuilding the DB 3+ times this session alone.*
+
+- [ ] **`utils/rotate-passwords`** — end-to-end password rotation in a single command.
+  Flow: generate N random passwords → update all gitignored config files → call `rebuild-db` → print summary of what changed (for recordkeeping, not logged to file).
+  Removes all manual steps from the rotation process: no hand-editing configs, no separate rebuild invocation.
+  *Triggered by: doing a full manual rotation this session — config edits, SQL rebuild, validate — as a sequence of ad-hoc steps.*
+
+- [ ] **`utils/session-health`** — single command combining Docker status + AWS identity + smoke test.
+  Currently run as three separate commands at session open. Unified output: green/red per layer.
+  *(Also tracked in lab-environment workstream.)*
+
+- [ ] **`utils/db-connect [user]`** — open an interactive MySQL shell as a named app user (`read-only`, `read-write`, `admin`), pulling credentials from the appropriate gitignored config file.
+  Eliminates the need to look up or paste passwords for ad-hoc queries.
+
 ---
 
 *Review this file at major milestones (e.g. after Part 01, after Part 02, end of quarter).*

@@ -2,9 +2,13 @@
 
 Stand up the full AWS environment from scratch: secrets → Docker → Terraform → DB schema → verified.
 
-> **⚠️ Known issue:** `utils/` bash scripts have stale path references from a prior repo layout.
-> They will not work until that fix is applied. Steps below call this out explicitly.
-> Tracked in `MetaFiles/TODO.md`.
+> **⚠️ Known issue: `utils/` bash wrapper scripts are broken for fresh standalone clones.**
+> They compute paths assuming `MBAi460-Group1/` is a *subdirectory* of the repo root, which was
+> true in the original lab layout but is not true after the standalone repo split.
+> **Workaround:** use the direct `docker run` commands shown in each step below — they work
+> correctly from the repo root of a fresh clone.
+> The underlying Python helpers (`utils/_run_sql.py`, `utils/_validate_db.py`) are fine.
+> Fix tracked in `MetaFiles/TODO.md`.
 
 ---
 
@@ -16,6 +20,11 @@ Stand up the full AWS environment from scratch: secrets → Docker → Terraform
 | Terraform ≥ 1.0 | IaC — manages S3, RDS, SG | `brew install terraform` |
 | Claude-Conjurer IAM credentials | AWS ops identity (PowerUserAccess) | Obtain from project owner |
 
+All commands below assume **repo root** as your working directory:
+```bash
+cd /path/to/MBAi460-Group1   # wherever you cloned the repo
+```
+
 ---
 
 ## Step 1 — Create secrets/
@@ -24,21 +33,28 @@ These files are gitignored. Create them once locally and never commit them.
 
 ```bash
 mkdir -p secrets
+mkdir -p "labs/lab01/Part 01 - AWS Setup/secrets"
 ```
 
-**`secrets/aws-credentials`:**
+**`secrets/aws-credentials`** — IAM credentials for Terraform and AWS CLI utils:
 ```ini
 [Claude-Conjurer]
 aws_access_key_id     = <ACCESS_KEY_ID>
 aws_secret_access_key = <SECRET_ACCESS_KEY>
 ```
 
-**`secrets/aws-config`:**
+**`secrets/aws-config`** — AWS region/profile config:
 ```ini
 [profile Claude-Conjurer]
 region = us-east-2
 output = json
 ```
+
+**`labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt`** — RDS admin password (used by `run-sql` and `validate-db`):
+```
+<your-rds-master-password>
+```
+> This must match `db_master_password` in `terraform.tfvars` (Step 3). Pick it now and use it consistently.
 
 ---
 
@@ -70,7 +86,7 @@ Create `infra/terraform/terraform.tfvars` (gitignored — never committed):
 bucket_name        = "photoapp-<yourname>-mbai460"   # globally unique, lowercase
 db_identifier      = "photoapp-db"
 db_master_username = "admin"
-db_master_password = "<choose-a-strong-password>"
+db_master_password = "<your-rds-master-password>"    # same value as Step 1
 ```
 
 ---
@@ -90,7 +106,7 @@ cd ../..
 
 ---
 
-## Step 5 — Populate config files from Terraform outputs
+## Step 5 — Populate config files
 
 After `apply` completes, read the outputs:
 
@@ -99,59 +115,108 @@ terraform -chdir=infra/terraform output rds_address
 terraform -chdir=infra/terraform output s3_bucket_name
 ```
 
-Copy examples and fill in real values:
+Copy all three example templates and fill in real values:
 
 ```bash
-cp infra/config/photoapp-config.ini.example infra/config/photoapp-config.ini
-cp projects/project01/client/photoapp-config.ini.example projects/project01/client/photoapp-config.ini
+cp infra/config/photoapp-config.ini.example        infra/config/photoapp-config.ini
+cp projects/project01/client/photoapp-config.ini.example  projects/project01/client/photoapp-config.ini
+cp labs/lab02/shorten-config.ini.example           labs/lab02/shorten-config.ini
 ```
 
-In **`infra/config/photoapp-config.ini`** set:
-- `[rds] endpoint` → value of `rds_address`
-- `[rds] user_pwd` → password for `photoapp-read-only` MySQL user (set when running create-photoapp.sql)
-- `[s3] bucket_name` → value of `s3_bucket_name`
+> **How passwords work:** The SQL schema files use `${PLACEHOLDER}` variables instead of
+> hardcoded passwords. When you run `run-sql`, it reads these config files and substitutes
+> the placeholders before executing. **You choose the passwords here** — whatever you put
+> in the config files is what gets applied to RDS.
 
-In **`projects/project01/client/photoapp-config.ini`** set:
-- `[rds] endpoint` → same `rds_address`
-- `[rds] user_name` → `photoapp-read-write`
-- `[rds] user_pwd` → password for `photoapp-read-write` MySQL user
-- `[s3] bucket_name` → same `s3_bucket_name`
+### `infra/config/photoapp-config.ini`
+Backbone config — used by `validate-db` and AWS utils.
+```ini
+[rds]
+endpoint    = <rds_address output>
+port_number = 3306
+region_name = us-east-2
+user_name   = photoapp-read-only
+user_pwd    = <choose a password for photoapp-read-only>
+db_name     = photoapp
+
+[s3]
+bucket_name = <s3_bucket_name output>
+region_name = us-east-2
+```
+
+### `projects/project01/client/photoapp-config.ini`
+Client config — used by project01 code and `validate-db`.
+```ini
+[rds]
+endpoint    = <same rds_address>
+port_number = 3306
+region_name = us-east-2
+user_name   = photoapp-read-write
+user_pwd    = <choose a password for photoapp-read-write>
+db_name     = photoapp
+
+[s3]
+bucket_name = <same s3_bucket_name>
+region_name = us-east-2
+```
+
+### `labs/lab02/shorten-config.ini`
+URL Shortener config — used by lab02 code and `run-sql create-shorten.sql`.
+```ini
+[rds]
+endpoint    = <same rds_address>
+port_number = 3306
+region_name = us-east-2
+user_name   = shorten-app
+user_pwd    = <choose a password for shorten-app>
+db_name     = URL_Shortener
+```
+
+> **Password tips:** Use random 16-char passwords. Avoid `%` — Python's configparser treats
+> it as an interpolation character. Safe charset: `A-Z a-z 0-9 ! @ # ^ & *`
+> Quick generator: `python3 -c "import secrets,string; print(''.join(secrets.choice(string.ascii_letters+string.digits+'!@#^&*') for _ in range(16)))"`
 
 ---
 
 ## ✅ Test 2 — Smoke test AWS
 
-> **Requires utils path fix** (see warning above). Skip if not yet applied.
-
-```bash
-export AWS_SHARED_CREDENTIALS_FILE="$(pwd)/secrets/aws-credentials"
-export AWS_CONFIG_FILE="$(pwd)/secrets/aws-config"
-utils/smoke-test-aws --mode live
-```
-Expected: 10/10 checks pass (S3 public read, RDS reachable, Terraform state consistent).
+> **⚠️ Blocked on utils path fix.** `smoke-test-aws` hardcodes credential paths using `REPO_ROOT`
+> and cannot be overridden from outside. Skip this test for now.
+> Substitute: confirm in the AWS console that your S3 bucket and RDS instance exist and are available.
+> Then proceed — Test 3 (`validate-db`) directly confirms DB connectivity with the app user credentials.
+> Tracked in `MetaFiles/TODO.md`.
 
 ---
 
 ## Step 6 — Create DB schema
 
-> **Requires utils path fix** (see warning above).
+> Uses direct `docker run` commands — these work correctly from repo root without the bash wrapper.
 
 ```bash
-utils/run-sql projects/project01/create-photoapp.sql
+IMAGE=$(cat docker/_image-name.txt)
+
+# PhotoApp database (users, assets tables + seed data + photoapp-read-only/read-write users)
+docker run --rm -u user -v "$(pwd):/home/user" -w /home/user --network host \
+  "$IMAGE" python3 utils/_run_sql.py projects/project01/create-photoapp.sql
+
+# URL Shortener database (shorten table + shorten-app user)
+docker run --rm -u user -v "$(pwd):/home/user" -w /home/user --network host \
+  "$IMAGE" python3 utils/_run_sql.py labs/lab02/create-shorten.sql
 ```
 
-This creates the `photoapp` database, tables, seed data, and the `photoapp-read-only` / `photoapp-read-write` MySQL users with their passwords. The passwords set here are what goes into the config files in Step 5.
+Passwords are read from the config files you created in Step 5 and substituted automatically.
+Both commands should report `Statements: N | OK: N | Errors: 0`.
 
 ---
 
 ## ✅ Test 3 — Validate DB
 
-> **Requires utils path fix** (see warning above).
-
 ```bash
-utils/validate-db
+IMAGE=$(cat docker/_image-name.txt)
+docker run --rm -u user -v "$(pwd):/home/user" -w /home/user --network host \
+  "$IMAGE" python3 utils/_validate_db.py
 ```
-Expected: 26/26 checks pass. All tables, users, and seed data present.
+Expected: `Checks: 26 | Passed: 26 | Failed: 0`. Validates schema, seed data, AUTO_INCREMENT values, and both app user connections.
 
 ---
 
@@ -160,9 +225,15 @@ Expected: 26/26 checks pass. All tables, users, and seed data present.
 ```bash
 export AWS_SHARED_CREDENTIALS_FILE="$(pwd)/secrets/aws-credentials"
 export AWS_CONFIG_FILE="$(pwd)/secrets/aws-config"
+
 cd infra/terraform && terraform destroy && cd ../..
-utils/smoke-test-aws --mode dead   # verify all resources gone
 ```
+
+Verify resources are gone: check the AWS console (S3 + RDS) or — if you have applied the utils path fix — run:
+```bash
+utils/smoke-test-aws --mode dead
+```
+Expected: 10/10 checks confirm all resources gone.
 
 ---
 
@@ -173,7 +244,10 @@ utils/smoke-test-aws --mode dead   # verify all resources gone
 | `secrets/aws-credentials` | ❌ gitignored | IAM credentials for Claude-Conjurer |
 | `secrets/aws-config` | ❌ gitignored | AWS region/profile config |
 | `infra/terraform/terraform.tfvars` | ❌ gitignored | Terraform variable values incl. DB master password |
-| `infra/config/photoapp-config.ini` | ❌ gitignored | Backbone config — RDS + S3; used by utils |
-| `projects/project01/client/photoapp-config.ini` | ❌ gitignored | Client config — read-write user; used by project01 tests |
+| `labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt` | ❌ gitignored | RDS admin password; read by `run-sql` and `validate-db` |
+| `infra/config/photoapp-config.ini` | ❌ gitignored | Backbone config — photoapp-read-only password + S3; used by validate-db |
+| `projects/project01/client/photoapp-config.ini` | ❌ gitignored | Client config — photoapp-read-write password; used by project01 code |
+| `labs/lab02/shorten-config.ini` | ❌ gitignored | URL Shortener config — shorten-app password; used by lab02 code |
 | `infra/config/photoapp-config.ini.example` | ✅ committed | Template for backbone config |
 | `projects/project01/client/photoapp-config.ini.example` | ✅ committed | Template for client config |
+| `labs/lab02/shorten-config.ini.example` | ✅ committed | Template for URL Shortener config |
