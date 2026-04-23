@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # utils/docker-status — Docker/Colima health check.
+# Mac/Colima only — requires Colima; will hard-fail on Linux or Docker Desktop.
 # Runnable from any directory.
 
 set -euo pipefail

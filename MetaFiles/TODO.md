@@ -14,24 +14,42 @@
 
 - [x] **[Security] Reset photoapp users + passwords** — `photoapp-read-only` (abc123!!) and `photoapp-read-write` (def456!!) passwords were briefly exposed in initial commit before history rewrite; rotate both in RDS + update local `infra/config/photoapp-config.ini` and `projects/project01/client/photoapp-config.ini` (recreate from `.example` templates)
 - [x] **[Hygiene] photoapp-config.ini gitignore gap** — resolved: removed from history via git filter-repo, gitignored, `.example` templates added
+- [ ] **[Design] PDF tracking policy — resolve before Phase 3 commit** — `projects/project01/Part02/` PDF is tracked; `projects/project01/Part03/` PDF is untracked. Decide before first collaborator push: (a) track all PDFs (committed project docs), or (b) gitignore all PDFs (keep repo lean). Apply policy consistently then commit. (Phase 2 Audit: S2A-7/S2D-5)
 - [ ] **[Design] VCS strategy** — branching model, what gets committed, tfstate remote backend, multi-collaborator gitignore policy (see Lab-root MetaFiles/TODO.md)
 - [x] **[Tuning] IAM diagram mismatch** — CLOSED 2026-04-20: `lab01-iam-design-v1.md` updated — Claude-Conjurer now shows PowerUserAccess, Mermaid diagram fixed, README updated.
 - [ ] **[Security/IAM] Consider upgrading Claude-Conjurer permissions for IAM creation** — currently PowerUserAccess (no IAM); blocked `terraform apply` for IAM resources; options: add scoped `iam:CreateUser/Policy/AttachUserPolicy` permissions, or keep IAM as Erik-only human gate (current pattern). Decide before next IAM-touching Terraform work.
-- [ ] **[IaC] main.tf AWS profile hardcoded to ErikTheWizard** — Claude-Conjurer cannot run `terraform plan/apply` until this is resolved; options: (a) change to `Claude-Conjurer`, (b) parameterize via `TF_VAR_aws_profile` / env var, (c) use `-chdir` + env override. Decide before next Terraform work.
-- [ ] **[Tooling] Credential path gap in utils/** — `smoke-test-aws`, `aws-inventory`, `rotate-access-keys` look for `${CLASS_ROOT}/secrets/aws-credentials` but `MBAi460-Group1/secrets/` doesn't exist in standalone repo; scripts fall back to `~/.aws` silently and fail. Fix: update scripts to use `claude-workspace/secrets/` path or accept `AWS_SHARED_CREDENTIALS_FILE` env var override.
+- [x] **[IaC] main.tf AWS profile hardcoded to ErikTheWizard** — CLOSED 2026-04-23: added `variable "aws_profile"` (default `"Claude-Conjurer"`) in variables.tf; main.tf now uses `profile = var.aws_profile`. Override via `terraform.tfvars` or `TF_VAR_aws_profile`. (A3)
+- [x] **[Tooling] Credential path gap in utils/** — CLOSED 2026-04-23: `smoke-test-aws` and `aws-inventory` already use `${CLASS_ROOT}/secrets/` (correct for standalone). `AWS_PROFILE` hardcoding fixed to `${AWS_PROFILE:-Claude-Conjurer}` in both scripts — collaborators can `export AWS_PROFILE=theirprofile` before running, or name their profile `Claude-Conjurer`. QUICKSTART.md documents the setup. (A4)
+
+- [x] **[Blocker/Docs] README.md absolute path** — CLOSED 2026-04-23: replaced personal absolute path with `MBAi460-Group1/`. (Phase 1B: B1)
+- [x] **[Blocker/Docs] README.md broken orientation link** — CLOSED 2026-04-23: removed `../MetaFiles/orientation.md` reference; added in-repo links + QUICKSTART.md pointer. (Phase 1B: B2)
+- [x] **[Risk/Security] Committed passwords in visualizations** — CLOSED 2026-04-23: assessed as historic (original schema passwords, rotated 2026-04-20); annotation added to `visualizations/lab-database-schema-v2.md` changing "grader-checked" label to "original — rotated 2026-04-20". No scrubbing required. (Phase 1B: T3/B4)
+- [ ] **[Risk/Security] Committed passwords in project03 SQL** — `projects/project03/create-authsvc.sql` and `create-chatapp.sql` contain hardcoded `abc123!!` / `def456!!` passwords; class-provided but committed. Assess same as B4. (Phase 1B: B5)
 
 ## Backlog
 
 ### Tooling candidates (3x rule — see Future-State-Ideal-Lab.md for full list)
-- [ ] **[Design] Move `docker/run` and `docker/run-8080` to `utils/`** — `docker/` should be build artifacts only (`Dockerfile`, `_image-name.txt`); entry points belong in `utils/` alongside the other operational scripts. Requires script-relative image-name read fix.
-- [ ] **`utils/cred-sweep`** — pre-commit scan for committed secrets; candidate for git hook
-- [ ] **`utils/rebuild-db`** — single command: run all create-*.sql files + validate-db
-- [ ] **`utils/rotate-passwords`** — generate + update configs + rebuild-db in one shot
+- [x] **[Design] Move `docker/run` and `docker/run-8080` to `utils/`** — CLOSED 2026-04-23: created `utils/docker-run` and `utils/docker-run-8080` reading `_image-name.txt` from `../docker/`. Original `docker/run*` files retained for cross-platform parity (.bash/.bat/.ps1 also present). (A5)
+- [x] **`utils/cred-sweep`** — CLOSED 2026-04-23: created; scans staged files for AWS key IDs, known lab passwords, committed tfvars/secrets. (A6)
+- [x] **`utils/rebuild-db`** — CLOSED 2026-04-23: created; runs create-photoapp.sql → create-photoapp-labels.sql → validate-db with confirmation prompt. (A7)
+- [x] **`utils/rotate-passwords`** — CLOSED 2026-04-23: created; generates new passwords, rotates in RDS via MySQL, updates photoapp-config.ini, runs validate-db. (A8)
 
 - [ ] Terraform remote state (S3 + DynamoDB lock) — prerequisite for multi-collaborator GitHub use
 - [ ] Visualization naming convention cleanup (see visualizations/MetaFiles/TODO.md)
-- [ ] **[Low/Security] `labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt`** — plaintext credential inside Class Project tree; untracked now but unprotected against broad `git add`; needs gitignore coverage at MBAi460-Group1/ level (Lab-layer .gitignore change)
-- [ ] **[Low/Security] `MBAi460-Group1/labs/lab02/shorten-config.ini`** — gitignore covers old path only (`labs/lab02/`); new path unprotected (Lab-layer .gitignore change)
+- [x] **[Low/Security] `labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt`** — CLOSED 2026-04-23: verified already covered in `.gitignore` line 12. (T7)
+- [x] **[Low/Security] `MBAi460-Group1/labs/lab02/shorten-config.ini`** — CLOSED 2026-04-23: verified already covered in `.gitignore` line 16. (T8)
 - [ ] **[Low/Clarity] Gradescope submission vs backbone co-location in project01/** — `create-photoapp.sql` (backbone, never remove) and `client/photoapp.py` (submit to Gradescope) share a directory; consider a structural signal or comment distinguishing them as projects accumulate
 - [x] **[Low/Consistency] Profile name mismatch** — RESOLVED: `main.tf` was updated to `ErikTheWizard` (IAM-touching ops require Erik's SSO credentials); shell utils correctly use `Claude-Conjurer`. Two separate profiles for two separate identities — intentional, not a consistency issue.
 - [x] **[Cleanup/EndOfProject] infra/terraform/ artifact cleanup** — CLOSED 2026-04-20: `ErikPlanOutArtifact` and `main.tf~` deleted from disk + untracked; `*.tfplan` and `*~` patterns added to `infra/terraform/.gitignore`.
+
+### Collaborator Readiness — Phase 1B Findings
+
+- [x] **[Polish] visualizations/project01-part02-iam-v1.md stale filename metadata** — CLOSED 2026-04-23: line 7 updated to `project01-part02-iam-v1.md`. (Phase 1B: B7)
+- [x] **[Polish] visualizations/lab-database-schema-v3.md stale cross-reference** — CLOSED 2026-04-23: updated to `project01-part02-iam-v1.md`. (Phase 1B: B8)
+- [ ] **[GoodPractice] Open TODO items embedded in viz file** — `visualizations/lab01-iam-design-v1.md` contains 6 open `[ ]` items inside the diagram file itself; unusual placement — consider routing to MetaFiles/TODO.md or marking as resolved. (Phase 1B: B9)
+- [x] **[Polish] .example files use TODO for IAM key placeholders** — CLOSED 2026-04-23: both `infra/config/photoapp-config.ini.example` and `projects/project01/client/photoapp-config.ini.example` updated; `TODO` replaced with `<your-access-key-id>` / `<your-secret-access-key>`. (Phase 1B: B10)
+- [ ] **[OwnershipAmbiguity] project03/client/client.py TODO stubs** — `# TODO #1-3` in `projects/project03/client/client.py`; class-provided assignment stubs, expected — no action unless assignment work begins. (Phase 1B: B11)
+- [ ] **[OwnershipAmbiguity] labs/lab03/app/app.js TODO stub** — `response.send("TODO")` in `labs/lab03/app/app.js`; class-provided assignment stub, expected — no action unless assignment work begins. (Phase 1B: B12)
+- [x] **[OwnershipAmbiguity] project02/client/photoapp-client-config.ini tracked with localhost:8080** — CLOSED 2026-04-23: confirmed intentional placeholder; comment added: "update to deployed URL when starting project02". (Phase 1B: B13)
+- [x] **[GoodPractice] Historical lab01 setup guide has open checkboxes** — CLOSED 2026-04-23: historical annotation added to `labs/lab01/Part 01 - AWS Setup/MetaFiles/Steps-for-initial-AWS-Lab-setup-while-completing-the-assignment.md` — banner at top marks file as historical reference, Lab01 complete (10/10), do not re-execute. (Phase 1B: B14)
+- [ ] **[OwnershipAmbiguity] project03 staff API endpoint committed** — `projects/project03/client/authsvc-client-config-staff.ini` contains a live staff API endpoint URL committed to git; assess whether this is intentional (class-provided, expected) or should be gitignored. (Phase 1B: B6)

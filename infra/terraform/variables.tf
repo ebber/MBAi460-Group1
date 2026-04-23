@@ -4,6 +4,12 @@ variable "aws_region" {
   default     = "us-east-2"
 }
 
+variable "aws_profile" {
+  description = "AWS CLI profile for Terraform operations — set in terraform.tfvars or via TF_VAR_aws_profile env var"
+  type        = string
+  default     = "Claude-Conjurer"
+}
+
 variable "bucket_name" {
   description = "S3 bucket name — must start with 'photoapp', globally unique, lowercase only"
   type        = string

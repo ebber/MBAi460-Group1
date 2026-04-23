@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# utils/rebuild-db
+# Rebuild the photoapp database from scratch: drop + recreate all tables, then validate.
+# Runs SQL files in dependency order via utils/run-sql, then runs utils/validate-db.
+# Reads RDS endpoint + admin password from standard config paths (same as run-sql).
+# Runnable from any directory.
+#
+# WARNING: drops and recreates all tables — any existing data is destroyed.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+SQL_FILES=(
+  "projects/project01/create-photoapp.sql"
+  "projects/project01/create-photoapp-labels.sql"
+)
+
+printf "\n╔══════════════════════════════════════════════════════╗\n"
+printf "║                  rebuild-db                         ║\n"
+printf "╚══════════════════════════════════════════════════════╝\n\n"
+printf "  WARNING: This will DROP and recreate all photoapp tables.\n"
+printf "  All existing data will be destroyed.\n\n"
+read -r -p "  Type 'rebuild' to confirm: " confirm
+if [[ "$confirm" != "rebuild" ]]; then
+  echo "  Aborted."
+  exit 0
+fi
+
+printf "\n"
+for sql in "${SQL_FILES[@]}"; do
+  if [[ ! -f "${CLASS_ROOT}/${sql}" ]]; then
+    printf "  [SKIP] %s — file not found\n" "$sql"
+    continue
+  fi
+  printf "  [RUN]  %s\n" "$sql"
+  "${SCRIPT_DIR}/run-sql" "${CLASS_ROOT}/${sql}"
+done
+
+printf "\n  Running validate-db...\n\n"
+"${SCRIPT_DIR}/validate-db"

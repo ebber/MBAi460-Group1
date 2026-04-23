@@ -14,7 +14,14 @@ TF_DIR="${CLASS_ROOT}/infra/terraform"
 
 export AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-${CLASS_ROOT}/secrets/aws-credentials}"
 export AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-${CLASS_ROOT}/secrets/aws-config}"
-export AWS_PROFILE="Claude-Conjurer"
+export AWS_PROFILE="${AWS_PROFILE:-Claude-Conjurer}"
+
+require_cmd() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "[FAIL] Required command not found: $1" >&2; exit 1
+  fi
+}
+require_cmd aws
 
 MODE=""
 while [[ $# -gt 0 ]]; do

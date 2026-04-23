@@ -72,9 +72,12 @@ flowchart TB
 **Note on Claude-Conjurer permissions:** Claude-Conjurer has `PowerUserAccess` (not AdministratorAccess). IAM operations (`iam:CreateUser`, `iam:AttachUserPolicy`, etc.) are explicitly denied. IAM resources are managed by Erik via SSO. This is intentional — agent cannot escalate its own privileges.
 
 ## Future State (from Future-State-Ideal-Lab.md)
-- [ ] Scope `Claude-Conjurer` further — PowerUserAccess is still broad; task-specific policies are the target
-- [ ] IAM Groups for policy management as agent roster grows
-- [ ] MFA on SSO / root
-- [ ] Separate `agent-read-only` vs `agent-mutate` identities
-- [ ] Replace static keys with IAM Role + OIDC for agent auth (production pattern)
-- [ ] Periodic Access Advisor review
+
+Aspirations tracked in `MetaFiles/Future-State-Ideal-Lab.md` — not open tasks:
+
+- Scope `Claude-Conjurer` further — PowerUserAccess is still broad; task-specific policies are the target
+- IAM Groups for policy management as agent roster grows
+- MFA on SSO / root
+- Separate `agent-read-only` vs `agent-mutate` identities
+- Replace static keys with IAM Role + OIDC for agent auth (production pattern)
+- Periodic Access Advisor review

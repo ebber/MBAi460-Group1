@@ -1,6 +1,8 @@
 #!/bin/bash
 #
 # BASH script to run docker image in a docker container:
+# Must be run from MBAi460-Group1/ repo root (uses ./docker/ relative path).
+# Prefer utils/docker-run for a path-safe alternative.
 #
 read -r image < ./docker/_image-name.txt
 #

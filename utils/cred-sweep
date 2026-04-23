@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# utils/cred-sweep
+# Pre-commit credential scan — grep tracked (staged) files for known secret patterns.
+# Exit 1 if any match found (safe to wire as a pre-commit hook).
+# Runnable from any directory.
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+PASS=0; FAIL=0
+
+check() {
+  local label="$1"; local pattern="$2"; local scope="$3"
+  local hits
+  hits=$(git -C "$CLASS_ROOT" grep -rn --cached -E "$pattern" -- "$scope" 2>/dev/null || true)
+  if [[ -n "$hits" ]]; then
+    printf "  [LEAK] %s\n%s\n" "$label" "$hits"
+    FAIL=$((FAIL+1))
+  else
+    printf "  [OK]   %s\n" "$label"
+    PASS=$((PASS+1))
+  fi
+}
+
+printf "\n╔══════════════════════════════════════════════════════╗\n"
+printf "║               Credential Sweep                      ║\n"
+printf "╚══════════════════════════════════════════════════════╝\n\n"
+
+# AWS access key IDs (AKIA...)
+check "AWS access key IDs" 'AKIA[A-Z0-9]{16}' .
+
+# AWS secret access key pattern (40-char base64 — heuristic, high false-positive risk; scope tightly)
+# Skipped: too many false positives in general code. Add targeted scans below instead.
+
+# Known lab passwords
+check "Known lab passwords (abc123!! / def456!!)" 'abc123!!|def456!!' .
+
+# Terraform variable values file (should be gitignored)
+check "Committed terraform.tfvars" '^.' infra/terraform/terraform.tfvars 2>/dev/null || true
+
+# RDS master password file
+check "RDS master password file" '^.' "labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt" 2>/dev/null || true
+
+# .ini files with real credentials (look for non-placeholder values in sensitive keys)
+check "photoapp-config.ini with live keys (not TODO/<placeholder>)" \
+  'aws_access_key_id\s*=\s*(?!TODO|<your)' \
+  'infra/config/photoapp-config.ini projects/project01/client/photoapp-config.ini' 2>/dev/null || true
+
+printf "\n══════════════════════════════════════════════════════\n"
+printf "  Checks: %d | OK: %d | Leaked: %d\n" $((PASS+FAIL)) "$PASS" "$FAIL"
+if [[ "$FAIL" -eq 0 ]]; then
+  printf "  CLEAN — no credential patterns found in staged files\n"
+else
+  printf "  WARNING — %d credential pattern(s) found — review above\n" "$FAIL"
+fi
+printf "══════════════════════════════════════════════════════\n\n"
+
+[[ "$FAIL" -eq 0 ]]

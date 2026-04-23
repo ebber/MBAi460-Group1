@@ -1,5 +1,5 @@
 [rds]
-endpoint = <rds-identifier>.c5q4s860smqq.us-east-2.rds.amazonaws.com
+endpoint = <full-rds-endpoint from: terraform -chdir=infra/terraform output rds_address>
 port_number = 3306
 region_name = us-east-2
 user_name = photoapp-read-only
@@ -12,10 +12,10 @@ region_name = us-east-2
 
 [s3readonly]
 region_name = us-east-2
-aws_access_key_id = TODO
-aws_secret_access_key = TODO
+aws_access_key_id = <your-access-key-id>
+aws_secret_access_key = <your-secret-access-key>
 
 [s3readwrite]
 region_name = us-east-2
-aws_access_key_id = TODO
-aws_secret_access_key = TODO
+aws_access_key_id = <your-access-key-id>
+aws_secret_access_key = <your-secret-access-key>

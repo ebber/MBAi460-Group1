@@ -1163,12 +1163,12 @@ cd projects/project01/client
 
 ## Phase 4 — Cleanup
 
-- [ ] Code quality review pass (photoapp.py — inner-fn placement, retry coverage, logging signal)
-- [ ] Update `lab-database-schema-v3.md` status from PROPOSED → CURRENT
-- [ ] Update `project01-part02-iam-target-v1.md` status from PROPOSED → CURRENT
-- [ ] Close Part02 TODO items
-- [ ] Write retrospective at `MetaFiles/retrospective.md`
-- [ ] Update `Future-State-Ideal-Lab.md` with anything pulled forward or newly surfaced
+- [x] Code quality review pass — CLOSED 2026-04-23: see `MetaFiles/code-quality-review.md`
+- [x] Update `lab-database-schema-v3.md` status — CLOSED: `**Status:** ✅ APPLIED` confirmed in file
+- [x] Update `project01-part02-iam-v1.md` status — CLOSED: `**Status:** ✅ APPLIED` + renamed from Target-State- prefix
+- [x] Close Part02 TODO items — CLOSED 2026-04-23: T13 routed to Part02 backlog; self-referential verification item closed; all assignment items confirmed complete
+- [x] Write retrospective — CLOSED: `MetaFiles/retrospective.md` exists, 2026-04-20, 70/70
+- [x] Update `Future-State-Ideal-Lab.md` — DROPPED 2026-04-23: no Part02-specific additions identified; file already contains relevant backlog items
 
 ---
 

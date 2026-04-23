@@ -87,8 +87,8 @@ flowchart LR
         db_us[("URL_Shortener")]
     end
 
-    ro["photoapp-read-only\npwd: abc123!! (grader-checked)"]
-    rw["photoapp-read-write\npwd: def456!! (grader-checked)"]
+    ro["photoapp-read-only\npwd: abc123!! (original — rotated 2026-04-20)"]
+    rw["photoapp-read-write\npwd: def456!! (original — rotated 2026-04-20)"]
     sa["shorten-app@'%'\npwd: see shorten-config.ini"]
 
     ro -- "SELECT · SHOW VIEW" --> db_pa

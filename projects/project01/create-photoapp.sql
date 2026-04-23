@@ -45,20 +45,20 @@ ALTER TABLE assets AUTO_INCREMENT = 1001;  -- starting value
 -- 
 -- PWD hashing: https://phppasswordhash.com/
 --
-INSERT INTO users(username, pwdhash, givenname, familyname)  -- pwd = abc123!!
-            values('p_sarkar', 
+INSERT INTO users(username, pwdhash, givenname, familyname)
+            values('p_sarkar',
             '$2y$10$/8B5evVyaHF.hxVx0i6dUe2JpW89EZno/VISnsiD1xSh6ZQsNMtXK',
             'Pooja',
             'Sarkar');
 
-INSERT INTO users(username, pwdhash, givenname, familyname)  -- pwd = abc456!!
-            values('e_ricci', 
+INSERT INTO users(username, pwdhash, givenname, familyname)
+            values('e_ricci',
             '$2y$10$F.FBSF4zlas/RpHAxqsuF.YbryKNr53AcKBR3CbP2KsgZyMxOI2z2',
             'Emanuele',
             'Ricci');
 
-INSERT INTO users(username, pwdhash, givenname, familyname)  -- pwd = abc789!!
-            values('l_chen', 
+INSERT INTO users(username, pwdhash, givenname, familyname)
+            values('l_chen',
             '$2y$10$GmIzRsGKP7bd9MqH.mErmuKvZQ013kPfkKbeUAHxar5bn1vu9.sdK',
             'Li',
             'Chen');

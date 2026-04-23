@@ -40,6 +40,18 @@ infra/terraform/.terraform/
 infra/terraform/*.tfplan
 
 # ============================================================
+# Generic secrets / key files — belt-and-suspenders
+# ============================================================
+.env
+*.key
+*.pem
+
+# ============================================================
+# Agent working plans — internal coordination artifacts, not project history
+# ============================================================
+MetaFiles/plans/
+
+# ============================================================
 # Standard ignores
 # ============================================================
 **/.DS_Store

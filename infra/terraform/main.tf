@@ -9,11 +9,12 @@ terraform {
 
 provider "aws" {
   region  = var.aws_region
-  profile = "ErikTheWizard"
+  profile = var.aws_profile
 
-  # Credentials via env vars — set before running terraform (see infra/README.md):
-  #   export AWS_SHARED_CREDENTIALS_FILE=<repo-root>/claude-workspace/secrets/aws-credentials
-  #   export AWS_CONFIG_FILE=<repo-root>/claude-workspace/secrets/aws-config
+  # Credentials via env vars — set before running terraform (see QUICKSTART.md):
+  #   export AWS_SHARED_CREDENTIALS_FILE=<repo-root>/secrets/aws-credentials
+  #   export AWS_CONFIG_FILE=<repo-root>/secrets/aws-config
+  # Profile defaults to "Claude-Conjurer" — override in terraform.tfvars: aws_profile = "YourProfile"
 }
 
 ###############################################################################

@@ -6,7 +6,8 @@ S3 + RDS photo application. Introduces the core AWS backbone used by all subsequ
 
 | File | Purpose |
 |------|---------|
-| `create-photoapp.sql` | **Canonical photoapp DB schema** — users + assets tables, seed data, IAM users; run via `MBAi460-Group1/utils/run-sql` |
+| `create-photoapp.sql` | **Canonical photoapp DB schema** — users + assets tables, seed data, IAM users; run via `utils/run-sql` |
+| `create-photoapp-labels.sql` | **Labels table extension** (Part 02) — Rekognition output schema; apply after `create-photoapp.sql` |
 | `client/photoapp.py` | PhotoApp client implementation |
 | `client/tests.py` | Gradescope submission tests |
 | `client/photoapp-config.ini` | Client RDS config (read-write user) — assignment-specific |
@@ -24,5 +25,5 @@ The `client/photoapp-config.ini` here is the assignment client config (different
 
 `create-photoapp.sql` defines the canonical photoapp database structure.
 All projects (project02, project03) assume this schema is in place.
-To rebuild the DB: `MBAi460-Group1/utils/run-sql MBAi460-Group1/projects/project01/create-photoapp.sql`
-To validate: `MBAi460-Group1/utils/validate-db`
+To rebuild the DB: `utils/rebuild-db`
+To validate: `utils/validate-db`

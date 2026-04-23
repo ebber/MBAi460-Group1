@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# utils/docker-run
+# Run the Docker image interactively, mounting the repo root as /home/user.
+# Run from any directory — mounts CWD or repo root depending on your intent.
+# Equivalent to docker/run but invocable from utils/ like other operational scripts.
+#
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+read -r image < "${SCRIPT_DIR}/../docker/_image-name.txt"
+#
+#  -it  => interactive
+#  -u   => run as this user
+#  -w   => home dir inside container
+#  -v   => map current dir (.) to home dir
+#  --rm => remove container when done
+#
+docker run -it -u user -w /home/user -v .:/home/user --network host --rm "$image" bash

@@ -4,7 +4,7 @@
 **Scope:** IAM identity model after Part 02 Phase 1 Terraform apply
 **Status:** ✅ APPLIED — Phase 1 terraform apply complete (2026-04-20)
 **Related diagrams:** `lab01-iam-design-v1.md`, `lab-architecture-v2.md`
-**Filename:** `Target-State-project01-part02-iam-v1.md` (renamed from `project01-part02-iam-target-v1.md`)
+**Filename:** `project01-part02-iam-v1.md`
 
 ---
 

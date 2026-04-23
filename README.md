@@ -22,10 +22,19 @@ Each lab/project part is graded separately and builds on a shared AWS environmen
 - **Database schema:** defined in `projects/project01/create-photoapp.sql` — this is the canonical photoapp DDL; all projects build on it
 - **Backbone configs:** `infra/config/` holds consolidated runtime configs (RDS endpoints, credentials); configs may live inside a project folder during active development, but should be graduated to `infra/config/` when the assignment closes
 - **Terraform:** run from `MBAi460-Group1/infra/terraform/`
-- **All utils:** run from repo root (`/Users/erik/Documents/Lab/mbai460-client`)
+- **All utils:** run from repo root (`MBAi460-Group1/`)
 
-## Orientation
+## Getting Started
 
-See `../MetaFiles/orientation.md` (repo root) for the full three-sphere Lab overview.
-Governing principles: `MetaFiles/Manifesto-AWS-Lab-Sanctum.md`
-Long-term design target: `MetaFiles/Future-State-Ideal-Lab.md`
+See [`MetaFiles/QUICKSTART.md`](MetaFiles/QUICKSTART.md) for a complete collaborator setup walkthrough (AWS credentials, Terraform, Docker, DB schema, verification).
+
+## MetaFiles
+
+`MetaFiles/` is the coordination layer for the Class Project — onboarding, governing docs, and the active action queue.
+
+| File | Purpose |
+|------|---------|
+| [`MetaFiles/QUICKSTART.md`](MetaFiles/QUICKSTART.md) | **New collaborator environment setup — start here** |
+| [`MetaFiles/Manifesto-AWS-Lab-Sanctum.md`](MetaFiles/Manifesto-AWS-Lab-Sanctum.md) | Governing principles |
+| [`MetaFiles/Future-State-Ideal-Lab.md`](MetaFiles/Future-State-Ideal-Lab.md) | Long-term design target |
+| [`MetaFiles/TODO.md`](MetaFiles/TODO.md) | Active action queue |

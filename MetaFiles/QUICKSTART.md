@@ -54,6 +54,9 @@ output = json
 
 Run from repo root:
 ```bash
+# Make scripts executable (first clone only — Mac/Linux)
+bash setup/mac.bash
+
 docker/build
 ```
 Expected: image `mbai460-client` built successfully.
@@ -100,11 +103,15 @@ cd ../..
 
 ## Step 5 — Populate config files
 
-After `apply` completes, read the outputs:
+After `apply` completes, read the outputs — you'll need all of these for the config files below:
 
 ```bash
 terraform -chdir=infra/terraform output rds_address
 terraform -chdir=infra/terraform output s3_bucket_name
+terraform -chdir=infra/terraform output s3readonly_access_key_id
+terraform -chdir=infra/terraform output s3readonly_secret_access_key
+terraform -chdir=infra/terraform output s3readwrite_access_key_id
+terraform -chdir=infra/terraform output s3readwrite_secret_access_key
 ```
 
 Copy all three example templates and fill in real values:
@@ -134,6 +141,16 @@ db_name     = photoapp
 [s3]
 bucket_name = <s3_bucket_name output>
 region_name = us-east-2
+
+[s3readonly]
+region_name           = us-east-2
+aws_access_key_id     = <s3readonly_access_key_id output>
+aws_secret_access_key = <s3readonly_secret_access_key output>
+
+[s3readwrite]
+region_name           = us-east-2
+aws_access_key_id     = <s3readwrite_access_key_id output>
+aws_secret_access_key = <s3readwrite_secret_access_key output>
 ```
 
 ### `projects/project01/client/photoapp-config.ini`
@@ -150,6 +167,16 @@ db_name     = photoapp
 [s3]
 bucket_name = <same s3_bucket_name>
 region_name = us-east-2
+
+[s3readonly]
+region_name           = us-east-2
+aws_access_key_id     = <same s3readonly_access_key_id>
+aws_secret_access_key = <same s3readonly_secret_access_key>
+
+[s3readwrite]
+region_name           = us-east-2
+aws_access_key_id     = <same s3readwrite_access_key_id>
+aws_secret_access_key = <same s3readwrite_secret_access_key>
 ```
 
 ### `labs/lab02/shorten-config.ini`
@@ -185,7 +212,9 @@ Expected: `Mode: live | Checks: 10 | Passed: 10 | Failed: 0`
 
 ```bash
 utils/run-sql projects/project01/create-photoapp.sql
-utils/run-sql labs/lab02/create-shorten.sql
+
+# Only needed when starting lab02 — create-shorten.sql is not present until lab02 begins:
+# utils/run-sql labs/lab02/create-shorten.sql
 ```
 
 Passwords are read from the config files you created in Step 5 and substituted automatically.

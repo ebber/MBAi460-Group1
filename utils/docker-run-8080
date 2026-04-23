@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# utils/docker-run-8080
+# Run the Docker image interactively with port 8080 exposed.
+# Run from any directory — mounts CWD as /home/user.
+# Equivalent to docker/run-8080 but invocable from utils/ like other operational scripts.
+#
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+read -r image < "${SCRIPT_DIR}/../docker/_image-name.txt"
+#
+#  -it  => interactive
+#  -u   => run as this user
+#  -w   => home dir inside container
+#  -v   => map current dir (.) to home dir
+#  -p   => expose port 8080
+#  --rm => remove container when done
+#
+docker run -it -u user -w /home/user -v .:/home/user -p 8080:8080 --rm "$image" bash

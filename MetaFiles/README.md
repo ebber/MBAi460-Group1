@@ -7,9 +7,11 @@ Contains governing philosophy, durable design docs, and the active TODO queue.
 
 | File | Purpose |
 |------|---------|
+| `QUICKSTART.md` | New collaborator environment setup walkthrough — start here |
 | `Manifesto-AWS-Lab-Sanctum.md` | Governing principles for the AWS Lab — what intentionally insecure means and why |
 | `Future-State-Ideal-Lab.md` | Long-term design target for the Lab — security, observability, IaC maturity |
 | `TODO.md` | Active ActionQueue for Class Project level items |
+| `plans/` | Implementation plans for in-progress work (agent-internal; gitignored) |
 
 ## What belongs here
 

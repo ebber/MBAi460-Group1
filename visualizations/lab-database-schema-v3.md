@@ -4,7 +4,7 @@
 **Scope:** All databases — photoapp (with Part 02 labels table) + URL_Shortener
 **Status:** ✅ APPLIED — labels table created in RDS (2026-04-20)
 **Supersedes:** `lab-database-schema-v2.md`
-**Related diagrams:** `lab-architecture-v2.md`, `Target-State-project01-part02-iam-v1.md`
+**Related diagrams:** `lab-architecture-v2.md`, `project01-part02-iam-v1.md`
 
 ---
 

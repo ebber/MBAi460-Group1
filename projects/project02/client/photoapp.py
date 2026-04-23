@@ -3,6 +3,9 @@
 # to support downloading and uploading images to S3, along with
 # retrieving and updating data in associated photoapp database.
 #
+# project02 client stub — class-provided starting point.
+# See projects/project01/client/photoapp.py for the Part02 reference implementation.
+#
 # Initial code (initialize, get_ping, get_users):
 #   Prof. Joe Hummel
 #   Northwestern University

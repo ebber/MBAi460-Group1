@@ -1,0 +1,11 @@
+# Copy to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored — never commit it.
+# See MetaFiles/QUICKSTART.md Step 3 for full setup context.
+
+bucket_name        = "photoapp-<yourname>-mbai460"   # globally unique, lowercase
+db_identifier      = "photoapp-db"
+db_master_username = "admin"
+db_master_password = "<strong-password-min-8-chars>"  # also write to labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt
+
+# Optional: override AWS profile (defaults to "Claude-Conjurer")
+# aws_profile = "YourProfile"

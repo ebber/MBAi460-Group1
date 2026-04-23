@@ -1,5 +1,10 @@
 # Steps: initial AWS lab setup (assignment + sanctum)
 
+> **⚠️ HISTORICAL REFERENCE — Lab01 is COMPLETE (10/10, 2026-04-20)**
+> These steps have been executed. The checkboxes below reflect the setup process that was followed,
+> not an active work queue. Do not re-execute unless rebuilding the environment from scratch.
+> For current environment state, see `MBAi460-Group1/MetaFiles/TODO.md` and `QUICKSTART.md`.
+
 Use this file **while executing** Part 01. It layers **sanctum practices** on top of the course handout. For a **PDF-faithful** outline only, see `Steps.md`; for **grading success criteria**, see `Requirements.md`. Principles live in `Manifesto-AWS-Lab-Sanctum.md`.
 
 ---
