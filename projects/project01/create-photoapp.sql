@@ -40,6 +40,15 @@ CREATE TABLE assets
 
 ALTER TABLE assets AUTO_INCREMENT = 1001;  -- starting value
 
+CREATE TABLE labels
+(
+    assetid     int not null,
+    label       varchar(128) not null,
+    confidence  int not null,
+    PRIMARY KEY (assetid, label),
+    FOREIGN KEY (assetid) REFERENCES assets(assetid)
+);
+
 --
 -- Insert some PhotoApp users for our app to start with:
 -- 
