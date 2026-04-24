@@ -14,7 +14,7 @@
 
 - [x] **[Security] Reset photoapp users + passwords** — `photoapp-read-only` (abc123!!) and `photoapp-read-write` (def456!!) passwords were briefly exposed in initial commit before history rewrite; rotate both in RDS + update local `infra/config/photoapp-config.ini` and `projects/project01/client/photoapp-config.ini` (recreate from `.example` templates)
 - [x] **[Hygiene] photoapp-config.ini gitignore gap** — resolved: removed from history via git filter-repo, gitignored, `.example` templates added
-- [ ] **[Design] PDF tracking policy — resolve before Phase 3 commit** — `projects/project01/Part02/` PDF is tracked; `projects/project01/Part03/` PDF is untracked. Decide before first collaborator push: (a) track all PDFs (committed project docs), or (b) gitignore all PDFs (keep repo lean). Apply policy consistently then commit. (Phase 2 Audit: S2A-7/S2D-5)
+- [x] **[Design] PDF tracking policy** — CLOSED 2026-04-23: track all PDFs. Part03 PDF staged and included in commit 745ea05. Both Part02 and Part03 PDFs now tracked. (Phase 2 Audit: S2A-7/S2D-5)
 - [ ] **[Design] VCS strategy** — branching model, what gets committed, tfstate remote backend, multi-collaborator gitignore policy (see Lab-root MetaFiles/TODO.md)
 - [x] **[Tuning] IAM diagram mismatch** — CLOSED 2026-04-20: `lab01-iam-design-v1.md` updated — Claude-Conjurer now shows PowerUserAccess, Mermaid diagram fixed, README updated.
 - [ ] **[Security/IAM] Consider upgrading Claude-Conjurer permissions for IAM creation** — currently PowerUserAccess (no IAM); blocked `terraform apply` for IAM resources; options: add scoped `iam:CreateUser/Policy/AttachUserPolicy` permissions, or keep IAM as Erik-only human gate (current pattern). Decide before next IAM-touching Terraform work.
