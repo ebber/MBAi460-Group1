@@ -105,5 +105,33 @@ let get_users_file = require('./api_get_users.js');
 app.get('/users', get_users_file.get_users);
 
 //
-// load and define more API functions here:
+// 3. app.get('/images', async (request, response) => {...});
 //
+let get_images_file = require('./api_get_images.js');
+app.get('/images', get_images_file.get_images);
+//
+// 4. app.post('/image', async (request, response) => {...});
+//
+let post_image_file = require('./api_post_image.js');
+app.post('/image', post_image_file.post_image);
+//
+// 5. app.get('/images/search', async (request, response) => {...});
+//    NOTE: must be defined before /image/:assetid to avoid routing conflict
+//
+let get_images_search_file = require('./api_get_images_search.js');
+app.get('/images/search', get_images_search_file.get_images_search);
+//
+// 6. app.get('/image/:assetid', async (request, response) => {...});
+//
+let get_image_file = require('./api_get_image.js');
+app.get('/image/:assetid', get_image_file.get_image);
+//
+// 7. app.get('/image/:assetid/labels', async (request, response) => {...});
+//
+let get_image_labels_file = require('./api_get_image_labels.js');
+app.get('/image/:assetid/labels', get_image_labels_file.get_image_labels);
+//
+// 8. app.delete('/images', async (request, response) => {...});
+//
+let delete_images_file = require('./api_delete_images.js');
+app.delete('/images', delete_images_file.delete_images);
