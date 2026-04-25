@@ -39,3 +39,4 @@ See [`MetaFiles/QUICKSTART.md`](MetaFiles/QUICKSTART.md) for a complete collabor
 | [`MetaFiles/Manifesto-AWS-Lab-Sanctum.md`](MetaFiles/Manifesto-AWS-Lab-Sanctum.md) | Governing principles |
 | [`MetaFiles/Future-State-Ideal-Lab.md`](MetaFiles/Future-State-Ideal-Lab.md) | Long-term design target |
 | [`MetaFiles/TODO.md`](MetaFiles/TODO.md) | Active action queue |
+| [`MetaFiles/Journal/`](MetaFiles/Journal/) | Session journal — agents and collaborators may leave entries here at their discretion |
