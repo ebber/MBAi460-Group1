@@ -5,12 +5,14 @@ Contains governing philosophy, durable design docs, and the active TODO queue.
 
 ## Contents
 
-| File | Purpose |
-|------|---------|
+| File / Directory | Purpose |
+|-----------------|---------|
 | `QUICKSTART.md` | New collaborator environment setup walkthrough — start here |
 | `Manifesto-AWS-Lab-Sanctum.md` | Governing principles for the AWS Lab — what intentionally insecure means and why |
 | `Future-State-Ideal-Lab.md` | Long-term design target for the Lab — security, observability, IaC maturity |
 | `TODO.md` | Active ActionQueue for Class Project level items |
+| `Journal/` | Session journal entries — what happened, why it mattered; for pattern mining, not spin-up |
+| `collaborator-readiness/` | Collaborator Readiness Quest artifacts (orientation map, triage table, Legacy/) — completed 2026-04-23 |
 | `plans/` | Implementation plans for in-progress work (agent-internal; gitignored) |
 
 ## What belongs here

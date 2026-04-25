@@ -14,7 +14,8 @@ Each lab/project part is graded separately and builds on a shared AWS environmen
 | `utils/` | Operational scripts — AWS, Docker, DB tooling |
 | `setup/` | Host machine setup for the class environment |
 | `visualizations/` | Architecture and design diagrams |
-| `MetaFiles/` | Class Project coordination: governing docs, ActionQueue |
+| `learnings/` | Process and methodology retrospectives — patterns, heuristics, compaction recovery |
+| `MetaFiles/` | Class Project coordination: governing docs, ActionQueue, Journal |
 
 ## Key Facts
 

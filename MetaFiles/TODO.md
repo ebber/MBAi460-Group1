@@ -12,6 +12,8 @@
   - `utils/aws-inventory` — same credential path issue as smoke-test-aws
   - `utils/Erik-AWS-Scan` — ✅ no path issues; uses explicit `--profile` flags; personal-use only
 
+- [ ] **[Tooling] Validate utils/ path fix plan** — `MetaFiles/plans/2026-04-20-utils-path-fix.md` has all checkboxes unchecked, but the TODO above is marked done. Verify the path fix was actually applied correctly to all 7 scripts; if confirmed, delete the stale plan file. (1B structural audit, 2026-04-24)
+
 - [x] **[Security] Reset photoapp users + passwords** — `photoapp-read-only` (abc123!!) and `photoapp-read-write` (def456!!) passwords were briefly exposed in initial commit before history rewrite; rotate both in RDS + update local `infra/config/photoapp-config.ini` and `projects/project01/client/photoapp-config.ini` (recreate from `.example` templates)
 - [x] **[Hygiene] photoapp-config.ini gitignore gap** — resolved: removed from history via git filter-repo, gitignored, `.example` templates added
 - [x] **[Design] PDF tracking policy** — CLOSED 2026-04-23: track all PDFs. Part03 PDF staged and included in commit 745ea05. Both Part02 and Part03 PDFs now tracked. (Phase 2 Audit: S2A-7/S2D-5)
