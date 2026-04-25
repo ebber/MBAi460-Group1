@@ -26,7 +26,7 @@ terraform destroy
 
 The AWS profile defaults to `Claude-Conjurer`. To use a different profile, add `aws_profile = "YourProfile"` to `terraform.tfvars` (gitignored) or set `TF_VAR_aws_profile=YourProfile` before running terraform.
 
-See `QUICKSTART.md` for the full collaborator setup walkthrough.
+See `MetaFiles/QUICKSTART.md` for the full collaborator setup walkthrough.
 
 ## Config Graduation Policy
 
