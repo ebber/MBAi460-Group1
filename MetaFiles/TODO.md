@@ -28,6 +28,10 @@
 - [x] **[Risk/Security] Committed passwords in visualizations** — CLOSED 2026-04-23: assessed as historic (original schema passwords, rotated 2026-04-20); annotation added to `visualizations/lab-database-schema-v2.md` changing "grader-checked" label to "original — rotated 2026-04-20". No scrubbing required. (Phase 1B: T3/B4)
 - [ ] **[Risk/Security] Committed passwords in project03 SQL** — `projects/project03/create-authsvc.sql` and `create-chatapp.sql` contain hardcoded `abc123!!` / `def456!!` passwords; class-provided but committed. Assess same as B4. (Phase 1B: B5)
 
+- [ ] **[Project01/Hygiene] Investigate and consolidate SQL artifacts in `projects/project01/`** — `create-photoapp.sql` and `create-photoapp-labels.sql` coexist at project01 root. Investigate whether the labels file should remain split or fold into the main schema; document the relationship (when each is run, by whom, why split). Memory currently references only the main file. (Spin-up env scan, 2026-04-26)
+
+- [ ] **[Docs] Elaborate purpose of `MBAi460-Group1/learnings/`** — directory exists (last touched 2026-04-24) but is not described in memory, project_overview, or README. Capture: what belongs there, who writes to it, lifecycle, audience. (Spin-up env scan, 2026-04-26)
+
 ## Backlog
 
 ### Tooling candidates (3x rule — see Future-State-Ideal-Lab.md for full list)
@@ -35,6 +39,10 @@
 - [x] **`utils/cred-sweep`** — CLOSED 2026-04-23: created; scans staged files for AWS key IDs, known lab passwords, committed tfvars/secrets. (A6)
 - [x] **`utils/rebuild-db`** — CLOSED 2026-04-23: created; runs create-photoapp.sql → create-photoapp-labels.sql → validate-db with confirmation prompt. (A7)
 - [x] **`utils/rotate-passwords`** — CLOSED 2026-04-23: created; generates new passwords, rotates in RDS via MySQL, updates photoapp-config.ini, runs validate-db. (A8)
+
+- [ ] **[Tooling] Decide if `utils/boto_test.py` is still wanted** — confirmed purpose 2026-04-26: in-container sanity check for `boto3` install (`python3 MBAi460-Group1/utils/boto_test.py`, returns version string). It works as documented. Decide: keep as-is, expand into a fuller in-container smoke probe, or retire if redundant with other checks. (Spin-up env scan, 2026-04-26)
+- [ ] **[Tooling/Lab-root] Decide tracking status of lab-root `utils/`** — `mbai460-client/utils/` (`lab-status`, `lab-up`, `lab-down`, `lock.sh`, `unlock.sh`) is untracked in the lab repo but not declared in `.gitignore` either — implicit untracked policy. Decide: track in lab repo, or add explicit gitignore entry. (Spin-up env scan, 2026-04-26)
+- [ ] **[Tooling] `aws-inventory` ENI association traversal** — `aws-inventory` reports EIPs as `attached_to=(unattached)` when they're attached to an ENI (no `InstanceId`), e.g. RDS-managed ENIs. Verified 2026-04-26: EIP `3.146.129.20` is correctly attached to RDS via `eni-02d7750d55c8b998a` (`ServiceManaged: rds`); inventory script needs to render `NetworkInterfaceId` + `ServiceManaged` association, not just `InstanceId`. Cosmetic but causes false alarms. (Spin-up EOR-6, 2026-04-26)
 
 - [ ] Terraform remote state (S3 + DynamoDB lock) — prerequisite for multi-collaborator GitHub use
 - [ ] Visualization naming convention cleanup (see visualizations/MetaFiles/TODO.md)

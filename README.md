@@ -40,3 +40,26 @@ See [`MetaFiles/QUICKSTART.md`](MetaFiles/QUICKSTART.md) for a complete collabor
 | [`MetaFiles/Future-State-Ideal-Lab.md`](MetaFiles/Future-State-Ideal-Lab.md) | Long-term design target |
 | [`MetaFiles/TODO.md`](MetaFiles/TODO.md) | Active action queue |
 | [`MetaFiles/Journal/`](MetaFiles/Journal/) | Session journal — agents and collaborators may leave entries here at their discretion |
+
+## Queue Surfaces
+
+The Class Project uses scoped TODO surfaces. When queueing an item, route to the most-scoped surface that fits the concern.
+
+**Inside this repo:**
+
+| Surface | Scope |
+|---------|-------|
+| [`MetaFiles/TODO.md`](MetaFiles/TODO.md) | Class Project main queue — cross-cutting tooling, hygiene, security, IaC, design |
+| [`infra/MetaFiles/TODO.md`](infra/MetaFiles/TODO.md) | Infrastructure-scoped — Terraform, AWS, RDS, IAM specifics |
+| [`visualizations/MetaFiles/TODO.md`](visualizations/MetaFiles/TODO.md) | Visualization-scoped — diagram naming, lifecycle, polish |
+| `labs/<labN>/MetaFiles/` | Lab-scoped (per-lab coordination; mostly historical for closed labs) |
+| `projects/project01/Part0{2,3}/MetaFiles/` | Project01 part-scoped |
+
+**External (lab orchestration repo at `mbai460-client/`):**
+
+| Surface | Scope |
+|---------|-------|
+| `mbai460-client/MetaFiles/TODO.md` | Lab orchestration layer — VCS strategy, secrets layout, multi-repo coordination |
+| `mbai460-client/claude-workspace/TODO.md` | Agent workspace queue — ritual maintenance, memory hygiene, agent-internal tooling |
+
+**Routing heuristic:** Start with the most-scoped surface. Promote to the parent surface only when the concern legitimately crosses scopes. Don't duplicate items across surfaces — link if needed.
