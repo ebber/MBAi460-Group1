@@ -36,7 +36,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 
 | Phase | Goal | State | Commit | Evidence link |
 |---|---|---|---|---|
-| 0 | Baseline verification (NEW; not in 02) | ⏳ | — | install-log + smoke output below |
+| 0 | Baseline verification (NEW; not in 02) | ✅ 2026-04-26 | (this commit) | refactor-log 2026-04-26 entry; install-log 2026-04-26 entry |
 | 1 | Test toolchain (02 §1) | ⏳ | — | `npm test` exit 0 |
 | 2 | App.js / server.js split (02 §2) | ⏳ | — | failing test → green; `npm start` parity |
 | 3 | Liveness endpoint `/health` (02 §3) | ⏳ | — | `curl /health` |
@@ -57,28 +57,28 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 
 ### Task 0.1 — Verify Node + npm versions
 
-- [ ] **Step 0.1.1:** Run `node --version && npm --version`. Expected: Node ≥24.x, npm ≥11.x (per `package.json` engines).
-- [ ] **Step 0.1.2:** If mismatch, halt and surface to Erik before continuing. (Auto-mode exception: version mismatch is destructive-class — Ask first.)
+- [x] **Step 0.1.1:** Ran `node --version && npm --version` → **Node v24.8.0**, **npm 11.6.0**. Both ≥ engines in `package.json`. ✅
+- [x] **Step 0.1.2:** No mismatch; no halt needed.
 
 ### Task 0.2 — Install baseline dependencies
 
-- [ ] **Step 0.2.1:** From `Part03/`, run `npm install` and capture exit code, deps-installed count, vulnerabilities count, notable warnings.
-- [ ] **Step 0.2.2:** Append a `## 2026-04-26 — Phase 0 baseline npm install` entry to `Part03/MetaFiles/install-log.md` with: date, cwd, command, exit, packages-installed count, vulnerabilities count, notable warnings.
-- [ ] **Step 0.2.3:** Confirm `node_modules/` exists.
+- [x] **Step 0.2.1:** Ran `npm install` from `Part03/` → exit 0, 305 packages, 8 vulnerabilities (all transitive through `sqlite3`), 9 deprecation warnings. ✅
+- [x] **Step 0.2.2:** Install-log entry written. 🚩 Surfaced: `sqlite3@5.1.7` is in deps but not actually `require()`d anywhere in `server/*.js` — likely Project 2 leftover. Decision deferred to Erik (remove vs. upgrade vs. keep).
+- [x] **Step 0.2.3:** `node_modules/` confirmed (204 top-level entries).
 
 ### Task 0.3 — Smoke the baseline server
 
-- [ ] **Step 0.3.1:** From `Part03/`, run `npm start` in the background. Capture the port-bind line ("Web service running, listening on port 8080...").
-- [ ] **Step 0.3.2:** `curl -s http://localhost:8080/` — expected JSON with `status: "running"` and a numeric `uptime_in_secs`.
-- [ ] **Step 0.3.3:** `curl -s http://localhost:8080/ping` — expected `{message: "success", M: <int>, N: <int>}` (live S3 + RDS). Per memory, `N=3` (3 seeded users); `M` is current S3 object count (≥1 if `test/degu.jpg` is present).
-- [ ] **Step 0.3.4:** `curl -s http://localhost:8080/users` — expected `{message: "success", data: [<3 user rows>]}`.
-- [ ] **Step 0.3.5:** Stop the background server cleanly.
+- [x] **Step 0.3.1:** Started `npm start` in background; server bound to port 8080. ✅
+- [x] **Step 0.3.2:** `curl /` → `200 {"status":"running","uptime_in_secs":12}`. ✅
+- [x] **Step 0.3.3:** `curl /ping` → `200 {"message":"success","M":10,"N":3}`. ✅ (M=10 S3 objects; N=3 users — matches memory.)
+- [x] **Step 0.3.4:** `curl /users` → `200 {"message":"success","data":[3 users: p_sarkar, e_ricci, l_chen]}`. ✅ Matches seeded users from memory.
+- [x] **Step 0.3.5:** Server stopped cleanly via `pkill -f "node server/app.js"` (SIGTERM, exit 143).
 
 ### Task 0.4 — Document baseline state
 
-- [ ] **Step 0.4.1:** Append a `## 2026-04-26 — Phase 0 Baseline Smoke Verified` section to `Part03/MetaFiles/refactor-log.md` with the captured `curl` outputs as evidence. This is the "before" state for the prove-it-works principle.
-- [ ] **Step 0.4.2:** Mark Phase 0 ✅ in this plan's Master Tracker.
-- [ ] **Step 0.4.3:** Stage and commit: `install-log.md` (new), `refactor-log.md` (appended), this plan (tracker updated). Commit message: `Part03 02 Phase 0: baseline verified; install-log + refactor-log entries`.
+- [x] **Step 0.4.1:** Refactor-log entry written with full curl evidence.
+- [x] **Step 0.4.2:** Phase 0 marked ✅ in Master Tracker (this file, below).
+- [ ] **Step 0.4.3:** Commit `install-log.md` (appended), `refactor-log.md` (appended), this plan (tracker updated). Commit message: `Part03 02 Phase 0: baseline verified`.
 
 **Subagent calibration:** main thread (sequential probes; no parallelism).
 

@@ -59,6 +59,38 @@ Immediate next checks:
 
 ---
 
+## 2026-04-26 — Phase 0 Baseline Smoke Verified (Server Foundation pre-execution)
+
+Before Server Foundation (workstream 02) execution begins, the un-refactored Project 2 Express baseline was verified end-to-end. Captured here as the "before" state for the prove-it-works principle (Erik 2026-04-26).
+
+**Versions:** Node v24.8.0, npm 11.6.0 (above `package.json` engines).
+
+**Install:** `npm install` from `Part03/` → exit 0, 305 packages, 8 vulnerabilities (all transitive through `sqlite3@5.1.7`; flagged in `install-log.md` for Erik decision). `node_modules/` + `package-lock.json` created.
+
+**Live smoke (against real RDS + S3):**
+
+```
+GET http://localhost:8080/
+→ 200  {"status":"running","uptime_in_secs":12}
+
+GET http://localhost:8080/ping
+→ 200  {"message":"success","M":10,"N":3}
+       (M=10 S3 objects, N=3 RDS users)
+
+GET http://localhost:8080/users
+→ 200  {"message":"success","data":[
+         {"userid":80001,"username":"p_sarkar","givenname":"Pooja","familyname":"Sarkar"},
+         {"userid":80002,"username":"e_ricci","givenname":"Emanuele","familyname":"Ricci"},
+         {"userid":80003,"username":"l_chen","givenname":"Li","familyname":"Chen"}
+       ]}
+```
+
+**State observed:** baseline runs as advertised. Pre-existing legacy URL contract works against live infra. Phase 2 will decommission these URLs in favor of `/api/*`.
+
+**Open signal flagged:** `sqlite3@5.1.7` is in dependencies but not actually `require()`d by any `server/*.js` file. Carries 8 vulnerabilities + 9 deprecation warnings via its prebuild toolchain. Decision (remove vs. upgrade) deferred to Erik. See `install-log.md` 2026-04-26 entry.
+
+---
+
 ## 2026-04-26 - Express Direction Confirmed; Approach Docs Aligned
 
 The team committed to **Express/Node** as the Part 03 backend (rather than the FastAPI/Python target previously described in the approach docs). Decision made in coordination with the design agent on grounds of "future compatibility" — preserves the Project 02 collaborator baseline and avoids a Python↔Node bridge.
