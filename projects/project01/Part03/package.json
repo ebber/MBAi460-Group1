@@ -1,0 +1,30 @@
+{
+  "name": "project01-part03-photoapp",
+  "version": "1.0.0",
+  "description": "Project 01 Part 03 PhotoApp web server working baseline",
+  "main": "server/app.js",
+  "scripts": {
+    "test": "echo \"TODO: add automated tests for the copied Part03 Express baseline\" && exit 1",
+    "start": "node server/app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^25.0.9",
+    "@aws-sdk/client-s3": "^3.972.0",
+    "@aws-sdk/client-rekognition": "^3.946.0",
+    "@aws-sdk/credential-providers": "^3.969.0",
+    "express": "^5.2.1",
+    "ini": "^6.0.0",
+    "mysql2": "^3.16.1",
+    "uuid": "^13.0.0",
+    "sqlite3": "^5.1.7",
+    "is-network-error": "^1.1.0",
+    "p-retry": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=24.x",
+    "npm": ">=11.x"
+  }
+}
