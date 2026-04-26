@@ -20,7 +20,7 @@ Owns:
 
 Does not own:
 
-- FastAPI setup.
+- Backend server setup.
 - Backend route behavior.
 - `photoapp.py` integration.
 - AWS credentials or server config.
@@ -29,28 +29,29 @@ Does not own:
 
 Owns:
 
-- FastAPI/Uvicorn application skeleton.
+- Local Express server application skeleton.
 - Static web app hosting from `frontend/dist`.
 - Local run commands.
 - Docker/runtime wiring.
-- Backend project structure.
+- Server project structure.
 
 Does not own:
 
 - Final UI design.
 - All detailed `/api/*` route behavior.
-- Part 2 AWS/RDS/Rekognition function implementation.
+- AWS SDK + `mysql2` service-module implementation (owned by API Routes).
 
 ### 3. API Routes Workstream
 
 Owns:
 
-- `/api/*` FastAPI routes.
-- Request/response schemas.
-- PhotoApp service layer.
-- Local file bridge.
-- Part 2 adapter.
-- Backend unit, integration, and smoke tests for API behavior.
+- `/api/*` Express routes.
+- Request validation and response shaping.
+- Tuple/row-to-object converters and envelope helpers.
+- PhotoApp service module (Node-native AWS SDK + `mysql2` orchestration).
+- Multipart upload middleware (multer).
+- Error/status-code mapping.
+- Server unit, integration, and smoke tests for API behavior.
 
 Does not own:
 
@@ -62,12 +63,11 @@ Does not own:
 
 - Browser calls only HTTP endpoints under `/api/*` plus static website routes.
 - Browser never reads `photoapp-config.ini`.
-- Browser never imports Python code.
-- FastAPI is the only local backend server process.
-- `photoapp.py` is imported as a Python module, not run as a separate service.
-- `photoapp.py` may call off-box AWS services through `boto3` and `pymysql`.
-- The `Local File Bridge` remains in scope for the initial implementation because Part 2 expects local filenames.
-- Future stream-through upload is tracked as a TODO, not part of the initial contract.
+- Browser never accesses AWS credentials or AWS SDK code directly.
+- There should be one local Express server process for the Part 3 app.
+- The Express server reads `photoapp-config.ini` server-side (via the `ini` package) for AWS profile + RDS connection details.
+- The server uses Node-native AWS SDK (`@aws-sdk/client-s3`, `@aws-sdk/client-rekognition`) for S3 + Rekognition and `mysql2` for RDS access. Part 2 `photoapp.py` is **not** imported at runtime — it is preserved as a behavioral reference only.
+- Multipart browser uploads are handled by Express middleware (multer). The initial implementation buffers uploads to a temp directory or in memory; future stream-through directly to S3 is tracked as a TODO.
 
 ## Directory Contract
 
@@ -90,32 +90,42 @@ projects/project01/Part03/
       components/
       App.jsx
       main.jsx
-    dist/
+    dist/                           # Vite build output; served by Express
 
-  backend/
-    main.py
+  server/
+    app.js                          # Express app: middleware, mounts, exports app
+    server.js                       # listen() entrypoint; imports app
+    config.js                       # web service config (port, config file path)
     routes/
-      photoapp_routes.py
+      photoapp_routes.js            # /api/* routes; HTTP request/response concerns
     services/
-      photoapp_service.py
-      file_bridge.py
-    adapters/
-      part02_photoapp.py
-    schemas.py
+      photoapp.js                   # PhotoApp use cases: list, upload, download, labels, search, delete
+      aws.js                        # AWS SDK + mysql2 client factories (formerly helper.js)
+    middleware/
+      upload.js                     # multer config for multipart uploads
+      error.js                      # JSON error mapping
+    schemas.js                      # row-to-object converters; envelope helpers
     tests/
+      app.test.js
+      health.test.js
+      schemas.test.js
+      photoapp_service.test.js
+      photoapp_routes.test.js
 
-  README.md
+  package.json                      # server-side: Express, mysql2, AWS SDK, multer, jest, supertest
+  README.md                         # run instructions + workstream pointers
 
 projects/project01/client/
-  photoapp.py
-  photoapp-config.ini
+  photoapp.py                       # Part 2 reference (NOT imported by Part 03 server)
+  photoapp-config.ini               # server-side config; never loaded by browser
 ```
 
 Ownership:
 
 - UI owns `ClaudeDesignDrop/` and `frontend/`.
-- Server Foundation owns `backend/main.py`, static mounting, app startup, and run docs.
-- API Routes owns `backend/routes/`, `backend/services/`, `backend/adapters/`, `backend/schemas.py`, and backend tests.
+- Server Foundation owns `server/app.js`, `server/server.js`, `server/config.js`, static mounting, app startup, run docs, and the foundation-level test files (`server/tests/app.test.js`, `health.test.js`, `static.test.js`, `api_placeholder.test.js`).
+- API Routes owns `server/routes/`, `server/services/`, `server/middleware/`, `server/schemas.js`, and the API/service-level test files (`server/tests/schemas.test.js`, `photoapp_service.test.js`, `photoapp_routes.test.js`, `live_integration.test.js`).
+- `server/tests/` is co-owned: Foundation seeds the harness (`jest.config.js`, package.json `test` script); API Routes adds the bulk of behavior tests on top. Neither workstream should modify the other's test files without coordination.
 - Any workstream may update `Part03/README.md`, but changes should preserve run instructions from other workstreams.
 
 ## API Contract
@@ -178,8 +188,8 @@ Success response:
 
 Implementation note:
 
-- Part 2 returns tuples: `(userid, username, givenname, familyname)`.
-- API Routes workstream converts tuples to objects.
+- `mysql2` returns rows as objects keyed by column name; map to the documented field set in a converter helper.
+- Sort by `userid` ASC.
 
 UI behavior:
 
@@ -216,8 +226,8 @@ Success response:
 
 Implementation note:
 
-- Part 2 returns tuples: `(assetid, userid, localname, bucketkey)`.
-- API Routes workstream converts tuples to objects.
+- `mysql2` rows map directly to the documented field set; preserve original column casing in the SQL and shape via a converter helper.
+- `bucketkey` shape: `username/uuid-localname` (Part 2 convention).
 
 UI behavior:
 
@@ -258,9 +268,9 @@ Failure examples:
 
 Implementation note:
 
-- Initial implementation writes upload to a temp local file.
-- Then calls Part 2 `post_image(userid, local_filename)`.
-- Temp file should be cleaned up after success or failure.
+- Multer middleware accepts the multipart `file` field; initial implementation buffers to disk in a temp directory (parity with Part 2 semantics).
+- Service then: validates `userid` exists, generates `bucketkey = <username>/<uuid>-<localname>`, uploads buffer to S3, calls Rekognition `DetectLabels`, inserts asset row + label rows in MySQL.
+- Temp file is cleaned up after success or failure (do not rely on multer auto-cleanup alone).
 
 UI behavior:
 
@@ -282,10 +292,9 @@ Response:
 
 Implementation note:
 
-- Initial implementation allocates a temp output path.
-- Calls Part 2 `get_image(assetid, temp_path)`.
-- Returns file response.
-- Cleanup strategy must not delete the file before FastAPI finishes sending it.
+- Service looks up `bucketkey` from the assets table; missing → 404.
+- Streams the S3 object body directly to the Express response (`response.setHeader('Content-Type', …)` + `s3GetResponse.Body.pipe(response)`); avoids a temp-file roundtrip.
+- `Content-Type` is best-effort from `localname` extension or S3 `ContentType` if available.
 
 UI behavior:
 
@@ -314,8 +323,8 @@ Success response:
 
 Implementation note:
 
-- Part 2 returns tuples: `(label, confidence)`.
-- API converts tuples to objects.
+- SQL: `SELECT label, confidence FROM labels WHERE assetid = ? ORDER BY confidence DESC`.
+- Missing assetid → 404.
 
 UI behavior:
 
@@ -345,8 +354,8 @@ Success response:
 
 Implementation note:
 
-- Part 2 returns tuples: `(assetid, label, confidence)`.
-- API converts tuples to objects.
+- SQL joins `assets` and `labels` on `assetid`; filter `labels.label LIKE ?` or `= ?` per scope decision.
+- Empty/whitespace-only `label` → **400 always** at the route boundary. The service may also raise `Error('label is required')` defensively; the route validates first.
 
 UI behavior:
 
@@ -357,7 +366,7 @@ UI behavior:
 
 Purpose:
 
-- Delete all images and labels through existing Part 2 behavior.
+- Delete all images and labels.
 
 Success response:
 
@@ -369,6 +378,11 @@ Success response:
   }
 }
 ```
+
+Implementation note:
+
+- **Order: DB-first, S3-second** (per Part 2 semantics): `DELETE FROM labels`, `DELETE FROM assets`, then `S3 DeleteObjects` for every bucketkey collected before the DB delete. Keeps S3 ↔ DB consistent if the second step fails.
+- Use `S3 DeleteObjects` (batched) where possible.
 
 UI behavior:
 
@@ -422,39 +436,41 @@ Smoke tests:
 
 ### Server Foundation Workstream
 
-Unit tests:
+Unit tests (Jest + supertest):
 
+- App imports cleanly and exports an Express `app` instance.
 - Static route returns `index.html` when `frontend/dist` exists.
-- App includes API router under `/api`.
-- Health or root route behaves predictably.
+- App mounts API router under `/api` (placeholder before API Routes work).
+- Health route behaves predictably.
 
 Integration tests:
 
-- Build frontend and serve it through FastAPI.
+- Build frontend and serve it through Express static middleware.
 - Confirm `GET /` returns HTML.
 - Confirm `GET /assets/*` returns JS/CSS.
 
 Smoke tests:
 
-- Run one local command to start server.
+- Run one local command to start server (`npm start`).
 - Open browser at local port.
-- Confirm app loads without Vite dev server if using built assets.
+- Confirm app loads from built assets (no Vite dev server needed at runtime).
 
 ### API Routes Workstream
 
-Unit tests:
+Unit tests (Jest):
 
-- Tuple-to-object conversion helpers.
+- Row-to-object converter helpers.
+- Envelope helpers (`successResponse` / `errorResponse`).
 - Request validation and error mapping.
-- Service methods call adapter with expected values.
-- File bridge writes and cleans temp uploads.
+- Service methods call AWS SDK / `mysql2` clients with expected values (use mocked clients).
+- Multipart upload middleware writes and cleans temp uploads.
 
-Integration tests:
+Integration tests (Jest + supertest):
 
-- API routes with FastAPI test client and stubbed adapter.
+- API routes against the Express app with stubbed service module.
 - Upload route accepts multipart file.
-- File route returns bytes response.
-- Error paths return documented JSON shape.
+- File route returns image bytes / streamed response.
+- Error paths return documented JSON envelope shape.
 
 Smoke tests:
 
@@ -475,11 +491,11 @@ Smoke tests:
 Before deep UI or API work:
 
 - [ ] `Part03/frontend` exists.
-- [ ] `Part03/backend` exists.
+- [ ] `Part03/server` exists with `app.js`, `server.js`, `routes/`, `tests/`.
 - [ ] `GET /` can serve either placeholder or built frontend.
-- [ ] `GET /api/ping` contract is agreed, even if mocked.
+- [ ] `GET /api` returns the placeholder envelope; `/api/ping` contract is agreed, even if mocked.
 - [ ] UI has `photoappApi.js` wrapper.
-- [ ] Backend has router placeholder.
+- [ ] Server has `/api` placeholder router mounted.
 
 ### Checkpoint 2: Mock Integration
 
@@ -494,7 +510,7 @@ Before real Part 2 integration:
 
 Before demo recording:
 
-- [ ] Backend adapter initializes `photoapp.py`.
+- [ ] Server connects to RDS, S3, and Rekognition successfully (live config).
 - [ ] `/api/ping` works against live config.
 - [ ] `/api/users` returns seeded users.
 - [ ] Upload creates an image and asset ID.
@@ -518,12 +534,13 @@ Before Canvas submission:
 
 ## Shared Open Questions
 
-- Should local development use Vite dev server plus FastAPI proxy, or built assets served by FastAPI only?
-- Which exact Docker command should be the canonical demo command?
-- Should backend return `bucketkey` to UI, or hide it as backend/internal metadata?
-- Should image preview route stream from temp file or return a generated one-time file response?
-- Should API Routes use Pydantic models for every response, or simple dictionaries for assignment speed?
+- Which exact Docker command should be the canonical demo command for the video teammate?
+- Should the server return `bucketkey` to the UI in `/api/images` responses, or hide it as server-internal metadata?
+- For `/api/images/{assetid}/file`: stream S3 object body directly into the Express response, or buffer to memory first? (Initial direction: stream.)
+- Should the server validate request shapes with a schema library (`zod`/`joi`/`ajv`), or rely on per-route checks for assignment speed?
 - Do we need a mock mode for UI demos if AWS is temporarily unavailable?
+
+(Resolved: local dev uses built assets only — no Vite proxy. Resolved: response envelope `{message, data}`/`{message, error}`. Resolved: `/api/*` URL prefix. See `refactor-log.md` 2026-04-26.)
 
 ## Change Control
 
@@ -536,3 +553,20 @@ If a workstream needs to change:
 - shared test command
 
 then update this document first, then update the affected workstream approach docs.
+
+## Footnote: Implementation Provenance
+
+On 2026-04-25, merged collaborator work from `origin/main` provided a Project 2 Express web-service baseline and Streamlit UI reference. Useful files were copied into `projects/project01/Part03` to accelerate implementation while keeping Part 3 self-contained for submission.
+
+On 2026-04-26, the team committed to **Express/Node** as the Part 03 backend (rather than the FastAPI/Python target initially described). Decision drivers: future compatibility with the Project 2 baseline, avoidance of a Python↔Node bridge, alignment with collaborator team. See `refactor-log.md` 2026-04-26 for the full Q1–Q6 decision record.
+
+This provenance does not change the functional contract above. Executors should implement and verify the behavior described in this document — endpoint shapes, response envelope, ownership boundaries, and TDD discipline.
+
+Copied baseline locations (Project 2 → Part 03, 2026-04-25):
+
+- `projects/project01/Part03/server/`
+- `projects/project01/Part03/package.json`
+- `projects/project01/Part03/MetaFiles/Reference/project02-streamlit-gui.py`
+- `projects/project01/Part03/MetaFiles/Reference/project02-client-photoapp.py`
+
+Refactor decisions and cleanup notes belong in `projects/project01/Part03/MetaFiles/refactor-log.md`.

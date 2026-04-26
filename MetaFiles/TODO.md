@@ -30,6 +30,8 @@
 
 - [ ] **[Project01/Hygiene] Investigate and consolidate SQL artifacts in `projects/project01/`** — `create-photoapp.sql` and `create-photoapp-labels.sql` coexist at project01 root. Investigate whether the labels file should remain split or fold into the main schema; document the relationship (when each is run, by whom, why split). Memory currently references only the main file. (Spin-up env scan, 2026-04-26)
 
+- [ ] **[Project01/Part03] Correctly deprecate Part 02 Python from Part 03 backend** — Part 03 backend committed to Express/Node (2026-04-26 design pivot); Part 02 `projects/project01/client/photoapp.py` is no longer imported at runtime. Decide & execute: (a) keep `client/photoapp.py` as a behavioral reference with a deprecation banner, or (b) move it to a `Reference/` location, or (c) delete it after Part 03 reaches feature parity. Includes review of client config file consumption (Part 03 server reads `photoapp-config.ini` directly via `ini` package). (Express pivot Q2, 2026-04-26)
+
 - [ ] **[Docs] Elaborate purpose of `MBAi460-Group1/learnings/`** — directory exists (last touched 2026-04-24) but is not described in memory, project_overview, or README. Capture: what belongs there, who writes to it, lifecycle, audience. (Spin-up env scan, 2026-04-26)
 
 ## Backlog

@@ -4,29 +4,30 @@
 
 ## Goal
 
-Create the local FastAPI/Uvicorn server foundation for Project 01 Part 03: a backend app skeleton, static React build serving, router mounting, local run commands, and documentation that lets UI and API Routes workstreams plug in cleanly.
+Create the local Express/Node server foundation for Project 01 Part 03: an Express app skeleton, a thin listen entrypoint, static React build serving from `frontend/dist`, an `/api` placeholder router mount, a server liveness endpoint, local run commands, and documentation that lets UI and API Routes workstreams plug in cleanly.
 
 ## Scope
 
 This workstream owns:
 
-- `backend/main.py`
-- FastAPI app creation
-- Uvicorn run target
-- Static web app hosting from `frontend/dist`
-- Placeholder frontend build serving
-- Backend package structure
-- Basic health/root behavior
-- Local development/run documentation
-- Server-level tests that prove the shell works before real API routes exist
+- `server/app.js` (Express app: middleware, mounts, exports `app` — does **not** call `listen`).
+- `server/server.js` (thin entrypoint: imports `app`, calls `listen` on `config.web_service_port`).
+- `server/config.js` (already present; preserve as-is for this workstream).
+- Static web app hosting from `frontend/dist`.
+- Placeholder `frontend/dist/index.html` so the static host has something to serve before UI workstream produces a real Vite build.
+- `server/routes/` directory and a placeholder `/api` mount.
+- Server liveness endpoint `GET /health` (deliberately outside `/api/*`).
+- Local run commands (`npm install`, `npm start`).
+- Server-level tests (Jest + supertest) that prove the shell works before real `/api/*` business logic exists.
+- `Part03/README.md` server-related sections.
 
 This workstream does **not** own:
 
-- Final Claude Design UI conversion
-- Detailed `/api/*` endpoint behavior
-- Part 2 `photoapp.py` adapter behavior
-- AWS/RDS/S3/Rekognition logic
-- Real upload/download implementation
+- Final Claude Design UI conversion.
+- Detailed `/api/*` endpoint behavior (beyond the placeholder).
+- AWS SDK + `mysql2` service-module implementation.
+- Multipart upload middleware (`multer`).
+- Error/status-code mapping middleware.
 
 Those are owned by UI and API Routes workstreams.
 
@@ -36,275 +37,271 @@ Read first:
 
 - `00-coordination-and-contracts.md`
 - `01-ui-workstream.md`
-- `visualizations/Target-State-project01-part03-photoapp-architecture-v1.md`
+- `MetaFiles/refactor-log.md` (2026-04-26 Q1–Q6 Express pivot decisions)
 
 This workstream should produce enough server structure for later workstreams to add:
 
-- `backend/routes/photoapp_routes.py`
-- `backend/services/photoapp_service.py`
-- `backend/adapters/part02_photoapp.py`
+- `server/routes/photoapp_routes.js`
+- `server/services/photoapp.js`
+- `server/services/aws.js`
+- `server/middleware/upload.js`
+- `server/middleware/error.js`
+- `server/schemas.js`
 
 ## Target Files
 
-Create or modify:
+Create or modify (matches the Directory Contract in `00-coordination-and-contracts.md`):
 
 ```text
 projects/project01/Part03/
-  backend/
-    __init__.py
-    main.py
+  server/
+    app.js                          # Express app: middleware, mounts, exports app
+    server.js                       # listen() entrypoint; imports app
+    config.js                       # web service config (port, config file path) — preserved
     routes/
-      __init__.py
-    services/
-      __init__.py
-    adapters/
-      __init__.py
+      photoapp_routes.js            # placeholder /api mount this workstream; real routes added by API Routes workstream
     tests/
-      __init__.py
-      test_main.py
+      app.test.js                   # app object + middleware mounts
+      health.test.js                # GET /health
+      static.test.js                # GET / and GET /assets/*
+      api_placeholder.test.js       # GET /api placeholder envelope
 
   frontend/
     dist/
-      index.html
+      index.html                    # placeholder until UI workstream ships a Vite build
+      assets/
+        app.css                     # placeholder static asset
 
-  README.md
-```
-
-Optional, depending on package/dependency strategy:
-
-```text
-projects/project01/Part03/requirements.txt
-projects/project01/Part03/pyproject.toml
+  package.json                      # adds jest + supertest devDeps; "start": "node server/server.js"
+  jest.config.js                    # (optional) Jest configuration
+  README.md                         # run instructions + workstream pointers
 ```
 
 ## Design Decisions
 
-- One Python server process: `uvicorn backend.main:app --host 0.0.0.0 --port 8080`.
-- FastAPI serves both:
-  - Static web app: `GET /`, `GET /assets/*`
-  - API routes: `/api/*`
-- Before real frontend exists, use a placeholder `frontend/dist/index.html`.
-- Before real API routes exist, expose a minimal app health route or placeholder router mount for server verification.
-- Keep static serving and API route mounting in `backend/main.py`.
-- Avoid adding route business logic to `backend/main.py`.
+- One Express server process: `node server/server.js`, listening on `config.web_service_port` (8080).
+- Express serves both:
+  - Static web app: `GET /`, `GET /assets/*` from `frontend/dist`.
+  - API routes: `/api/*` (placeholder mount this workstream; real routes added by API Routes workstream).
+- `server/app.js` exports an Express app instance and **does not** call `listen()`. This is required so Jest + supertest can drive the app in-process without binding a port.
+- `server/server.js` is the sole `listen()` site. It imports `app`, calls `listen(config.web_service_port)`, and logs startup.
+- Mount order in `app.js` is load-bearing:
+  1. JSON body parser middleware.
+  2. **API router under `/api` first** (so static catchall cannot absorb `/api/*`).
+  3. `express.static` mount over `frontend/dist`.
+  4. Explicit `GET /` fallback that returns `frontend/dist/index.html` (SPA index).
+- `GET /health` is mounted at `/health`, **not** `/api/health`. The `/api/*` namespace is reserved for the PhotoApp API contract in `00-coordination-and-contracts.md`. `/health` is a server liveness probe owned by this workstream.
+- Path resolution uses `path.join(__dirname, '..', 'frontend', 'dist')`. `__dirname` for `server/app.js` is `Part03/server`, so `..` resolves to `Part03/`. This makes static serving robust to CWD as long as the file layout is preserved.
+- Local dev mode is **built-only**: UI builds `frontend/dist`; Express serves it via static middleware. No Vite dev server proxy. (Recorded in `refactor-log.md` 2026-04-26 Q5.)
+- Response envelope for the `/api` placeholder follows the shared contract: `{message: "success", data: {...}}` on success, `{message: "error", error: "..."}` on failure. (Recorded in `refactor-log.md` 2026-04-26 Q3.)
+- Test stack is **Jest + supertest** in `devDependencies`. (Recorded in `refactor-log.md` 2026-04-26 Q4.)
 
 ---
 
-## Phase 1: Create Backend Package Skeleton
+## Phase 1: Test Toolchain Setup
 
-### Task 1.1: Create backend directories
+### Task 1.1: Add Jest and supertest as devDependencies
 
 **Files:**
 
-- Create: `projects/project01/Part03/backend/__init__.py`
-- Create: `projects/project01/Part03/backend/routes/__init__.py`
-- Create: `projects/project01/Part03/backend/services/__init__.py`
-- Create: `projects/project01/Part03/backend/adapters/__init__.py`
-- Create: `projects/project01/Part03/backend/tests/__init__.py`
+- Modify: `projects/project01/Part03/package.json`
 
 **Checklist:**
 
-- [ ] Create `backend/`.
-- [ ] Create `backend/routes/`.
-- [ ] Create `backend/services/`.
-- [ ] Create `backend/adapters/`.
-- [ ] Create `backend/tests/`.
-- [ ] Add `__init__.py` files so Python imports are stable.
+- [ ] Add `jest` to `devDependencies`.
+- [ ] Add `supertest` to `devDependencies`.
+- [ ] Add `"test": "jest"` to `scripts`.
+- [ ] Confirm `"main": "server/server.js"` (or leave existing `main`, but `start` must run `server.js`).
+- [ ] Add `"start": "node server/server.js"` to `scripts`.
+- [ ] Run `npm install` from `Part03/`.
 
 **Check your work:**
 
 - Unit: not applicable.
-- Integration: run `python -c "import backend"` from `projects/project01/Part03`.
-- Smoke: no import error.
+- Integration: `npx jest --version` prints a version.
+- Smoke: `npm test` runs and reports "no tests found" (expected — tests come next).
 
----
-
-## Phase 2: Dependency Baseline
-
-### Task 2.1: Define backend dependencies
+### Task 1.2: Configure Jest for the server tree
 
 **Files:**
 
-Choose one:
+- Create: `projects/project01/Part03/jest.config.js` (optional; can also be a `jest` block in `package.json`).
 
-- Create: `projects/project01/Part03/requirements.txt`
+Suggested config:
 
-Recommended initial contents:
-
-```text
-fastapi
-uvicorn[standard]
-pytest
-httpx
-python-multipart
+```js
+module.exports = {
+  testEnvironment: 'node',
+  testMatch: ['<rootDir>/server/tests/**/*.test.js'],
+};
 ```
 
-If using `pyproject.toml` instead, keep dependency names equivalent.
-
 **Checklist:**
 
-- [ ] Add FastAPI.
-- [ ] Add Uvicorn.
-- [ ] Add pytest.
-- [ ] Add httpx for FastAPI test client compatibility.
-- [ ] Add `python-multipart` so upload routes will work later.
-- [ ] Do not add boto3/pymysql here unless needed; existing environment may already support Part 2. API Routes workstream can revisit.
+- [ ] Tell Jest to look in `server/tests/`.
+- [ ] Use `node` test environment (not `jsdom`).
+- [ ] Confirm `npm test` still reports "no tests found" before any test file exists.
 
 **Check your work:**
 
 - Unit: not applicable.
-- Integration: from `Part03`, install dependencies in the intended environment.
-- Smoke: run `python -c "import fastapi, uvicorn"`.
+- Integration: `npm test` exits cleanly with 0 tests.
+- Smoke: not applicable.
 
 ---
 
-## Phase 3: FastAPI App Factory
+## Phase 2: Express App Object (split listen out)
 
-### Task 3.1: Test app import and app object
+The current `server/app.js` calls `app.listen()` at module load. That has to change so Jest + supertest can import the app without binding a port.
+
+### Task 2.1: Failing test for app object export
 
 **Files:**
 
-- Create: `projects/project01/Part03/backend/tests/test_main.py`
+- Create: `projects/project01/Part03/server/tests/app.test.js`
 
 **Write failing test first:**
 
-```python
-from fastapi import FastAPI
+```js
+const app = require('../app');
 
-from backend.main import app
+test('app exports an Express application function', () => {
+  expect(typeof app).toBe('function');
+  // Express app is a function with .use, .get, .listen on it
+  expect(typeof app.use).toBe('function');
+  expect(typeof app.get).toBe('function');
+});
 
-
-def test_app_is_fastapi_instance():
-    assert isinstance(app, FastAPI)
-```
-
-**Checklist:**
-
-- [ ] Write the test before creating `backend/main.py`.
-- [ ] Run the test.
-- [ ] Confirm it fails because `backend.main` or `app` does not exist.
-
-Expected command:
-
-```bash
-cd projects/project01/Part03
-pytest backend/tests/test_main.py -v
-```
-
-Expected failure:
-
-```text
-ModuleNotFoundError: No module named 'backend.main'
-```
-
-### Task 3.2: Implement minimal FastAPI app
-
-**Files:**
-
-- Create: `projects/project01/Part03/backend/main.py`
-
-Minimal implementation:
-
-```python
-from fastapi import FastAPI
-
-app = FastAPI(title="PhotoApp Part 03")
-```
-
-**Checklist:**
-
-- [ ] Create `backend/main.py`.
-- [ ] Define `app`.
-- [ ] Run the test again.
-- [ ] Confirm it passes.
-
-**Check your work:**
-
-- Unit: `pytest backend/tests/test_main.py -v` passes.
-- Integration: `python -c "from backend.main import app; print(app.title)"` prints `PhotoApp Part 03`.
-- Smoke: not yet applicable.
-
----
-
-## Phase 4: Server Health Route
-
-### Task 4.1: Add test for server health endpoint
-
-**Files:**
-
-- Modify: `backend/tests/test_main.py`
-
-Add:
-
-```python
-from fastapi.testclient import TestClient
-
-from backend.main import app
-
-
-client = TestClient(app)
-
-
-def test_health_endpoint_returns_running_status():
-    response = client.get("/health")
-    assert response.status_code == 200
-    assert response.json() == {"status": "running"}
+test('importing app does not bind a port', () => {
+  // If require('../app') called listen(), the test process would
+  // already be holding a socket. We just assert the export shape;
+  // the absence of a port-in-use error during repeated require()
+  // is the real signal here.
+  expect(app).toBeDefined();
+});
 ```
 
 **Checklist:**
 
 - [ ] Add the test.
-- [ ] Run it.
-- [ ] Confirm it fails with `404`.
+- [ ] Run `npm test`.
+- [ ] Confirm it currently fails (or that loading `app.js` opens a listening socket — both are signals to refactor).
 
-### Task 4.2: Implement health endpoint
+### Task 2.2: Split `app.js` and create `server.js`
 
 **Files:**
 
-- Modify: `backend/main.py`
+- Modify: `projects/project01/Part03/server/app.js`
+- Create: `projects/project01/Part03/server/server.js`
 
-Add:
+`server/app.js` (new shape — strip `listen()` and route handlers that belong to API Routes workstream; preserve JSON middleware):
 
-```python
-@app.get("/health")
-def health():
-    return {"status": "running"}
+```js
+const express = require('express');
+const app = express();
+
+app.use(express.json({ strict: false, limit: '50mb' }));
+
+// API routes mount goes here in Phase 7 (BEFORE static middleware).
+// Static middleware mount goes here in Phase 5.
+// SPA index fallback goes here in Phase 5.
+
+module.exports = app;
+```
+
+`server/server.js`:
+
+```js
+const app = require('./app');
+const config = require('./config');
+
+const port = config.web_service_port;
+
+app.listen(port, () => {
+  console.log(`**Web service running, listening on port ${port}...`);
+  process.env.AWS_SHARED_CREDENTIALS_FILE = config.photoapp_config_filename;
+});
 ```
 
 **Checklist:**
 
-- [ ] Add endpoint.
-- [ ] Run tests.
-- [ ] Confirm tests pass.
+- [ ] Remove `app.listen(...)` from `app.js`.
+- [ ] Remove the legacy `app.get('/', ...)` uptime handler from `app.js` (it conflicts with the SPA index in Phase 5).
+- [ ] Remove the legacy `api_get_*` requires from `app.js` for now — those belong to API Routes workstream and will be re-introduced through the router placeholder in Phase 7.
+- [ ] Add `module.exports = app;` at the bottom of `app.js`.
+- [ ] Create `server.js` with the snippet above.
+- [ ] Run `npm test`.
+- [ ] Confirm `app.test.js` passes.
 
 **Check your work:**
 
-- Unit: `test_health_endpoint_returns_running_status` passes.
-- Integration: start Uvicorn and call `/health`.
-- Smoke command:
-
-```bash
-cd projects/project01/Part03
-uvicorn backend.main:app --host 0.0.0.0 --port 8080
-```
-
-In another terminal:
-
-```bash
-curl http://localhost:8080/health
-```
-
-Expected:
-
-```json
-{"status":"running"}
-```
+- Unit: `app.test.js` passes.
+- Integration: `node -e "const a = require('./server/app'); console.log(typeof a);"` prints `function`.
+- Smoke: `npm start` starts the server and prints the listening message.
 
 ---
 
-## Phase 5: Placeholder Static Web App
+## Phase 3: Server Liveness Endpoint
 
-### Task 5.1: Add placeholder frontend build artifact
+### Task 3.1: Failing test for `GET /health`
+
+**Files:**
+
+- Create: `projects/project01/Part03/server/tests/health.test.js`
+
+**Write failing test first:**
+
+```js
+const request = require('supertest');
+const app = require('../app');
+
+test('GET /health returns running', async () => {
+  const res = await request(app).get('/health');
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({ status: 'running' });
+});
+```
+
+**Checklist:**
+
+- [ ] Add the test.
+- [ ] Run `npm test`.
+- [ ] Confirm it fails with `404`.
+
+### Task 3.2: Implement `GET /health`
+
+**Files:**
+
+- Modify: `projects/project01/Part03/server/app.js`
+
+Add (above any static or API mounts):
+
+```js
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'running' });
+});
+```
+
+**Checklist:**
+
+- [ ] Add the endpoint.
+- [ ] Run `npm test`.
+- [ ] Confirm `health.test.js` passes.
+- [ ] Confirm the endpoint is at `/health`, **not** `/api/health`.
+
+**Check your work:**
+
+- Unit: `health.test.js` passes.
+- Integration: `npm start` then `curl http://localhost:8080/health` returns `{"status":"running"}`.
+- Smoke: a teammate can confirm liveness without touching `/api/*`.
+
+---
+
+## Phase 4: Placeholder Frontend Build Artifact
+
+The static host needs something to serve before UI workstream produces a real Vite build.
+
+### Task 4.1: Add placeholder `index.html`
 
 **Files:**
 
@@ -318,6 +315,7 @@ Initial placeholder:
   <head>
     <meta charset="UTF-8" />
     <title>PhotoApp Part 03</title>
+    <link rel="stylesheet" href="/assets/app.css" />
   </head>
   <body>
     <div id="root">PhotoApp Part 03 placeholder frontend</div>
@@ -329,94 +327,90 @@ Initial placeholder:
 
 - [ ] Create `frontend/dist/`.
 - [ ] Add placeholder `index.html`.
-- [ ] Confirm this file is understood as a temporary artifact until UI workstream generates a real build.
+- [ ] Note: this is a temporary artifact; UI workstream will overwrite it via Vite build output.
 
 **Check your work:**
 
 - Unit: not applicable.
 - Integration: file exists at expected path.
-- Smoke: open the file directly in a browser if desired.
+- Smoke: open the file directly in a browser if desired (rendered standalone, no server).
 
 ---
 
-## Phase 6: Static Web App Host
+## Phase 5: Static Web App Host
 
-### Task 6.1: Test `GET /` serves frontend HTML
+### Task 5.1: Failing test for `GET /` serving HTML
 
 **Files:**
 
-- Modify: `backend/tests/test_main.py`
+- Create: `projects/project01/Part03/server/tests/static.test.js`
 
-Add:
+**Write failing test first:**
 
-```python
-def test_root_serves_frontend_index():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert "text/html" in response.headers["content-type"]
-    assert "PhotoApp Part 03" in response.text
+```js
+const request = require('supertest');
+const app = require('../app');
+
+test('GET / serves the SPA index HTML', async () => {
+  const res = await request(app).get('/');
+  expect(res.status).toBe(200);
+  expect(res.headers['content-type']).toMatch(/text\/html/);
+  expect(res.text).toContain('PhotoApp Part 03');
+});
 ```
 
 **Checklist:**
 
 - [ ] Add the test.
-- [ ] Run it.
-- [ ] Confirm it fails because `/` is not implemented yet.
+- [ ] Run `npm test`.
+- [ ] Confirm it fails (currently `404` since the legacy `/` handler was removed in Phase 2).
 
-### Task 6.2: Implement root static serving
+### Task 5.2: Mount static middleware and SPA index fallback
 
 **Files:**
 
-- Modify: `backend/main.py`
+- Modify: `projects/project01/Part03/server/app.js`
 
-Suggested implementation:
+Add near the top:
 
-```python
-from pathlib import Path
+```js
+const path = require('path');
+const FRONTEND_DIST = path.join(__dirname, '..', 'frontend', 'dist');
+```
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
+Add (after `/health`, after the API mount that arrives in Phase 7, but for now after `/health`):
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
-INDEX_HTML = FRONTEND_DIST / "index.html"
+```js
+app.use(express.static(FRONTEND_DIST));
 
-app = FastAPI(title="PhotoApp Part 03")
-
-
-@app.get("/health")
-def health():
-    return {"status": "running"}
-
-
-@app.get("/")
-def serve_index():
-    return FileResponse(INDEX_HTML)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
+});
 ```
 
 **Checklist:**
 
-- [ ] Add path constants.
-- [ ] Add `serve_index()`.
-- [ ] Run tests.
-- [ ] Confirm root HTML test passes.
+- [ ] Add `path` import and `FRONTEND_DIST` constant.
+- [ ] Add `express.static(FRONTEND_DIST)` middleware.
+- [ ] Add `GET /` fallback that returns `index.html`.
+- [ ] Run `npm test`.
+- [ ] Confirm `static.test.js` `GET /` test passes.
 
 **Check your work:**
 
-- Unit: root serving test passes.
-- Integration: `curl http://localhost:8080/` returns HTML when server is running.
-- Smoke: browser displays placeholder frontend at `http://localhost:8080/`.
+- Unit: `static.test.js` `GET /` test passes.
+- Integration: `npm start`, then `curl http://localhost:8080/` returns HTML containing `PhotoApp Part 03`.
+- Smoke: browser at `http://localhost:8080/` displays placeholder frontend.
 
 ---
 
-## Phase 7: Static Assets Mount
+## Phase 6: Static Assets
 
-### Task 7.1: Add placeholder asset
+### Task 6.1: Add placeholder asset
 
 **Files:**
 
 - Create: `projects/project01/Part03/frontend/dist/assets/app.css`
-- Modify: `frontend/dist/index.html`
 
 Example asset:
 
@@ -426,145 +420,153 @@ body {
 }
 ```
 
-Reference it in `index.html`:
+**Checklist:**
 
-```html
-<link rel="stylesheet" href="/assets/app.css" />
-```
+- [ ] Create `frontend/dist/assets/`.
+- [ ] Add `app.css` with a recognizable rule (e.g., `font-family`).
+- [ ] Confirm `index.html` already references `/assets/app.css` from Phase 4.
 
-### Task 7.2: Test assets route
+### Task 6.2: Failing test for `/assets/*`
 
 **Files:**
 
-- Modify: `backend/tests/test_main.py`
+- Modify: `projects/project01/Part03/server/tests/static.test.js`
 
 Add:
 
-```python
-def test_assets_route_serves_static_files():
-    response = client.get("/assets/app.css")
-    assert response.status_code == 200
-    assert "font-family" in response.text
+```js
+test('GET /assets/app.css is served by static middleware', async () => {
+  const res = await request(app).get('/assets/app.css');
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('font-family');
+});
 ```
 
 **Checklist:**
 
-- [ ] Add placeholder CSS.
-- [ ] Add test.
-- [ ] Run test and confirm it fails with `404`.
-
-### Task 7.3: Mount static assets
-
-**Files:**
-
-- Modify: `backend/main.py`
-
-Add:
-
-```python
-from fastapi.staticfiles import StaticFiles
-
-if (FRONTEND_DIST / "assets").exists():
-    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
-```
-
-**Checklist:**
-
-- [ ] Mount `/assets`.
-- [ ] Run tests.
-- [ ] Confirm assets route test passes.
-- [ ] Confirm root page still passes.
+- [ ] Add the test.
+- [ ] Run `npm test`.
+- [ ] If `express.static` is already mounted from Phase 5, this test should pass on the first run after the CSS file exists. If it fails with `404`, confirm `FRONTEND_DIST` is correct and the file is on disk.
 
 **Check your work:**
 
-- Unit: static file tests pass.
-- Integration: browser loads placeholder CSS.
-- Smoke: no 404s for placeholder static assets in browser dev tools.
+- Unit: `/assets/app.css` test passes.
+- Integration: browser dev tools show the CSS loaded with status `200`.
+- Smoke: no missing-asset 404s when loading `/`.
 
 ---
 
-## Phase 8: API Router Placeholder Mount
+## Phase 7: API Router Placeholder Mount
 
-### Task 8.1: Create placeholder router test
+This phase reserves the `/api` namespace for the API Routes workstream. The placeholder route is replaced with real endpoints in workstream 03.
+
+### Task 7.1: Failing test for `GET /api` placeholder
 
 **Files:**
 
-- Create: `backend/routes/photoapp_routes.py`
-- Modify: `backend/tests/test_main.py`
+- Create: `projects/project01/Part03/server/tests/api_placeholder.test.js`
 
-Test expectation:
+**Write failing test first:**
 
-```python
-def test_api_router_placeholder_is_mounted():
-    response = client.get("/api")
-    assert response.status_code == 200
-    assert response.json() == {
-        "message": "success",
-        "data": {
-            "service": "photoapp-api",
-            "status": "placeholder"
-        }
-    }
+```js
+const request = require('supertest');
+const app = require('../app');
+
+test('GET /api returns placeholder envelope', async () => {
+  const res = await request(app).get('/api');
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    message: 'success',
+    data: {
+      service: 'photoapp-api',
+      status: 'placeholder',
+    },
+  });
+});
 ```
 
 **Checklist:**
 
-- [ ] Add failing test first.
-- [ ] Run it.
-- [ ] Confirm failure.
+- [ ] Add the test.
+- [ ] Run `npm test`.
+- [ ] Confirm it fails with `404` (or with the static middleware swallowing the request — that is the exact failure mode Phase 7 prevents).
 
-### Task 8.2: Implement placeholder API router
+### Task 7.2: Implement placeholder router and mount it BEFORE static
 
 **Files:**
 
-- Create: `backend/routes/photoapp_routes.py`
-- Modify: `backend/main.py`
+- Create: `projects/project01/Part03/server/routes/photoapp_routes.js`
+- Modify: `projects/project01/Part03/server/app.js`
 
-`photoapp_routes.py`:
+`server/routes/photoapp_routes.js`:
 
-```python
-from fastapi import APIRouter
+```js
+const express = require('express');
+const router = express.Router();
 
-router = APIRouter(prefix="/api")
+router.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'success',
+    data: {
+      service: 'photoapp-api',
+      status: 'placeholder',
+    },
+  });
+});
 
-
-@router.get("")
-def api_root():
-    return {
-        "message": "success",
-        "data": {
-            "service": "photoapp-api",
-            "status": "placeholder",
-        },
-    }
+module.exports = router;
 ```
 
-`main.py`:
+`server/app.js` final mount order (load-bearing):
 
-```python
-from backend.routes.photoapp_routes import router as photoapp_router
+```js
+const express = require('express');
+const path = require('path');
+const photoappRoutes = require('./routes/photoapp_routes');
 
-app.include_router(photoapp_router)
+const app = express();
+const FRONTEND_DIST = path.join(__dirname, '..', 'frontend', 'dist');
+
+app.use(express.json({ strict: false, limit: '50mb' }));
+
+// 1. Liveness probe (outside /api/*)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'running' });
+});
+
+// 2. API router FIRST so static catchall cannot absorb /api/*
+app.use('/api', photoappRoutes);
+
+// 3. Static frontend
+app.use(express.static(FRONTEND_DIST));
+
+// 4. SPA index fallback
+app.get('/', (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
+});
+
+module.exports = app;
 ```
 
 **Checklist:**
 
-- [ ] Implement placeholder router.
-- [ ] Include router in `main.py`.
-- [ ] Run tests.
-- [ ] Confirm all pass.
+- [ ] Create the placeholder router.
+- [ ] Mount `/api` **before** `express.static`.
+- [ ] Run `npm test`.
+- [ ] Confirm `api_placeholder.test.js` passes.
+- [ ] Confirm `health.test.js` and `static.test.js` still pass.
 
 **Check your work:**
 
-- Unit: router placeholder test passes.
-- Integration: `curl http://localhost:8080/api`.
-- Smoke: confirms API Routes workstream has a mount point.
+- Unit: `api_placeholder.test.js` passes.
+- Integration: `npm start`, then `curl http://localhost:8080/api` returns the placeholder envelope.
+- Smoke: API Routes workstream has a confirmed mount point at `/api`.
 
 ---
 
-## Phase 9: Development Run Documentation
+## Phase 8: Run Documentation
 
-### Task 9.1: Add Part 03 README
+### Task 8.1: Update Part 03 README
 
 **Files:**
 
@@ -580,8 +582,11 @@ Include:
 From this directory:
 
 ```bash
-uvicorn backend.main:app --host 0.0.0.0 --port 8080
+npm install
+npm start
 ```
+
+The server listens on the port configured in `server/config.js` (default `8080`).
 
 Open:
 
@@ -589,70 +594,83 @@ Open:
 http://localhost:8080/
 ```
 
-Health check:
+Liveness check (NOT under `/api`):
 
 ```text
 http://localhost:8080/health
 ```
 
-API placeholder:
+API placeholder (replaced by API Routes workstream):
 
 ```text
 http://localhost:8080/api
 ```
 
+## Tests
+
+```bash
+npm test
+```
+
+Runs Jest against `server/tests/`.
+
 ## Current Architecture
 
-FastAPI serves:
+Express serves:
 
 - `GET /` from `frontend/dist/index.html`
-- `GET /assets/*` from `frontend/dist/assets`
-- `/api/*` through the PhotoApp API router
+- `GET /assets/*` from `frontend/dist/assets` via `express.static`
+- `/api/*` through the PhotoApp router (placeholder until API Routes workstream lands)
+- `GET /health` as a server liveness probe (outside `/api/*`)
 
-The real UI workstream owns `frontend/`.
-The API Routes workstream owns detailed `/api/*` behavior.
+The UI workstream owns `frontend/`; it produces `frontend/dist/` via Vite build.
+The API Routes workstream owns detailed `/api/*` behavior, AWS SDK + `mysql2` integration, and multipart upload middleware.
 ````
 
 **Checklist:**
 
-- [ ] Add server command.
+- [ ] Add `npm install` + `npm start` instructions.
 - [ ] Add browser URL.
-- [ ] Add health check.
-- [ ] Add API placeholder.
+- [ ] Add `/health` URL with note that it is **not** under `/api`.
+- [ ] Add `/api` placeholder URL.
+- [ ] Add `npm test` instructions.
 - [ ] Explain ownership boundaries.
 
 **Check your work:**
 
 - Unit: not applicable.
 - Integration: copy/paste commands work.
-- Smoke: someone with no context can start server from README.
+- Smoke: someone with no context can start the server from README.
 
 ---
 
-## Phase 10: Server Foundation Acceptance
+## Phase 9: Server Foundation Acceptance
 
-### Task 10.1: Full local verification
+### Task 9.1: Full local verification
 
 **Checklist:**
 
-- [ ] `pytest backend/tests -v` passes.
-- [ ] `uvicorn backend.main:app --host 0.0.0.0 --port 8080` starts cleanly.
+- [ ] `npm install` runs cleanly from `Part03/`.
+- [ ] `npm test` passes (`app`, `health`, `static`, `api_placeholder` suites).
+- [ ] `npm start` starts the server and prints the listening message.
 - [ ] `curl http://localhost:8080/health` returns `{"status":"running"}`.
-- [ ] `curl http://localhost:8080/api` returns placeholder API JSON.
+- [ ] `curl http://localhost:8080/api` returns the placeholder envelope `{message:"success", data:{service:"photoapp-api", status:"placeholder"}}`.
 - [ ] `curl http://localhost:8080/` returns placeholder HTML.
-- [ ] Browser loads `http://localhost:8080/`.
-- [ ] Browser dev tools show no missing `/assets/app.css`.
-- [ ] README commands are accurate.
-- [ ] No AWS credentials or `photoapp-config.ini` values are referenced by this foundation layer.
+- [ ] Browser loads `http://localhost:8080/` without console errors.
+- [ ] Browser dev tools show `/assets/app.css` loaded with status `200`.
+- [ ] No AWS credentials or `photoapp-config.ini` values are referenced by this foundation layer (those are loaded in `server.js` startup hook only and consumed by API Routes workstream).
+- [ ] `app.js` does **not** call `listen()`.
 
 ## Suggested Commit Points
 
-- After backend skeleton imports cleanly.
-- After health endpoint test passes.
-- After static `GET /` serving passes.
-- After `/assets` route passes.
-- After `/api` placeholder route passes.
-- After README and smoke checks pass.
+- After Phase 1: Jest + supertest devDeps added; `npm test` runs with no tests.
+- After Phase 2: `app.js` exports app, `server.js` calls listen, `app.test.js` passes.
+- After Phase 3: `GET /health` test passes.
+- After Phase 5: `GET /` static serving test passes.
+- After Phase 6: `/assets/*` test passes.
+- After Phase 7: `/api` placeholder test passes; mount order locked in.
+- After Phase 8: README is accurate and someone fresh can start the server.
+- After Phase 9: full acceptance checklist green.
 
 ## Handoff To Other Workstreams
 
@@ -660,22 +678,48 @@ After this workstream:
 
 UI can:
 
-- Replace placeholder `frontend/dist` with a Vite build.
+- Replace placeholder `frontend/dist/` with a real Vite build.
 - Continue using `GET /` and `/assets/*` as the static serving contract.
+- Rely on `/api/*` as the only HTTP namespace it needs to call (plus `/health` if it wants a connectivity probe outside the API contract).
 
 API Routes can:
 
-- Replace `/api` placeholder with real endpoints.
-- Add `backend/services/`, `backend/adapters/`, and schemas.
-- Keep route mounting through `backend.main`.
+- Replace `server/routes/photoapp_routes.js` placeholder handler with real endpoints (`/api/ping`, `/api/users`, `/api/images`, `/api/images/:assetid/file`, `/api/images/:assetid/labels`, `/api/search`, `DELETE /api/images`).
+- Add `server/services/photoapp.js`, `server/services/aws.js`, `server/middleware/upload.js`, `server/middleware/error.js`, and `server/schemas.js`.
+- Keep router mounting through `server/app.js` (`app.use('/api', photoappRoutes)`).
+- Trust that `app.js` exports the app and does not call `listen()`, so supertest-based integration tests work without port conflicts.
 
 ## Risks And Mitigations
 
-- Risk: `frontend/dist` does not exist when server starts.
-  - Mitigation: tests should cover expected behavior; README should explain build order.
-- Risk: static route catches `/api/*`.
-  - Mitigation: mount/include API routes explicitly and test `/api`.
-- Risk: cleanup conflict when UI workstream replaces placeholder files.
-  - Mitigation: placeholder files are disposable; ownership belongs to UI once Vite build exists.
-- Risk: Docker port mismatch.
-  - Mitigation: standardize on port `8080` in README and coordination doc.
+- Risk: `express.static` catchall absorbs `/api/*`.
+  - Mitigation: mount `/api` **before** `express.static` in `app.js`. Phase 7 test pins this.
+- Risk: `frontend/dist/` does not exist when server starts (e.g., UI workstream has not run a build yet).
+  - Mitigation: ship a placeholder `index.html` and `assets/app.css` from this workstream; document build order in README.
+- Risk: `path.join(__dirname, '..', 'frontend', 'dist')` resolves wrong because the process was started from an unexpected CWD.
+  - Mitigation: use `__dirname` (file-relative), not `process.cwd()`. Document in README that the server is started via `npm start` from `Part03/`.
+- Risk: ESM/CJS mismatch — current `server/*.js` uses CommonJS (`require`), and Jest defaults align with that.
+  - Mitigation: keep CommonJS for now. If UI workstream brings ESM and someone is tempted to flip the server, do that as a deliberate refactor with a `refactor-log.md` entry, not silently.
+- Risk: `app.listen()` accidentally re-introduced in `app.js`, which breaks supertest tests by binding a port at import time.
+  - Mitigation: `app.test.js` asserts the export shape; reviewers should reject any PR that calls `listen()` outside `server.js`.
+- Risk: port `8080` already in use locally.
+  - Mitigation: standardize on `8080` in `config.js` and README; document override path (edit `config.js`) for teammates whose port is taken.
+- Risk: putting the liveness probe under `/api/health` would pollute the PhotoApp API contract documented in `00`.
+  - Mitigation: this workstream mounts liveness at `/health` outside `/api/*` and documents the boundary in README.
+
+## Footnote: Server Baseline Provenance
+
+On 2026-04-25, the team copied a Project 2 Express server baseline into Part 3:
+
+- `projects/project01/Part03/server/`
+- `projects/project01/Part03/package.json`
+
+On 2026-04-26, the team confirmed Express/Node as the Part 03 backend direction (Q1–Q6 in `MetaFiles/refactor-log.md`):
+
+- Q1 — keep `/api/*` URL prefix.
+- Q2 — Part 2 `photoapp.py` is reference-only; the server uses Node-native AWS SDK + `mysql2`.
+- Q3 — response envelope is `{message, data}` / `{message, error}`.
+- Q4 — test stack is Jest + supertest.
+- Q5 — local dev is built-only (Express serves `frontend/dist`; no Vite proxy).
+- Q6 — visualization is agnosticized (handled by design agent).
+
+This workstream's job is to smooth the copied baseline into the shape this checklist describes: split `app.js` and `server.js`, mount `/api` before static, ship a placeholder frontend build, add Jest + supertest, and document run commands. Refactor notes for any deviations belong in `projects/project01/Part03/MetaFiles/refactor-log.md`.

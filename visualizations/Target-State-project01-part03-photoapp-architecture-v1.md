@@ -1,6 +1,7 @@
 # Target State - Project 01 Part 03 PhotoApp Local Architecture
 
 **Generated:** 2026-04-25  
+**Updated:** 2026-04-26 — language/implementation-agnostic pass following the Express direction confirmation. Awaiting design-agent review.  
 **Scope:** Project 01 Part 03 local web application architecture  
 **Status:** PROPOSED - architecture discussion artifact  
 **Related diagrams:** `docker-environment-v1.md`, `project01-part02-api-flow-v1.md`
@@ -12,10 +13,10 @@
 Target state for Part 03 is a local, framework-based web app:
 
 - **React + Vite frontend** owns layout, interaction state, upload forms, image gallery, label display, and search UI.
-- **Uvicorn + FastAPI backend** owns HTTP API routes, static serving for the built frontend, upload/download handling, error translation, and initialization of the existing PhotoApp API.
-- **PhotoApp Service Layer** coordinates Part 03 use cases so frontend code never imports Python modules directly and never sees credentials or environment details.
-- **Docker containers** provide the reproducible local runtime. The rendered web app runs in the client-side browser context, and requests flow to the FastAPI server container.
-- **Off-box AWS services** are still called by the imported Part 02 `photoapp.py` module; the web server itself remains local.
+- **Local web server** owns HTTP API routes, static serving for the built frontend, upload/download handling, error translation, and the PhotoApp service module.
+- **PhotoApp Service Module** coordinates Part 03 use cases (S3, RDS, and Rekognition orchestration) so frontend code never accesses credentials, AWS SDKs, or database drivers directly.
+- **Docker containers** provide the reproducible local runtime. The rendered web app runs in the client-side browser context, and requests flow to the server container.
+- **Off-box AWS services** are called by the server's PhotoApp Service Module; the web server itself remains local.
 
 ---
 
@@ -25,7 +26,7 @@ Target state for Part 03 is a local, framework-based web app:
 flowchart LR
   subgraph host["Host machine"]
     direction LR
-    repo["Repo working tree\nPart03/frontend + Part03/backend\nbind-mounted into Docker during development"]
+    repo["Repo working tree\nPart03/frontend + Part03/server\nbind-mounted into Docker during development"]
     port["Host TCP :8080\npublished Docker port"]
   end
 
@@ -40,29 +41,30 @@ flowchart LR
   subgraph server_container["Docker container: Server"]
     direction LR
 
-    subgraph app["Uvicorn + FastAPI Server Application\nbackend/main.py"]
+    subgraph app["Local Web Server Application\nserver/app.js (exports app)\nserver/server.js (listen entrypoint)"]
       direction TB
-      fastapi["Uvicorn + FastAPI entrypoint\nlistens on container :8080"]
+      ingress["HTTP server entrypoint\nlistens on container :8080"]
       static["Static Web App Host\nserves frontend/dist"]
-      api["API Routes\nJSON + file endpoints"]
+      api["API Routes\nJSON + file endpoints under /api/*"]
     end
 
     subgraph static_assets["Built frontend assets\nfrontend/dist"]
       direction LR
       index["index.html"]
-      bundle["JS/CSS bundle"]
+      bundle["bundled assets"]
     end
 
-    subgraph backend["Backend application layer"]
+    subgraph backend["Server-side application layer"]
       direction LR
-      service["PhotoApp Service Layer\nuse-case orchestration + response shaping"]
-      files["Local File Bridge\nmultipart upload/download <-> temp paths"]
+      service["PhotoApp Service Module\nuse-case orchestration + response shaping"]
+      upload["Upload Buffer\nmultipart upload handling"]
     end
 
-    subgraph course_api["Existing Part 02 PhotoApp API"]
+    subgraph runtime_clients["Server-side runtime clients"]
       direction LR
-      photoapp["photoapp.py\ninitialize, get_ping, get_users,\nget_images, post_image, get_image,\nget_image_labels, get_images_with_label,\ndelete_images"]
-      config["photoapp-config.ini\nserver-side only"]
+      aws_clients["AWS service clients\nS3 + Rekognition"]
+      db_driver["RDS / MySQL driver"]
+      configfile["photoapp-config.ini\nserver-side only"]
     end
   end
 
@@ -74,8 +76,8 @@ flowchart LR
   end
 
   webapp -->|"GET /"| port
-  port -->|"Docker publish 8080:8080"| fastapi
-  fastapi --> static
+  port -->|"Docker publish 8080:8080"| ingress
+  ingress --> static
   static --> index
   index --> bundle
   bundle -->|"loaded by browser"| webapp
@@ -85,12 +87,14 @@ flowchart LR
   webapp -->|"download / preview\nGET /api/images/{assetid}/file"| api
 
   api --> service
-  service --> files
-  service --> photoapp
-  photoapp --> config
-  photoapp --> s3
-  photoapp --> rds
-  photoapp --> rekognition
+  service --> upload
+  service --> aws_clients
+  service --> db_driver
+  aws_clients --> configfile
+  db_driver --> configfile
+  aws_clients --> s3
+  aws_clients --> rekognition
+  db_driver --> rds
 ```
 
 ## Local Runtime Shape
@@ -101,24 +105,24 @@ flowchart LR
     direction TB
     subgraph browser["Browser"]
       direction TB
-      webapp["Rendered Web Application\nReact UI + bundled frontend API calls\nHTML + JS + CSS"]
+      webapp["Rendered Web Application\nReact UI + bundled frontend API calls\nbundled web app loaded in browser"]
     end
   end
 
   subgraph server_container["Docker container: Server"]
     direction TB
-    subgraph fastapi_app["Uvicorn + FastAPI Server Application\nbackend/main.py"]
+    subgraph server_app["Local Web Server Application\nserver/app.js + server/server.js"]
       direction TB
-      ingress["Uvicorn + FastAPI entrypoint\nlistens on container :8080"]
-      subgraph fastapi_handlers["FastAPI request handlers"]
+      ingress["HTTP server entrypoint\nlistens on container :8080"]
+      subgraph handlers["HTTP request handlers"]
         direction LR
         static["Static Web App Host\nserves frontend/dist\nGET / and /assets/*"]
-        api["API Routes\nbackend/routes/photoapp_routes.py\n/api/ping, /api/users, /api/images, /api/search"]
+        api["API Routes\nserver/routes/photoapp_routes\n/api/ping, /api/users, /api/images, /api/search"]
       end
     end
-    service["PhotoApp Service Layer\nbackend/services/photoapp_service.py\nuse-case orchestration + response shaping"]
-    files["Local File Bridge\nbackend/services/file_bridge.py\nmultipart upload/download <-> temp paths"]
-    photoapp_api["Existing Part 02 PhotoApp API\nproject01/client/photoapp.py\nimported Python module, not a separate service"]
+    service["PhotoApp Service Module\nserver/services/photoapp\nuse-case orchestration + response shaping"]
+    upload["Upload Buffer\nserver/middleware/upload\nmultipart upload handling"]
+    runtime_clients["Server-side runtime clients\nAWS service clients + RDS driver\nserver/services/aws"]
     config["Server-side config\nphotoapp-config.ini"]
   end
 
@@ -131,17 +135,17 @@ flowchart LR
 
   webapp -->|"GET http://server:8080/"| ingress
   ingress -->|"serve app shell + static assets"| static
-  static -->|"HTML + JS + CSS loaded in browser"| webapp
+  static -->|"bundled web app loaded in browser"| webapp
 
   webapp -->|"HTTP JSON + multipart requests\nhttp://server:8080/api/*"| ingress
   ingress --> api
-  api -->|"via Python module import"| service
-  service --> files
-  service -->|"calls imported Python functions"| photoapp_api
-  photoapp_api --> config
-  photoapp_api -->|"boto3 / pymysql calls"| s3
-  photoapp_api -->|"pymysql queries"| rds
-  photoapp_api -->|"boto3 detect_labels"| rekognition
+  api -->|"service call"| service
+  service --> upload
+  service --> runtime_clients
+  runtime_clients --> config
+  runtime_clients -->|"AWS SDK"| s3
+  runtime_clients -->|"DB driver"| rds
+  runtime_clients -->|"Rekognition DetectLabels"| rekognition
 
   subgraph spacer[" "]
     blank[" "]
@@ -172,12 +176,12 @@ flowchart LR
 
 | Boundary | Rule |
 |---|---|
-| Browser to backend | Browser only uses HTTP. No direct Python imports, config reads, or credentials. |
+| Browser to server | Browser only uses HTTP. No direct credential or AWS SDK access from frontend code. |
 | Frontend to API | Frontend calls `/api/*` and receives JSON or file responses. |
-| API to service | FastAPI routes stay thin: request parsing, status codes, response shapes. |
-| Service to Part 02 API | Service facade translates web concepts such as uploaded files into adapter-backed `photoapp.py` calls. |
+| API to service | HTTP routes stay thin: request parsing, status codes, response shapes. Business logic lives in the service module. |
+| Service to AWS / RDS | Service module orchestrates AWS SDK and RDS driver calls; converts row results into web-shaped objects; never exposes credentials. |
 | Docker to host | Host browser reaches the app through a published local port, typically `8080:8080`. |
-| Off-box AWS services | Server runs locally, but imported `photoapp.py` still calls S3, RDS, and Rekognition over the network. |
+| Off-box AWS services | Server runs locally; AWS service clients call S3, RDS, and Rekognition over the network. |
 
 ---
 
@@ -185,16 +189,20 @@ flowchart LR
 
 ```text
 projects/project01/Part03/
-  backend/
-    main.py                         # creates FastAPI app, mounts static files, includes API router
+  server/
+    app.js                          # creates server app, mounts static files, mounts /api router
+    server.js                       # listen() entrypoint
+    config.js                       # web service config (port, config file path)
     routes/
-      photoapp_routes.py            # /api/* endpoints; HTTP request/response concerns
+      photoapp_routes.js            # /api/* endpoints; HTTP request/response concerns
     services/
-      photoapp_service.py           # PhotoApp use cases: list, upload, download, labels, search, delete
-      file_bridge.py                # temp-file bridge for browser uploads/downloads
-    adapters/
-      part02_photoapp.py            # imports and initializes project01/client/photoapp.py
-    schemas.py                      # Pydantic request/response models where useful
+      photoapp.js                   # PhotoApp use cases: list, upload, download, labels, search, delete
+      aws.js                        # AWS service clients + RDS driver factories
+    middleware/
+      upload.js                     # multipart upload handling
+      error.js                      # JSON error mapping
+    schemas.js                      # row-to-object converters; envelope helpers
+    tests/
 
   frontend/
     src/
@@ -209,12 +217,13 @@ projects/project01/Part03/
       main.jsx
     index.html
     package.json
-    dist/                           # Vite build output; served by FastAPI
+    dist/                           # Vite build output; served by the local web server
 
+  package.json                      # server-side runtime + test deps
   README.md                         # run instructions + demo notes
 
 projects/project01/client/
-  photoapp.py                       # existing Part 02 implementation reused by adapter
+  photoapp.py                       # Part 02 reference (NOT imported by Part 03 server)
   photoapp-config.ini               # server-side config; never loaded by browser
 ```
 
@@ -227,17 +236,17 @@ projects/project01/client/
 ```mermaid
 sequenceDiagram
   participant Browser
-  participant FastAPI as Uvicorn + FastAPI
+  participant Server as Local Web Server
   participant StaticHost as Static Web App Host
   participant WebApp as Rendered Web Application
 
-  Browser->>FastAPI: GET /
-  FastAPI->>StaticHost: route to static host
+  Browser->>Server: GET /
+  Server->>StaticHost: route to static host
   StaticHost-->>Browser: index.html
-  Browser->>FastAPI: GET /assets/*.js and /assets/*.css
-  FastAPI->>StaticHost: route asset requests
-  StaticHost-->>Browser: bundled React JS/CSS
-  Browser->>WebApp: execute JS and render UI
+  Browser->>Server: GET /assets/*
+  Server->>StaticHost: route asset requests
+  StaticHost-->>Browser: bundled React assets
+  Browser->>WebApp: execute bundle and render UI
 ```
 
 ### Image Upload
@@ -246,22 +255,25 @@ sequenceDiagram
 sequenceDiagram
   participant WebApp as Rendered Web Application
   participant Route as API Routes
-  participant Service as PhotoApp Service Layer
-  participant Files as Local File Bridge
-  participant Part02 as Existing Part 02 PhotoApp API
+  participant Service as PhotoApp Service Module
+  participant Upload as Upload Buffer
+  participant AWSClients as AWS service clients
+  participant DB as RDS / MySQL driver
   participant AWS as Off-box AWS services
 
   WebApp->>Route: POST /api/images (userid + multipart file)
-  Route->>Service: upload_image(userid, UploadFile)
-  Service->>Files: save upload to temp path
-  Files-->>Service: temp local filename
-  Service->>Part02: post_image(userid, temp filename)
-  Part02->>AWS: upload to S3, write RDS row, call Rekognition
-  AWS-->>Part02: assetid + labels persisted
-  Part02-->>Service: assetid
-  Service->>Files: delete temp upload
-  Service-->>Route: upload result
-  Route-->>WebApp: JSON { assetid, message }
+  Route->>Upload: receive multipart file
+  Upload-->>Service: buffered file + metadata
+  Service->>DB: validate userid exists
+  Service->>AWSClients: upload to S3 (bucketkey: username/uuid-localname)
+  AWSClients->>AWS: S3 PutObject
+  Service->>AWSClients: detect labels
+  AWSClients->>AWS: Rekognition DetectLabels
+  AWS-->>AWSClients: labels
+  Service->>DB: INSERT asset row + INSERT IGNORE label rows
+  Service->>Upload: cleanup temp file
+  Service-->>Route: { assetid }
+  Route-->>WebApp: JSON envelope { message, data: { assetid } }
 ```
 
 ### Read/Search/Download API Calls
@@ -270,28 +282,29 @@ sequenceDiagram
 sequenceDiagram
   participant WebApp as Rendered Web Application
   participant Route as API Routes
-  participant Service as PhotoApp Service Layer
-  participant Files as Local File Bridge
-  participant Part02 as Existing Part 02 PhotoApp API
+  participant Service as PhotoApp Service Module
+  participant AWSClients as AWS service clients
+  participant DB as RDS / MySQL driver
   participant AWS as Off-box AWS services
 
   WebApp->>Route: GET /api/users or /api/images or /api/search
   Route->>Service: call matching use case
-  Service->>Part02: call get_users/get_images/get_images_with_label
-  Part02->>AWS: query RDS/S3 as needed
-  AWS-->>Part02: rows / object metadata
-  Part02-->>Service: tuples from Part 02 API
+  Service->>DB: SELECT users / assets / labels rows
+  DB->>AWS: RDS query
+  AWS-->>DB: rows
+  DB-->>Service: result set
   Service-->>Route: web-shaped response
-  Route-->>WebApp: JSON response
+  Route-->>WebApp: JSON envelope { message, data: [...] }
 
   WebApp->>Route: GET /api/images/{assetid}/file
   Route->>Service: download_image(assetid)
-  Service->>Files: allocate temp output path
-  Service->>Part02: get_image(assetid, temp path)
-  Part02->>AWS: download object from S3
-  AWS-->>Part02: image bytes written to temp path
-  Part02-->>Service: local filename
-  Service-->>Route: file response handle
+  Service->>DB: SELECT bucketkey FROM assets WHERE assetid = ?
+  DB-->>Service: bucketkey
+  Service->>AWSClients: GetObject (bucketkey)
+  AWSClients->>AWS: S3 GetObject
+  AWS-->>AWSClients: object stream
+  AWSClients-->>Service: response stream
+  Service-->>Route: pipe stream + Content-Type
   Route-->>WebApp: image file response
 ```
 
@@ -299,5 +312,4 @@ sequenceDiagram
 
 ## Temporary TODOs For Architecture Discussion
 
-- [ ] Consider a future stream-through upload path that avoids writing browser uploads to local disk. Current Part 03 target keeps the `Local File Bridge` because the existing Part 02 `photoapp.post_image(userid, local_filename)` API expects a local filename. A future refactor could add a stream-oriented function such as `post_image_stream(userid, original_filename, fileobj)` so FastAPI can pass the uploaded file stream directly toward S3 without a temporary file. Keep the public web API as `POST /api/images` either way so the frontend contract does not change.
-
+- [ ] Consider a future stream-through upload path that pipes the multipart upload directly to S3 without buffering to a temp file. Initial Part 03 target uses temp-file buffering (via the upload middleware) for parity with the original assignment's local-file expectations and to keep the service module simple. A future refactor could thread the upload stream end-to-end. Keep the public web API as `POST /api/images` either way so the frontend contract does not change.

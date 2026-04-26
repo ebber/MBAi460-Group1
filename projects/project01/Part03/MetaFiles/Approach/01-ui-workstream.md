@@ -4,7 +4,9 @@
 
 ## Goal
 
-Convert the Claude Design output into a maintainable React/Vite frontend that renders the PhotoApp UI and communicates with the FastAPI backend through `/api/*` calls.
+Convert the Claude Design output into a maintainable React/Vite frontend that renders the PhotoApp UI and communicates with the Express backend through `/api/*` calls.
+
+> **Dev mode (decided 2026-04-26, Q5):** Built-only. UI iteration on isolated components may use Vite dev server with mocked API responses, but full-stack testing always uses `npm run build` → `frontend/dist` → Express static middleware on port 8080. No Vite dev-server proxy.
 
 ## Scope
 
@@ -19,13 +21,13 @@ This workstream owns the browser-facing application only:
 
 This workstream does **not** own:
 
-- FastAPI server setup.
+- Express server setup.
 - Backend route implementation.
-- `photoapp.py` integration.
+- AWS SDK / `mysql2` service-module behavior.
 - Docker server runtime.
-- AWS/RDS/S3/Rekognition behavior.
+- AWS/RDS/S3/Rekognition orchestration.
 
-Those belong to the Server Foundation and API Routes workstreams.
+Those belong to the Server Foundation and API Routes workstreams. Part 2 `photoapp.py` is **not** imported at runtime by Part 03 — preserved as a behavioral reference only.
 
 ## Dependencies
 
@@ -86,6 +88,8 @@ Optional staging folders:
 
 ### Task 1.1: Make directory for Claude Design output
 
+**Status:** DONE 2026-04-25 - drop zone created at `projects/project01/Part03/ClaudeDesignDrop/`.
+
 **Files:**
 
 - Create: `projects/project01/Part03/ClaudeDesignDrop/README.md`
@@ -95,10 +99,10 @@ Optional staging folders:
 
 **Steps:**
 
-- [ ] Create the drop-zone folders.
-- [ ] Add a README explaining what collaborators should place there.
-- [ ] State that raw Claude Design files are source material, not the final app structure.
-- [ ] State that secrets/config must not be added.
+- [x] Create the drop-zone folders.
+- [x] Add a README explaining what collaborators should place there.
+- [x] State that raw Claude Design files are source material, not the final app structure.
+- [x] State that secrets/config must not be added.
 
 Suggested README content:
 
@@ -123,8 +127,8 @@ Rules:
 **Check your work:**
 
 - Unit: not applicable.
-- Integration: confirm the folder exists and the README is clear.
-- Smoke: collaborator can understand where to drop files without asking for repo context.
+- Integration: DONE - folder exists with `raw/`, `assets/`, `notes/`, README, and export-notes template.
+- Smoke: READY - collaborator can understand where to drop files without asking for repo context.
 
 ---
 
@@ -482,3 +486,12 @@ Before handing off the UI workstream:
 - Should the UI prioritize gallery thumbnails, table/list layout, or both?
 - Should image previews use direct backend file routes or explicit download buttons only?
 - Do we need a "demo mode" with mock data for development before backend routes exist?
+
+## Footnote: UI Reference Provenance
+
+On 2026-04-25, the team copied Project 2 UI reference material into Part 3:
+
+- `projects/project01/Part03/MetaFiles/Reference/project02-streamlit-gui.py`
+- `projects/project01/Part03/MetaFiles/Reference/project02-client-photoapp.py`
+
+These files are references only. They do not change the UI workstream checklist. The useful workflow sections are Status, Users, Browse Images, Upload Image, Search by Label, and Admin; the final UI should still follow the React/Vite structure and `/api/*` browser contract described above.
