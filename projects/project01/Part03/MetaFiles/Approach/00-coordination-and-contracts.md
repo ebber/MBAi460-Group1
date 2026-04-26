@@ -136,7 +136,7 @@ All API responses should be JSON except file/image download routes.
 
 Purpose:
 
-- Check backend connectivity through `photoapp.get_ping()`.
+- Check server connectivity through the PhotoApp service module (`server/services/photoapp.js` `getPing()`), which queries S3 + RDS via `services/aws.js` clients.
 
 Success response:
 

@@ -110,7 +110,7 @@ projects/project01/Part03/
 
 - [ ] Add `jest` to `devDependencies`.
 - [ ] Add `supertest` to `devDependencies`.
-- [ ] Add `"test": "jest"` to `scripts`.
+- [ ] Add `"test": "jest --passWithNoTests"` to `scripts`. The `--passWithNoTests` flag is **required** for Phase 1 — without it Jest exits non-zero when no test files exist yet, breaking the "tests come next" gate. Drop the flag once Phase 2's first test file lands (or keep it; it's harmless once tests exist).
 - [ ] Confirm `"main": "server/server.js"` (or leave existing `main`, but `start` must run `server.js`).
 - [ ] Add `"start": "node server/server.js"` to `scripts`.
 - [ ] Run `npm install` from `Part03/`.
@@ -119,7 +119,7 @@ projects/project01/Part03/
 
 - Unit: not applicable.
 - Integration: `npx jest --version` prints a version.
-- Smoke: `npm test` runs and reports "no tests found" (expected — tests come next).
+- Smoke: `npm test` exits 0 with "no tests found" (because of `--passWithNoTests`).
 
 ### Task 1.2: Configure Jest for the server tree
 
@@ -140,12 +140,12 @@ module.exports = {
 
 - [ ] Tell Jest to look in `server/tests/`.
 - [ ] Use `node` test environment (not `jsdom`).
-- [ ] Confirm `npm test` still reports "no tests found" before any test file exists.
+- [ ] Confirm `npm test` still exits 0 with "no tests found" (the `--passWithNoTests` flag from Task 1.1 makes this clean).
 
 **Check your work:**
 
 - Unit: not applicable.
-- Integration: `npm test` exits cleanly with 0 tests.
+- Integration: `npm test` exits 0 with 0 tests reported (clean because of `--passWithNoTests`).
 - Smoke: not applicable.
 
 ---
@@ -663,7 +663,7 @@ The API Routes workstream owns detailed `/api/*` behavior, AWS SDK + `mysql2` in
 
 ## Suggested Commit Points
 
-- After Phase 1: Jest + supertest devDeps added; `npm test` runs with no tests.
+- After Phase 1: Jest + supertest devDeps added; `npm test` exits 0 with no tests (via `--passWithNoTests`).
 - After Phase 2: `app.js` exports app, `server.js` calls listen, `app.test.js` passes.
 - After Phase 3: `GET /health` test passes.
 - After Phase 5: `GET /` static serving test passes.

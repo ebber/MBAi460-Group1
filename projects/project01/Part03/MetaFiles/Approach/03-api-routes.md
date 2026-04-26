@@ -92,7 +92,7 @@ projects/project01/Part03/package.json      # add multer, jest, supertest if mis
 projects/project01/Part03/README.md         # route-specific run/test commands
 ```
 
-The legacy `server/api_*.js` files should be deleted once their behavior is replicated and tested in the new structure. Do not delete until tests on the new structure are green.
+The legacy `server/api_*.js` files are **kept as a reference** through this workstream. Their final disposition (delete, archive, or keep) is **deferred to the Part 03 TODO queue** (`MetaFiles/TODO.md`) and decided at end-of-Part-03. Do **not** delete them as part of this workstream.
 
 ## API Contract Summary
 
@@ -371,6 +371,66 @@ test('getRekognition returns a RekognitionClient', () => {
 - Unit: aws factory tests pass with mocked `fs`.
 - Integration: importing `services/aws` does not connect to AWS or RDS by itself.
 - Smoke: defer real `getDbConn()` / `getBucket()` calls until live config is confirmed.
+
+### Task 2.2: Tighten the `getDbConn()` async contract
+
+**Files:**
+
+- Modify: `server/services/aws.js`
+- Modify: `server/tests/aws.test.js`
+
+**Why this exists:**
+
+In the legacy `server/helper.js`, `get_dbConn()` is marked `async` and returns the result of `mysql2.createConnection({...})` without an explicit `await`. `mysql2/promise.createConnection` returns a `Promise<Connection>`; an `async` function whose return value is itself a Promise will resolve through it, so callers `await get_dbConn()` end up with a `Connection` and the code works in practice. But the contract is implicit — readers have to reason about double-Promise resolution, and any future caller who *forgets* to `await` will get a `Promise<Connection>` and a runtime "TypeError: dbConn.execute is not a function" the first time they try to use it.
+
+The new factory should make the contract explicit so it cannot drift.
+
+**Required behavior:**
+
+- `getDbConn()` is `async` and returns a `Connection` (resolved), not a `Promise<Connection>` (un-resolved).
+- The function body uses `return await mysql2.createConnection({...})` (or equivalent `const conn = await ...; return conn;`).
+- A unit test asserts the returned value behaves like a connection (has `.execute`, `.end`).
+
+**Write failing test first:**
+
+```js
+// failing test first — asserts the return value is awaited (resolved), not a bare Promise
+test('getDbConn resolves to a connection-shaped object, not a Promise', async () => {
+  const fakeConn = { execute: jest.fn(), end: jest.fn() };
+  const mysql2 = require('mysql2/promise');
+  jest.spyOn(mysql2, 'createConnection').mockResolvedValue(fakeConn);
+
+  const { getDbConn } = require('../services/aws');
+  const conn = await getDbConn();
+
+  // If the implementation returns the unawaited Promise, conn would still be a Promise
+  // and these would fail.
+  expect(typeof conn.execute).toBe('function');
+  expect(typeof conn.end).toBe('function');
+});
+```
+
+**Implementation:**
+
+```js
+async function getDbConn() {
+  const photoappConfig = readPhotoAppConfig();
+  return await mysql2.createConnection({
+    host: photoappConfig.rds.endpoint,
+    port: photoappConfig.rds.port_number,
+    user: photoappConfig.rds.user_name,
+    password: photoappConfig.rds.user_pwd,
+    database: photoappConfig.rds.db_name,
+    multipleStatements: false,
+  });
+}
+```
+
+**Check your work:**
+
+- Unit: failing test described above passes after the explicit `await` is in place.
+- Integration: `await getDbConn()` returns a connection that responds to `.execute(...)` (this is exercised by all downstream service tests).
+- Smoke: live `getDbConn()` against real RDS still works (verified in Phase 8 live tests).
 
 ---
 
@@ -1125,7 +1185,7 @@ Before marking API Routes complete:
 - [ ] End-to-end smoke checklist passes.
 - [ ] README documents route-specific run/test commands.
 - [ ] API responses match `00-coordination-and-contracts.md` (envelope + status codes).
-- [ ] Legacy `server/api_*.js` files are deleted (their behavior is now covered by `routes/`, `services/`, and `middleware/`).
+- [ ] Legacy `server/api_*.js` files remain in place as reference; final disposition is queued in `Part03/MetaFiles/TODO.md` for end-of-Part-03 decision (do **not** delete during this workstream).
 
 ## Suggested Commit Points
 
@@ -1138,7 +1198,6 @@ Before marking API Routes complete:
 - After centralized error middleware mapping is green.
 - After guarded live integration tests pass.
 - After end-to-end smoke checklist passes.
-- After legacy `server/api_*.js` files are removed.
 
 ## Risks And Mitigations
 
