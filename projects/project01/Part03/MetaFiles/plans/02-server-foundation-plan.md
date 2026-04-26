@@ -37,7 +37,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 | Phase | Goal | State | Commit | Evidence link |
 |---|---|---|---|---|
 | 0 | Baseline verification (NEW; not in 02) | ✅ 2026-04-26 | (this commit) | refactor-log 2026-04-26 entry; install-log 2026-04-26 entry |
-| 1 | Test toolchain (02 §1) | ⏳ | — | `npm test` exit 0 |
+| 1 | Test toolchain (02 §1) | ✅ 2026-04-26 | (this commit) | install-log; `npm test` exit 0 |
 | 2 | App.js / server.js split (02 §2) | ⏳ | — | failing test → green; `npm start` parity |
 | 3 | Liveness endpoint `/health` (02 §3) | ⏳ | — | `curl /health` |
 | 4 | Placeholder frontend dist (02 §4) | ⏳ | — | `cat frontend/dist/index.html` |
@@ -94,8 +94,8 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 **Reference:** `02-server-foundation.md` Phase 1 (Tasks 1.1, 1.2). Execute 02 directly with checkbox updates.
 
 ### Tracker
-- [ ] **Task 1.1** — Add jest + supertest devDeps; `"test": "jest --passWithNoTests"`; `"start": "node server/server.js"` (note: server.js doesn't exist yet — Phase 2 creates it; for Phase 1 the start script can stay `node server/app.js` until Phase 2 completes the split, OR set to server.js now and run only after Phase 2). **Decision:** keep `start` script as `node server/app.js` through Phase 1; flip to `node server/server.js` in Phase 2 Task 2.2.
-- [ ] **Task 1.2** — `jest.config.js` (testMatch `<rootDir>/server/tests/**/*.test.js`, testEnvironment `node`).
+- [x] **Task 1.1** — `npm install --save-dev jest supertest` ran (jest@^30.3.0, supertest@^7.2.2 added; 306 packages); `"test": "jest --passWithNoTests"` set; `"start"` left as `node server/app.js` per decision; `npm test` exits 0 with "No tests found". 2026-04-26.
+- [x] **Task 1.2** — `jest.config.js` created (testEnvironment node, testMatch server/tests/). `npm test` still clean. 2026-04-26.
 
 **Atomic doc updates after each task:**
 - After 1.1: `install-log.md` entry (records the second `npm install` for jest+supertest); `02-server-foundation.md` Task 1.1 checkboxes; this plan tracker.

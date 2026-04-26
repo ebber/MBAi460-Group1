@@ -108,18 +108,18 @@ projects/project01/Part03/
 
 **Checklist:**
 
-- [ ] Add `jest` to `devDependencies`.
-- [ ] Add `supertest` to `devDependencies`.
-- [ ] Add `"test": "jest --passWithNoTests"` to `scripts`. The `--passWithNoTests` flag is **required** for Phase 1 — without it Jest exits non-zero when no test files exist yet, breaking the "tests come next" gate. Drop the flag once Phase 2's first test file lands (or keep it; it's harmless once tests exist).
-- [ ] Confirm `"main": "server/server.js"` (or leave existing `main`, but `start` must run `server.js`).
-- [ ] Add `"start": "node server/server.js"` to `scripts`.
-- [ ] Run `npm install` from `Part03/`.
+- [x] Added `jest@^30.3.0` to `devDependencies` (2026-04-26).
+- [x] Added `supertest@^7.2.2` to `devDependencies` (2026-04-26).
+- [x] Set `"test": "jest --passWithNoTests"` (2026-04-26). Flag confirmed working.
+- [x] Left `"main": "server/app.js"` for now; flips to `server/server.js` in Phase 2.
+- [ ] Set `"start": "node server/server.js"` — **deferred to Phase 2** (server.js doesn't exist yet; current `node server/app.js` is correct for Phases 0-1).
+- [x] `npm install --save-dev jest supertest` ran (2026-04-26, see `install-log.md`).
 
 **Check your work:**
 
 - Unit: not applicable.
-- Integration: `npx jest --version` prints a version.
-- Smoke: `npm test` exits 0 with "no tests found" (because of `--passWithNoTests`).
+- Integration: `npx jest --version` prints a version. ✅
+- Smoke: `npm test` exits 0 with "No tests found, exiting with code 0" (because of `--passWithNoTests`). ✅ verified 2026-04-26.
 
 ### Task 1.2: Configure Jest for the server tree
 
@@ -138,14 +138,14 @@ module.exports = {
 
 **Checklist:**
 
-- [ ] Tell Jest to look in `server/tests/`.
-- [ ] Use `node` test environment (not `jsdom`).
-- [ ] Confirm `npm test` still exits 0 with "no tests found" (the `--passWithNoTests` flag from Task 1.1 makes this clean).
+- [x] Created `jest.config.js` with `testMatch: ['<rootDir>/server/tests/**/*.test.js']` (2026-04-26).
+- [x] Set `testEnvironment: 'node'` (2026-04-26).
+- [x] `npm test` still exits 0 with "No tests found, exiting with code 0". ✅ verified 2026-04-26.
 
 **Check your work:**
 
 - Unit: not applicable.
-- Integration: `npm test` exits 0 with 0 tests reported (clean because of `--passWithNoTests`).
+- Integration: `npm test` exits 0 with 0 tests reported (clean because of `--passWithNoTests`). ✅
 - Smoke: not applicable.
 
 ---
