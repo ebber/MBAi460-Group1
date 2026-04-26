@@ -10,3 +10,9 @@ test('GET / serves the SPA index HTML', async () => {
   expect(res.headers['content-type']).toMatch(/text\/html/);
   expect(res.text).toContain('PhotoApp Part 03');
 });
+
+test('GET /assets/app.css is served by static middleware', async () => {
+  const res = await request(app).get('/assets/app.css');
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('font-family');
+});

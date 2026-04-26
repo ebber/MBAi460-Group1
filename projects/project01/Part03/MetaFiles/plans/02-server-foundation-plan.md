@@ -42,7 +42,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 | 3 | Liveness endpoint `/health` (02 §3) | ✅ 2026-04-26 | (this commit) | jest 3/3; supertest covers /health 200 envelope |
 | 4 | Placeholder frontend dist (02 §4) | ✅ 2026-04-26 | (this commit) | frontend/dist/index.html stub written |
 | 5 | Static web app host (02 §5) | ✅ 2026-04-26 | (this commit) | jest 4/4; supertest covers GET / → HTML containing "PhotoApp Part 03" |
-| 6 | Static assets mount (02 §6) | ⏳ | — | `curl /assets/app.css` |
+| 6 | Static assets mount (02 §6) | ✅ 2026-04-26 | (this commit) | jest 5/5; supertest covers /assets/app.css with font-family |
 | 7 | `/api` router placeholder (02 §7) | ⏳ | — | `curl /api` returns envelope |
 | 8 | Run documentation (02 §8) | ⏳ | — | README updated, accurate |
 | 9 | Acceptance checklist (02 §9) | ⏳ | — | full smoke green |
@@ -202,11 +202,11 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 **Reference:** `02-server-foundation.md` Phase 6.
 
 ### Tracker
-- [ ] **Task 6.1** — Add placeholder `Part03/frontend/dist/assets/app.css`.
-- [ ] **Task 6.2** — Reference the CSS in `frontend/dist/index.html` (`<link rel="stylesheet" href="/assets/app.css">`).
-- [ ] **Task 6.3** — Failing test for `GET /assets/app.css` returns 200 with CSS content.
-- [ ] **Task 6.4** — Verify `express.static` already serves `/assets/*` (Phase 5's mount should handle this naturally; if not, add explicit mount).
-- [ ] **Task 6.5** — Run tests → green.
+- [x] **Task 6.1** — `frontend/dist/assets/app.css` with `font-family: system-ui` rule. 2026-04-26.
+- [x] **Task 6.2** — `<link rel="stylesheet" href="/assets/app.css">` added to `frontend/dist/index.html`. 2026-04-26.
+- [x] **Task 6.3** — Test added to `static.test.js` for `GET /assets/app.css` returning 200 with `font-family`. 2026-04-26.
+- [x] **Task 6.4** — Phase 5's `express.static(FRONTEND_DIST)` already handles `/assets/*` — no extra mount needed. 2026-04-26.
+- [x] **Task 6.5** — `npm test` GREEN: 5 tests passed across 3 suites (static suite has 2 tests). 2026-04-26.
 
 **Atomic doc updates:** plan tracker + 02 Phase 6 checkboxes.
 
