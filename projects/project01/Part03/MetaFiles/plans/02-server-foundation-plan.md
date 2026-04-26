@@ -44,7 +44,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 | 5 | Static web app host (02 §5) | ✅ 2026-04-26 | (this commit) | jest 4/4; supertest covers GET / → HTML containing "PhotoApp Part 03" |
 | 6 | Static assets mount (02 §6) | ✅ 2026-04-26 | (this commit) | jest 5/5; supertest covers /assets/app.css with font-family |
 | 7 | `/api` router placeholder (02 §7) | ✅ 2026-04-26 | (this commit) | jest 6/6; live smoke /api/health/static/assets all green; legacy /ping = 404 |
-| 8 | Run documentation (02 §8) | ⏳ | — | README updated, accurate |
+| 8 | Run documentation (02 §8) | ✅ 2026-04-26 | (this commit) | README accurate; smoke targets reflect post-Phase-7 reality; workstream handoff documented |
 | 9 | Acceptance checklist (02 §9) | ⏳ | — | full smoke green |
 
 ---
@@ -252,14 +252,9 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 **Reference:** `02-server-foundation.md` Phase 8.
 
 ### Tracker
-- [ ] **Task 8.1** — Update `Part03/README.md` "Current Server Baseline" section: replace pre-refactor smoke targets with post-Phase-7 reality:
-  - `GET /` → HTML (placeholder frontend)
-  - `GET /health` → liveness JSON
-  - `GET /api` → placeholder envelope
-  - `GET /assets/app.css` → CSS
-  - **Note:** `/api/ping`, `/api/users` etc. arrive in workstream 03.
-- [ ] **Task 8.2** — Document `npm install`, `npm start`, `npm test` commands and expected outputs.
-- [ ] **Task 8.3** — Add a "Workstream handoff" section explaining what UI and API Routes can rely on after Phase 9 acceptance.
+- [x] **Task 8.1** — README "Run the Server" section reflects post-Phase-7 reality: GET / HTML, GET /health JSON, GET /api envelope, GET /assets/app.css CSS. Legacy URLs explicitly noted as 404. Workstream-03 future smoke targets listed. 2026-04-26.
+- [x] **Task 8.2** — `npm install`, `npm test`, `npm start` commands documented with expected listen-on-8080 output. 2026-04-26.
+- [x] **Task 8.3** — "Workstream Handoff (post Server Foundation)" section added; describes what API Routes (03) and UI (01) can rely on. 2026-04-26.
 
 **Atomic doc updates:** plan tracker + 02 Phase 8 checkboxes.
 
