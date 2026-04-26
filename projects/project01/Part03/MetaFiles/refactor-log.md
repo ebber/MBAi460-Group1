@@ -59,6 +59,69 @@ Immediate next checks:
 
 ---
 
+## 2026-04-26 — Server Foundation (02) complete
+
+All nine phases of the Server Foundation workstream (plus the new Phase 0 baseline-verification step) landed today, each with TDD discipline (failing test → minimal implementation → green) and atomic doc updates per task.
+
+**Final state:**
+
+```
+Part03/
+  package.json          # start: node server/server.js  |  test: jest --passWithNoTests
+  jest.config.js        # testMatch server/tests/**/*.test.js (node env)
+  server/
+    app.js              # exports configured Express app — no listen()
+    server.js           # listen entrypoint; preserves AWS_SHARED_CREDENTIALS_FILE side-effect
+    config.js           # web service config (preserved baseline)
+    helper.js           # AWS/RDS factory helpers (preserved baseline; workstream 03 evolves this)
+    routes/
+      photoapp_routes.js  # /api placeholder router (workstream 03 replaces the handler body)
+    tests/
+      app.test.js
+      health.test.js
+      static.test.js
+      api_placeholder.test.js
+    api_*.js            # legacy Project 2 baseline (kept as reference per Part 03 TODO; not wired into app)
+  frontend/
+    dist/
+      index.html        # placeholder; UI workstream replaces with Vite build
+      assets/
+        app.css         # placeholder rule
+```
+
+**Live URL contract after 02:**
+
+| URL | Behavior |
+|---|---|
+| `GET /` | 200 HTML (placeholder index) |
+| `GET /health` | 200 `{"status":"running"}` (server liveness; outside `/api/*`) |
+| `GET /api` | 200 placeholder envelope `{message:"success", data:{service:"photoapp-api", status:"placeholder"}}` |
+| `GET /assets/app.css` | 200 CSS (placeholder) |
+| `GET /ping`, `GET /users`, `GET /image/:id`, `GET /image/:id/labels`, `GET /images`, `GET /images/search`, `POST /image`, `DELETE /images` | **404** — legacy URLs decommissioned in Phase 2 |
+
+**Test surface:** Jest 4 suites / 6 tests, all green. Run via `npm test`. Test environment: Node. Test pattern: `server/tests/**/*.test.js`.
+
+**What's now unblocked:**
+
+- **API Routes workstream (03):** `/api` mount point is live; `server/routes/photoapp_routes.js` is the seam; supertest works against the exported `app`. Replace `router.get('/', ...)` with the real PhotoApp endpoints. Add `server/services/{photoapp,aws}.js`, `server/middleware/{upload,error}.js`, `server/schemas.js`, and the test files described in `03-api-routes.md`.
+- **UI workstream (01):** static-serving contract is live. UI Vite build → `Part03/frontend/dist/`. The placeholder `index.html` and `assets/app.css` are safe to overwrite.
+
+**Plan-doc reference:** `Part03/MetaFiles/plans/02-server-foundation-plan.md` (full per-phase tracker, evidence, TDD red→green records).
+
+**Commit chain (this session):**
+- `df1f3d9` Phase 0
+- `a6014fe` Phase 1
+- `fadc449` Phase 2
+- `c5ef7c6` Phase 3
+- `9da98ac` Phase 4
+- `b113abf` Phase 5
+- `04347d8` Phase 6
+- `2b61a0f` Phase 7
+- `be0c7ac` Phase 8
+- (this commit) Phase 9 — closeout
+
+---
+
 ## 2026-04-26 — Phase 2 (Server Foundation) — app.js / server.js split; legacy URLs decommissioned
 
 The Express baseline `app.js` was split: `app.js` now exports the configured `app` instance only; `server/server.js` is a thin entrypoint that imports `app` and calls `listen(config.web_service_port)`.
