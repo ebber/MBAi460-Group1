@@ -39,7 +39,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 | 0 | Baseline verification (NEW; not in 02) | ✅ 2026-04-26 | (this commit) | refactor-log 2026-04-26 entry; install-log 2026-04-26 entry |
 | 1 | Test toolchain (02 §1) | ✅ 2026-04-26 | (this commit) | install-log; `npm test` exit 0 |
 | 2 | App.js / server.js split (02 §2) | ✅ 2026-04-26 | (this commit) | red→green; `npm start` 8080; `curl /` 404 (expected) |
-| 3 | Liveness endpoint `/health` (02 §3) | ⏳ | — | `curl /health` |
+| 3 | Liveness endpoint `/health` (02 §3) | ✅ 2026-04-26 | (this commit) | jest 3/3; supertest covers /health 200 envelope |
 | 4 | Placeholder frontend dist (02 §4) | ⏳ | — | `cat frontend/dist/index.html` |
 | 5 | Static web app host (02 §5) | ⏳ | — | `curl /` returns HTML |
 | 6 | Static assets mount (02 §6) | ⏳ | — | `curl /assets/app.css` |
@@ -141,9 +141,9 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 **Reference:** `02-server-foundation.md` Phase 3.
 
 ### Tracker
-- [ ] **Task 3.1** — Failing test for `GET /health` returns 200 + `{status: "running"}`.
-- [ ] **Task 3.2** — Implement `/health` handler in `server/app.js` (deliberately outside `/api/*`; this is server liveness, not PhotoApp API).
-- [ ] **Task 3.3** — Run tests → green.
+- [x] **Task 3.1** — `server/tests/health.test.js` written; jest red (404). 2026-04-26.
+- [x] **Task 3.2** — `app.get('/health', ...)` handler added to `server/app.js`. 2026-04-26.
+- [x] **Task 3.3** — `npm test` GREEN: 3 tests passed across 2 suites. 2026-04-26.
 
 **Note:** `/health` is server-liveness, distinct from the PhotoApp `/api/ping` (which lives under `/api/*` and exercises S3 + RDS via the service module — coming in workstream 03).
 

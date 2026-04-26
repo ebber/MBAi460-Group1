@@ -26,4 +26,12 @@ const app = express();
 // Support larger image uploads/downloads (preserved from baseline).
 app.use(express.json({ strict: false, limit: '50mb' }));
 
+// Liveness probe — deliberately outside /api/* (the PhotoApp API namespace).
+// /api/ping (workstream 03) is the PhotoApp app-level ping that exercises
+// S3 + RDS; /health is a server-level liveness signal that does not touch
+// any external dependency.
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'running' });
+});
+
 module.exports = app;

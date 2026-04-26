@@ -246,6 +246,10 @@ app.listen(port, () => {
 
 ### Task 3.1: Failing test for `GET /health`
 
+**[x] DONE 2026-04-26.** `server/tests/health.test.js` written; ran red (404 — no handler); after Task 3.2 implementation, green (200 `{status: "running"}`).
+
+
+
 **Files:**
 
 - Create: `projects/project01/Part03/server/tests/health.test.js`
