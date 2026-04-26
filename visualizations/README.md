@@ -16,6 +16,7 @@ All diagrams are Mermaid markdown files rendered in-editor or via mermaid.live.
 | `lab-database-schema-v3.md` | photoapp schema + labels table | Current — labels table live, 70/70 |
 | `project01-part02-iam-v1.md` | IAM target state post Phase 1 Terraform | Current — s3readonly + s3readwrite live |
 | `project01-part02-api-flow-v1.md` | API function structure + decorator pattern | Current — all 7 functions implemented |
+| `Target-State-project01-part03-photoapp-architecture-v1.md` | Part 03 local React + FastAPI + Docker architecture | Proposed |
 
 ## Naming Convention
 
