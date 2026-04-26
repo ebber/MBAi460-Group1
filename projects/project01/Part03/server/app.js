@@ -21,6 +21,7 @@
 
 const express = require('express');
 const path = require('path');
+const photoappRoutes = require('./routes/photoapp_routes');
 
 const app = express();
 
@@ -29,27 +30,32 @@ const app = express();
 // Vite build into this directory; Phase 4 places a placeholder index.html.
 const FRONTEND_DIST = path.join(__dirname, '..', 'frontend', 'dist');
 
-// Support larger image uploads/downloads (preserved from baseline).
+// ---- Mount order is LOAD-BEARING (see 02-server-foundation.md §7) ----
+// 1. JSON body parser (preserved from baseline; supports large uploads).
+// 2. /health server liveness probe (outside /api/*).
+// 3. /api router (BEFORE static so the static catchall cannot absorb /api).
+// 4. express.static for frontend/dist.
+// 5. SPA index fallback for /.
+// ----------------------------------------------------------------------
+
+// 1. JSON middleware
 app.use(express.json({ strict: false, limit: '50mb' }));
 
-// Liveness probe — deliberately outside /api/* (the PhotoApp API namespace).
-// /api/ping (workstream 03) is the PhotoApp app-level ping that exercises
-// S3 + RDS; /health is a server-level liveness signal that does not touch
-// any external dependency.
+// 2. Liveness probe — deliberately outside /api/*. /api/ping (workstream 03)
+//    is the PhotoApp app-level ping that exercises S3 + RDS; /health is a
+//    server-level signal that does not touch any external dependency.
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'running' });
 });
 
-// /api router placeholder mount goes here in Phase 7 (BEFORE static
-// middleware so the static catchall cannot absorb /api/* requests).
+// 3. /api router (placeholder in Phase 7; real endpoints in workstream 03).
+//    MUST be mounted BEFORE express.static.
+app.use('/api', photoappRoutes);
 
-// Static frontend assets — served from frontend/dist when present.
-// Order matters: this MUST be mounted after /api (Phase 7) and before
-// the SPA index fallback below.
+// 4. Static frontend assets.
 app.use(express.static(FRONTEND_DIST));
 
-// SPA index fallback — any GET / that isn't an asset returns the bundled
-// index.html so the React Router can take over.
+// 5. SPA index fallback for /.
 app.get('/', (req, res) => {
   res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
 });

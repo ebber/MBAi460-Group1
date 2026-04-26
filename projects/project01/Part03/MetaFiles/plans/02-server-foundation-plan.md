@@ -43,7 +43,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 | 4 | Placeholder frontend dist (02 §4) | ✅ 2026-04-26 | (this commit) | frontend/dist/index.html stub written |
 | 5 | Static web app host (02 §5) | ✅ 2026-04-26 | (this commit) | jest 4/4; supertest covers GET / → HTML containing "PhotoApp Part 03" |
 | 6 | Static assets mount (02 §6) | ✅ 2026-04-26 | (this commit) | jest 5/5; supertest covers /assets/app.css with font-family |
-| 7 | `/api` router placeholder (02 §7) | ⏳ | — | `curl /api` returns envelope |
+| 7 | `/api` router placeholder (02 §7) | ✅ 2026-04-26 | (this commit) | jest 6/6; live smoke /api/health/static/assets all green; legacy /ping = 404 |
 | 8 | Run documentation (02 §8) | ⏳ | — | README updated, accurate |
 | 9 | Acceptance checklist (02 §9) | ⏳ | — | full smoke green |
 
@@ -223,10 +223,10 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 **Reference:** `02-server-foundation.md` Phase 7.
 
 ### Tracker
-- [ ] **Task 7.1** — Failing test for `GET /api` returns 200 + envelope `{message: "success", data: {service: "photoapp-api", status: "placeholder"}}`.
-- [ ] **Task 7.2** — Create `server/routes/photoapp_routes.js` with `router.get('/', ...)` placeholder (router will be mounted at `/api`, so the inner `'/'` becomes `/api`).
-- [ ] **Task 7.3** — Refactor mount order in `server/app.js` to the load-bearing final shape from 02 §7: JSON middleware → `/health` → `/api` router → `express.static` → SPA `/` fallback. The `/api` router must be mounted **before** `express.static` so the static middleware does not absorb `/api` requests.
-- [ ] **Task 7.4** — Run `npm test` → all green (`app.test.js`, `health.test.js`, `static.test.js`, `api_placeholder.test.js`).
+- [x] **Task 7.1** — `server/tests/api_placeholder.test.js` written; jest red (404). 2026-04-26.
+- [x] **Task 7.2** — `server/routes/photoapp_routes.js` created with `router.get('/', ...)` placeholder. 2026-04-26.
+- [x] **Task 7.3** — `server/app.js` mount order refactored to load-bearing shape (json → /health → /api → static → SPA /). 2026-04-26.
+- [x] **Task 7.4** — `npm test` GREEN: 6 tests passed across 4 suites. Live smoke confirmed: `/api` envelope, `/` HTML, `/health` JSON, `/assets/app.css` CSS, `/ping` 404 (decommissioned). 2026-04-26.
 
 **Note (legacy URLs):** Legacy `/ping`, `/users`, etc. were already decommissioned in Phase 2. Phase 7 only adds `/api` and reorders the existing mounts. No legacy-removal work happens here.
 
