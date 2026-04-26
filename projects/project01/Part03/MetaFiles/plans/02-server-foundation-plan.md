@@ -40,7 +40,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 | 1 | Test toolchain (02 §1) | ✅ 2026-04-26 | (this commit) | install-log; `npm test` exit 0 |
 | 2 | App.js / server.js split (02 §2) | ✅ 2026-04-26 | (this commit) | red→green; `npm start` 8080; `curl /` 404 (expected) |
 | 3 | Liveness endpoint `/health` (02 §3) | ✅ 2026-04-26 | (this commit) | jest 3/3; supertest covers /health 200 envelope |
-| 4 | Placeholder frontend dist (02 §4) | ⏳ | — | `cat frontend/dist/index.html` |
+| 4 | Placeholder frontend dist (02 §4) | ✅ 2026-04-26 | (this commit) | frontend/dist/index.html stub written |
 | 5 | Static web app host (02 §5) | ⏳ | — | `curl /` returns HTML |
 | 6 | Static assets mount (02 §6) | ⏳ | — | `curl /assets/app.css` |
 | 7 | `/api` router placeholder (02 §7) | ⏳ | — | `curl /api` returns envelope |
@@ -162,7 +162,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 **Reference:** `02-server-foundation.md` Phase 4.
 
 ### Tracker
-- [ ] **Task 4.1** — Create `Part03/frontend/dist/index.html` stub (placeholder HTML; UI workstream replaces with real Vite build later).
+- [x] **Task 4.1** — `frontend/dist/index.html` stub written (no CSS link yet — Phase 6 adds the link + CSS). 2026-04-26.
 
 **Prove it works:** `cat frontend/dist/index.html` shows the stub.
 
