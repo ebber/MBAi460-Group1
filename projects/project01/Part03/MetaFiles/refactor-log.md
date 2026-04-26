@@ -59,6 +59,41 @@ Immediate next checks:
 
 ---
 
+## 2026-04-26 — Phase 2 (Server Foundation) — app.js / server.js split; legacy URLs decommissioned
+
+The Express baseline `app.js` was split: `app.js` now exports the configured `app` instance only; `server/server.js` is a thin entrypoint that imports `app` and calls `listen(config.web_service_port)`.
+
+**Removed from `app.js`:**
+
+- `app.listen(...)` block (moved to `server.js`).
+- Legacy `app.get('/', ...)` uptime handler — `/` will return 404 until Phase 5 mounts the SPA fallback.
+- All legacy `api_get_*` / `api_post_*` / `api_delete_*` requires + `app.get`/`app.post`/`app.delete` lines. Legacy `server/api_*.js` source files **stay on disk** as a behavioral reference per the Part 03 TODO queue; they are simply not wired into the running app any more.
+
+**Effect on URLs (live server):**
+
+- `GET /ping`, `GET /users`, `GET /image/:assetid`, `GET /image/:assetid/labels`, `GET /images`, `GET /images/search`, `POST /image`, `DELETE /images` → all return 404 from now on.
+- `GET /` → 404 (until Phase 5 SPA fallback).
+- The new `/api/*` contract arrives in workstream 03 (after Phase 7 mounts the placeholder router).
+
+**TDD gates:**
+
+- Failing test (`server/tests/app.test.js`): app exports a function with `.use`/`.get`; importing app does not bind a port.
+- Before refactor: red — Jest could not import `app` because (a) it called `listen()` at module load, leaving a zombie socket, AND (b) loading transitively required `node_modules/uuid` which is now ESM-only and Jest's default CommonJS transform rejects it.
+- After refactor: green — `app.js` no longer calls `listen()` and no longer requires `api_post_image.js` (the file that pulls in `uuid`).
+
+**Side-finding (recorded for future agents working on workstream 03):**
+
+When workstream 03 re-introduces `uuid` (in the new `server/services/photoapp.js` for bucketkey generation), Jest will need a transform for the `uuid` package. Two options: (a) add `transformIgnorePatterns: ['node_modules/(?!uuid)']` to `jest.config.js` so babel-jest processes `uuid`; (b) pin `uuid` to v9.x which still ships CommonJS. Document the choice in 03's refactor notes when it lands.
+
+**Smoke evidence (after refactor):**
+
+- `npm test` → 2 tests passed, 1 suite passed, exit 0.
+- `npm start` → "**Web service running, listening on port 8080...**".
+- `curl http://localhost:8080/` → HTTP 404 with `Cannot GET /` (expected).
+- Server stopped cleanly via SIGTERM.
+
+---
+
 ## 2026-04-26 — Phase 0 Baseline Smoke Verified (Server Foundation pre-execution)
 
 Before Server Foundation (workstream 02) execution begins, the un-refactored Project 2 Express baseline was verified end-to-end. Captured here as the "before" state for the prove-it-works principle (Erik 2026-04-26).

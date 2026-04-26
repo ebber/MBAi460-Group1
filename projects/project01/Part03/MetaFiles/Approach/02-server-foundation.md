@@ -183,9 +183,9 @@ test('importing app does not bind a port', () => {
 
 **Checklist:**
 
-- [ ] Add the test.
-- [ ] Run `npm test`.
-- [ ] Confirm it currently fails (or that loading `app.js` opens a listening socket — both are signals to refactor).
+- [x] Test added at `server/tests/app.test.js` (2026-04-26).
+- [x] `npm test` ran (2026-04-26).
+- [x] Confirmed red: jest failed to parse `node_modules/uuid` (ESM-only) when transitively loaded via `app.js → api_post_image.js`; ALSO `app.listen()` fired at module load, holding port 8080 captive. Both failure modes signal the refactor is needed.
 
 ### Task 2.2: Split `app.js` and create `server.js`
 
@@ -225,19 +225,20 @@ app.listen(port, () => {
 
 **Checklist:**
 
-- [ ] Remove `app.listen(...)` from `app.js`.
-- [ ] Remove the legacy `app.get('/', ...)` uptime handler from `app.js` (it conflicts with the SPA index in Phase 5).
-- [ ] Remove the legacy `api_get_*` requires from `app.js` for now — those belong to API Routes workstream and will be re-introduced through the router placeholder in Phase 7.
-- [ ] Add `module.exports = app;` at the bottom of `app.js`.
-- [ ] Create `server.js` with the snippet above.
-- [ ] Run `npm test`.
-- [ ] Confirm `app.test.js` passes.
+- [x] Removed `app.listen(...)` from `app.js` (2026-04-26).
+- [x] Removed legacy `app.get('/', ...)` uptime handler from `app.js` (2026-04-26).
+- [x] Removed legacy `api_get_*`/`api_post_*`/`api_delete_*` requires + handler-mount lines from `app.js` (2026-04-26).
+- [x] Added `module.exports = app;` (2026-04-26).
+- [x] Created `server/server.js` with the listen entrypoint snippet (2026-04-26).
+- [x] Updated `package.json` `"start"` to `node server/server.js` (2026-04-26).
+- [x] `npm test` ran (2026-04-26).
+- [x] `app.test.js` passes — 2 tests green, 1 suite green, exit 0 (2026-04-26).
 
 **Check your work:**
 
-- Unit: `app.test.js` passes.
-- Integration: `node -e "const a = require('./server/app'); console.log(typeof a);"` prints `function`.
-- Smoke: `npm start` starts the server and prints the listening message.
+- Unit: `app.test.js` passes. ✅
+- Integration: app object exported with `.use`/`.get` callables; importing does not bind a port. ✅
+- Smoke: `npm start` printed "**Web service running, listening on port 8080...**"; `curl /` returned 404 (expected — legacy `/` removed; SPA fallback arrives in Phase 5). ✅ verified 2026-04-26.
 
 ---
 

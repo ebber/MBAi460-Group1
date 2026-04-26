@@ -38,7 +38,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 |---|---|---|---|---|
 | 0 | Baseline verification (NEW; not in 02) | ✅ 2026-04-26 | (this commit) | refactor-log 2026-04-26 entry; install-log 2026-04-26 entry |
 | 1 | Test toolchain (02 §1) | ✅ 2026-04-26 | (this commit) | install-log; `npm test` exit 0 |
-| 2 | App.js / server.js split (02 §2) | ⏳ | — | failing test → green; `npm start` parity |
+| 2 | App.js / server.js split (02 §2) | ✅ 2026-04-26 | (this commit) | red→green; `npm start` 8080; `curl /` 404 (expected) |
 | 3 | Liveness endpoint `/health` (02 §3) | ⏳ | — | `curl /health` |
 | 4 | Placeholder frontend dist (02 §4) | ⏳ | — | `cat frontend/dist/index.html` |
 | 5 | Static web app host (02 §5) | ⏳ | — | `curl /` returns HTML |
@@ -114,10 +114,10 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 **Reference:** `02-server-foundation.md` Phase 2.
 
 ### Tracker
-- [ ] **Task 2.1** — Failing test for `app` object export (`server/tests/app.test.js`).
-- [ ] **Task 2.2** — Refactor `server/app.js` to export the Express app *without* calling `listen()`; create `server/server.js` that imports `app` and calls `listen(config.web_service_port)`. Also (per 02 Task 2.2 checklist): **remove the legacy `app.get('/', ...)` uptime handler** AND **remove the legacy `api_get_*` requires** from `app.js`. Legacy `server/api_*.js` source files stay on disk per Part03 TODO; only the inline requires + handlers are deleted from `app.js`.
-- [ ] **Task 2.3** — Update `package.json` `"start"` to `node server/server.js`.
-- [ ] **Task 2.4** — Run `npm test` → green; run `npm start` and confirm the listen-on-8080 message prints (server starts cleanly).
+- [x] **Task 2.1** — `server/tests/app.test.js` written; `npm test` confirmed RED (uuid ESM parse error + listen-during-import). 2026-04-26.
+- [x] **Task 2.2** — `app.js` rewritten: exports `app`, no `listen()`, no legacy handlers, no legacy `api_*.js` requires. `server.js` created with listen entrypoint. 2026-04-26.
+- [x] **Task 2.3** — `package.json` `"start"` set to `node server/server.js`. 2026-04-26.
+- [x] **Task 2.4** — `npm test` GREEN (2 passed); `npm start` prints listen-on-8080; `curl /` returns 404 (expected). 2026-04-26.
 
 **Decision point recorded here (decommission of legacy URLs):** Phase 2 is when the legacy `/`, `/ping`, `/users`, `/image/...`, `/images`, `/images/search`, `/image/:assetid/labels` URLs DIE on the live server (they will return 404 from now on; the `/api/*` contract replaces them through Phase 7 + workstream 03). The Express `api_*.js` files stay on disk per the Part03 TODO queue (kept as reference; final disposition deferred to end-of-Part-03).
 
