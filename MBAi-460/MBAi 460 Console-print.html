@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>MBAi 460 — Console — Print</title>
+<style>
+  /* Screen: fit each page on-screen for preview */
+  :root { --page-w: 1440px; --page-h: 900px; --frame-pad: 32px; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #E8E6DF; font-family: "Inter", system-ui, sans-serif; color: #3D3D3A; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page {
+    width: var(--page-w);
+    height: var(--page-h);
+    background: #F5F3EE;
+    margin: 24px auto;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+    border: 1px solid #E0DDD3;
+    page-break-after: always;
+    break-after: page;
+    display: flex;
+    flex-direction: column;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  .page-head {
+    flex: 0 0 auto;
+    padding: 18px 28px 14px;
+    border-bottom: 1px solid #E4E1D7;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    background: #F5F3EE;
+  }
+  .page-head .left { display: flex; align-items: baseline; gap: 14px; min-width: 0; }
+  .page-head .num { font: 600 11px/1 "JetBrains Mono", ui-monospace, monospace; color: #8B8A82; letter-spacing: 0.06em; }
+  .page-head .title { font: 500 22px/1.15 "Source Serif 4", Georgia, serif; color: #1F1E1B; }
+  .page-head .sub { font: 400 13px/1.3 "Inter", sans-serif; color: #6F6D65; max-width: 560px; }
+  .page-head .meta { font: 500 10px/1 "JetBrains Mono", ui-monospace, monospace; color: #A0A099; letter-spacing: 0.08em; text-transform: uppercase; flex: 0 0 auto; }
+
+  .frame-wrap {
+    flex: 1 1 auto;
+    position: relative;
+    background: #EFECE4;
+    overflow: hidden;
+  }
+  .frame-wrap iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1440px;
+    height: 860px;
+    border: 0;
+    background: #fff;
+    transform-origin: 0 0;
+  }
+  /* Cover pages don't have iframes */
+  .cover {
+    background: #F0EEE6;
+    padding: 80px 96px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .cover .brand { display: flex; align-items: center; gap: 14px; }
+  .cover .logo-sq { width: 44px; height: 44px; border-radius: 10px; background: #CC785C; color: #F0EEE6; display: flex; align-items: center; justify-content: center; font: 600 22px/1 "Source Serif 4", Georgia, serif; }
+  .cover h1 { font: 500 96px/1.05 "Source Serif 4", Georgia, serif; color: #1F1E1B; margin: 0 0 20px; letter-spacing: -0.02em; max-width: 1100px; }
+  .cover h1 em { font-style: italic; color: #CC785C; }
+  .cover .tagline { font: 400 26px/1.4 "Source Serif 4", Georgia, serif; color: #4A4842; max-width: 900px; margin-bottom: 48px; }
+  .cover .meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 48px; padding-top: 32px; border-top: 1px solid #D6D2C4; }
+  .cover .meta-grid .k { font: 500 10px/1 "JetBrains Mono", ui-monospace, monospace; color: #8B8A82; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px; }
+  .cover .meta-grid .v { font: 500 16px/1.35 "Inter", sans-serif; color: #1F1E1B; }
+  .cover .brand .word { font: 500 20px/1 "Source Serif 4", Georgia, serif; color: #1F1E1B; }
+  .cover .brand .pill { font: 500 11px/1 "JetBrains Mono", ui-monospace, monospace; color: #8B8A82; padding: 5px 9px; border-radius: 999px; border: 1px solid #D6D2C4; letter-spacing: 0.06em; }
+
+  .toc { padding: 60px 96px; background: #F5F3EE; }
+  .toc h2 { font: 500 48px/1.1 "Source Serif 4", Georgia, serif; color: #1F1E1B; margin: 0 0 36px; }
+  .toc ol { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 80px; }
+  .toc li { display: flex; align-items: baseline; gap: 12px; padding: 12px 0; border-bottom: 1px solid #E4E1D7; break-inside: avoid; }
+  .toc li .n { font: 600 12px/1 "JetBrains Mono", ui-monospace, monospace; color: #CC785C; letter-spacing: 0.06em; min-width: 32px; }
+  .toc li .t { font: 500 18px/1.25 "Source Serif 4", Georgia, serif; color: #1F1E1B; flex: 1; }
+  .toc li .d { font: 400 13px/1.3 "Inter", sans-serif; color: #8B8A82; }
+
+  /* Footer on each page */
+  .page-foot {
+    position: absolute;
+    bottom: 12px;
+    left: 28px;
+    right: 28px;
+    display: flex;
+    justify-content: space-between;
+    font: 500 10px/1 "JetBrains Mono", ui-monospace, monospace;
+    color: #A0A099;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  /* PRINT */
+  @page { size: 1440px 900px; margin: 0; }
+  @media print {
+    html, body { background: #F5F3EE; }
+    .page { margin: 0; box-shadow: none; border: 0; page-break-after: always; break-after: page; }
+    .page:last-child { page-break-after: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 01: Cover -->
+<section class="page cover">
+  <div class="brand">
+    <div class="logo-sq">M</div>
+    <div class="word">MBAi 460</div>
+    <div class="pill">Spring 2026</div>
+  </div>
+  <div>
+    <h1>A console for <em>photoapp</em> — end to end.</h1>
+    <div class="tagline">Rekognition for photos, Textract for documents, a staff admin for the whole class. Thirteen screens, one cohesive surface.</div>
+    <div class="meta-grid">
+      <div><div class="k">Course</div><div class="v">CS / MBAi 460<br/>Cloud Computing</div></div>
+      <div><div class="k">Document</div><div class="v">UI handoff<br/>Screen inventory</div></div>
+      <div><div class="k">Author</div><div class="v">Pooja Menon<br/>Group 1</div></div>
+      <div><div class="k">Version</div><div class="v">v0.4 — draft<br/>Apr 18, 2026</div></div>
+    </div>
+  </div>
+  <div class="page-foot"><span>MBAi 460 · photoapp</span><span>01 / 14</span></div>
+</section>
+
+<!-- 02: TOC -->
+<section class="page">
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><span class="n">03</span><span class="t">Library — grid</span><span class="d">Default</span></li>
+      <li><span class="n">04</span><span class="t">Library — list</span><span class="d">Compact</span></li>
+      <li><span class="n">05</span><span class="t">Asset — photo</span><span class="d">Rekognition</span></li>
+      <li><span class="n">06</span><span class="t">Asset — document</span><span class="d">Textract</span></li>
+      <li><span class="n">07</span><span class="t">Upload</span><span class="d">Drag &amp; drop</span></li>
+      <li><span class="n">08</span><span class="t">Chat</span><span class="d">Group SSE</span></li>
+      <li><span class="n">09</span><span class="t">Profile</span><span class="d">Overview</span></li>
+      <li><span class="n">10</span><span class="t">Settings</span><span class="d">Account + API</span></li>
+      <li><span class="n">11</span><span class="t">Admin — users</span><span class="d">Staff-only</span></li>
+      <li><span class="n">12</span><span class="t">Help</span><span class="d">Shortcuts</span></li>
+      <li><span class="n">13</span><span class="t">Login</span><span class="d">Auth</span></li>
+      <li><span class="n">14</span><span class="t">Register</span><span class="d">Sign-up</span></li>
+    </ol>
+  </div>
+  <div class="page-foot"><span>Contents</span><span>02 / 14</span></div>
+</section>
+
+<!-- Screen pages -->
+<script>
+const SCREENS = [
+  { n: "03", title: "Library — grid", sub: "Thumbnails with Rekognition / Textract chips. Default dashboard for students after sign-in.", route: "/library", asset: null },
+  { n: "04", title: "Library — list", sub: "Dense list view with sortable columns, status chips, and inline rename.", route: "/library", asset: null, setup: "view=list" },
+  { n: "05", title: "Asset — photo", sub: "Rekognition labels with hover bounding boxes. Confidence pills, EXIF, ACL and raw JSON drawer.", route: "/asset/1042", asset: 1042 },
+  { n: "06", title: "Asset — document", sub: "Textract hero: linked text ↔ scan panes, low-confidence underlines, avg confidence and line count.", route: "/asset/1041", asset: 1041 },
+  { n: "07", title: "Upload", sub: "Drag & drop with per-file queue, service routing indicator, and destination picker.", route: "/upload", asset: null },
+  { n: "08", title: "Chat", sub: "Group channel over SSE. Online presence, delivery states, TA staff badge.", route: "/chat", asset: null },
+  { n: "09", title: "Profile", sub: "Identity, recent activity, storage quota, and links into settings.", route: "/profile", asset: null },
+  { n: "10", title: "Settings", sub: "Account, password, API key rotation, session management.", route: "/profile/settings", asset: null },
+  { n: "11", title: "Admin — users", sub: "Staff-only. Roster with asset counts, last-seen, and bulk invite.", route: "/admin/users", asset: null },
+  { n: "12", title: "Help", sub: "Keyboard shortcuts, supported formats, rate-limit notes.", route: "/help", asset: null },
+  { n: "13", title: "Login", sub: "Unauthenticated entry. Forgot-password and register links.", route: "/login", asset: null, authed: 0 },
+  { n: "14", title: "Register", sub: "New account flow. Email verification banner on success.", route: "/register", asset: null, authed: 0 },
+];
+
+const PAGE_W = 1440, PAGE_H = 900, HEAD_H = 66, FOOT_H = 30;
+const FRAME_W = 1440, FRAME_H = PAGE_H - HEAD_H - FOOT_H - 8; // ~796
+
+function urlFor(s) {
+  const p = new URLSearchParams();
+  p.set("noStore", "1");
+  p.set("route", s.route);
+  if (s.asset != null) p.set("assetId", String(s.asset));
+  if (s.authed != null) p.set("authed", String(s.authed));
+  else p.set("authed", "1");
+  p.set("theme", "light");
+  return "MBAi 460 Console.html?" + p.toString();
+}
+
+const cur = SCREENS.map((s, idx) => {
+  const n = String(idx + 3).padStart(2, "0");
+  return `
+  <section class="page">
+    <div class="page-head">
+      <div class="left">
+        <span class="num">${n}</span>
+        <div>
+          <div class="title">${s.title}</div>
+          <div class="sub">${s.sub}</div>
+        </div>
+      </div>
+      <div class="meta">${s.route}</div>
+    </div>
+    <div class="frame-wrap" style="height:${FRAME_H}px">
+      <iframe src="${urlFor(s)}" style="transform: scale(${(PAGE_W)/FRAME_W}); width:${FRAME_W}px; height:${FRAME_H}px" loading="eager"></iframe>
+    </div>
+    <div class="page-foot"><span>${s.title}</span><span>${n} / 14</span></div>
+  </section>`;
+}).join("");
+
+document.body.insertAdjacentHTML("beforeend", cur);
+
+// Wait for fonts + all iframes to finish loading, then print
+(async () => {
+  try { await document.fonts.ready; } catch {}
+  const frames = Array.from(document.querySelectorAll("iframe"));
+  await Promise.all(frames.map(f => new Promise(res => {
+    if (f.contentDocument?.readyState === "complete") return res();
+    f.addEventListener("load", res, { once: true });
+    setTimeout(res, 8000);
+  })));
+  // Extra settle time for React renders inside iframes
+  await new Promise(r => setTimeout(r, 2500));
+  window.print();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MBAi 460 — Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="src/tokens.css"/>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  #root { height: 100vh; }
+  .app-layout { display: grid; grid-template-columns: var(--rail-w) 1fr; height: calc(100vh - var(--topbar-h)); }
+  .app-main { overflow: hidden; display: flex; flex-direction: column; min-height: 0; background: var(--color-paper); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="300" fill="#F0EEE6"/>
+    <rect x="90" y="90" width="120" height="120" rx="24" fill="#CC785C"/>
+    <text x="150" y="180" text-anchor="middle" font-family="Georgia, serif" font-size="88" font-weight="600" fill="#F0EEE6">M</text>
+  </svg>
+</template>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="src/icons.jsx"></script>
+<script type="text/babel" src="src/data.jsx"></script>
+<script type="text/babel" src="src/shell.jsx"></script>
+<script type="text/babel" src="src/auth.jsx"></script>
+<script type="text/babel" src="src/library.jsx"></script>
+<script type="text/babel" src="src/asset.jsx"></script>
+<script type="text/babel" src="src/screens.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback, useMemo } = React;
+
+const URL_PARAMS = new URLSearchParams(location.search);
+const URL_NOSTORE = URL_PARAMS.get("noStore") === "1";
+const URL_ROUTE = URL_PARAMS.get("route");
+const URL_ASSET = URL_PARAMS.get("assetId");
+const URL_THEME = URL_PARAMS.get("theme");
+const URL_AUTHED = URL_PARAMS.get("authed");
+
+function App() {
+  const [authed, setAuthed] = useState(() => URL_AUTHED != null ? URL_AUTHED === "1" : localStorage.getItem("mbai_authed") === "1");
+  const [route, setRoute] = useState(() => URL_ROUTE || localStorage.getItem("mbai_route") || "/library");
+  const [assetId, setAssetId] = useState(() => {
+    if (URL_ASSET) return URL_ASSET;
+    const r = URL_ROUTE || "";
+    const m = r.match(/^\/asset\/(.+)$/);
+    return m ? m[1] : null;
+  });
+  const [cmdK, setCmdK] = useState(false);
+  const [tweaksOpen, setTweaksOpen] = useState(false);
+  const [tweaks, setTweaks] = useState(() => {
+    let base;
+    try {
+      const saved = JSON.parse(localStorage.getItem("mbai_tweaks"));
+      if (saved) base = saved;
+    } catch {}
+    if (!base) base = { theme: "light", accent: "#CC785C", density: "comfy", seed: "pooja", empty: false };
+    if (URL_THEME) base = { ...base, theme: URL_THEME };
+    return base;
+  });
+  const T = tweaks;
+
+  const [assets, setAssets] = useState(window.MOCK.ASSETS);
+  const user = window.MOCK.USER;
+
+  useEffect(() => { if (!URL_NOSTORE) localStorage.setItem("mbai_authed", authed ? "1" : "0"); }, [authed]);
+  useEffect(() => { if (!URL_NOSTORE) localStorage.setItem("mbai_route", route); }, [route]);
+  useEffect(() => { if (!URL_NOSTORE) localStorage.setItem("mbai_tweaks", JSON.stringify(T)); }, [T]);
+
+  // Apply theme + accent
+  useEffect(() => {
+    document.documentElement.dataset.theme = T.theme;
+    document.documentElement.style.setProperty("--color-accent", T.accent);
+    // derive soft + hover
+    const hex = T.accent.replace("#","");
+    const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
+    document.documentElement.style.setProperty("--color-accent-soft", `rgba(${r},${g},${b},0.12)`);
+    document.documentElement.style.setProperty("--color-accent-ring", `rgba(${r},${g},${b},0.32)`);
+    document.documentElement.style.setProperty("--color-accent-2", `rgb(${Math.max(0,r-18)},${Math.max(0,g-18)},${Math.max(0,b-18)})`);
+  }, [T.theme, T.accent]);
+
+  // Global shortcuts
+  useEffect(() => {
+    const h = (e) => {
+      if (!authed) return;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setCmdK(true); }
+      if (e.key === "?" && !["INPUT","TEXTAREA"].includes(document.activeElement?.tagName)) { e.preventDefault(); setRoute("/help"); }
+      if (e.key === "u" && !["INPUT","TEXTAREA"].includes(document.activeElement?.tagName) && route.startsWith("/library")) { e.preventDefault(); setRoute("/upload"); }
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [authed, route]);
+
+  const navigate = useCallback((r) => { setRoute(r); setAssetId(null); }, []);
+  const openAsset = useCallback((id) => { setAssetId(id); setRoute(`/asset/${id}`); }, []);
+  const currentAsset = useMemo(() => assets.find(a => a.id === assetId), [assetId, assets]);
+
+  const onRename = (id, name) => setAssets(as => as.map(a => a.id === id ? { ...a, name } : a));
+  const onDelete = (id) => { setAssets(as => as.filter(a => a.id !== id)); navigate("/library"); };
+
+  const goAdjacent = (dir) => {
+    const idx = assets.findIndex(a => a.id === assetId);
+    const next = assets[(idx + dir + assets.length) % assets.length];
+    if (next) openAsset(next.id);
+  };
+
+  if (!authed) {
+    if (route === "/register") return <window.RegisterScreen onLogin={() => { setAuthed(true); setRoute("/library"); }} onNav={setRoute}/>;
+    return <window.LoginScreen onLogin={() => { setAuthed(true); setRoute("/library"); }} onNav={setRoute}/>;
+  }
+
+  let main;
+  if (route.startsWith("/asset/") && currentAsset) {
+    main = <window.AssetDetail asset={currentAsset} onBack={() => navigate("/library")} onDelete={onDelete} onRename={onRename} onNext={() => goAdjacent(1)} onPrev={() => goAdjacent(-1)}/>;
+  } else if (route === "/upload") {
+    main = <window.UploadScreen onDone={() => navigate("/library")}/>;
+  } else if (route === "/chat") {
+    main = <window.ChatScreen user={user}/>;
+  } else if (route === "/profile") {
+    main = <window.ProfileScreen user={user} assets={assets} onNav={setRoute}/>;
+  } else if (route === "/profile/settings") {
+    main = <window.SettingsScreen user={user} onBack={() => navigate("/profile")}/>;
+  } else if (route.startsWith("/admin/users")) {
+    main = <window.AdminUsers/>;
+  } else if (route.startsWith("/admin/assets")) {
+    main = <window.AdminUsers/>;
+  } else if (route === "/help") {
+    main = <window.HelpScreen/>;
+  } else {
+    main = <window.Library assets={assets} onOpenAsset={openAsset} onOpenUpload={() => navigate("/upload")} density={T.density} emptyState={T.empty} onOpenCmdK={() => setCmdK(true)}/>;
+  }
+
+  return (
+    <window.ToastProvider>
+      <window.TopBar route={route} onNav={navigate} onOpenCmdK={() => setCmdK(true)} onToggleTweaks={() => setTweaksOpen(x => !x)} user={user} onLogout={() => { setAuthed(false); setRoute("/login"); }}/>
+      <div className="app-layout">
+        <window.LeftRail route={route} onNav={navigate} isStaff={user.roles.includes("staff")} assetCount={assets.length}/>
+        <main className="app-main">{main}</main>
+      </div>
+      <window.CommandPalette open={cmdK} onClose={() => setCmdK(false)} onNav={setRoute} onOpenAsset={openAsset} assets={assets}/>
+      <window.TweaksPanel open={tweaksOpen} onClose={() => setTweaksOpen(false)} tweaks={T} setTweaks={setTweaks}/>
+    </window.ToastProvider>
+  );
+}
+
+// Wait for all babel scripts to load before mounting
+const tryMount = () => {
+  if (window.Library && window.AssetDetail && window.UploadScreen && window.ChatScreen && window.LoginScreen && window.TopBar) {
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  } else {
+    setTimeout(tryMount, 60);
+  }
+};
+tryMount();
+
+// Tweaks host integration
+window.addEventListener("message", (e) => {
+  if (e.data?.type === "__activate_edit_mode") window.dispatchEvent(new CustomEvent("tweaks-open"));
+  if (e.data?.type === "__deactivate_edit_mode") window.dispatchEvent(new CustomEvent("tweaks-close"));
+});
+window.parent?.postMessage({ type: "__edit_mode_available" }, "*");
+</script>
+</body>
+</html>
