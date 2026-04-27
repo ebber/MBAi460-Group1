@@ -10,7 +10,7 @@
 
 🔄 **In progress** as of 2026-04-27. **Step 3 audit complete (this file)**; remediation plan + execute + re-validate to follow per the 12-step Frame.
 
-Will flip to ✅ when sub-B Phase 11/12 closes (drift resolved; re-audit shows zero 🚩; tests stay green).
+Will flip to ✅ when sub-B Plan Phase 4 (re-audit + validation) closes — drift resolved; re-audit shows zero 🚩; tests stay green. See `plans/outstanding-integrations-sub-B-plan.md` for the Plan-phase-numbered tracker (Plan has 7 phases 0-6; the broader 12-step Frame contains the Plan as Steps 4-11 of the Frame).
 
 ---
 
@@ -156,7 +156,7 @@ Plus 5 adjacent observations (A–E above) — informational, not bucketed.
 
 ---
 
-## Closeout summary (filled at sub-B Phase 11)
+## Closeout summary (filled at sub-B Plan Phase 4-5 — re-audit + closeout)
 
 _(Captured at validation step.)_
 

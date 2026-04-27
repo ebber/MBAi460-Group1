@@ -35,13 +35,13 @@ Sub-B is complete when:
 
 | Phase | Goal | State | Commit | Evidence |
 |---|---|---|---|---|
-| 0 | Pre-execution baseline (git clean + Map confirm) | ⏳ | — | `git status` clean; OrientationMap shows sub-B as next active sub-workstream |
+| 0 | Pre-execution baseline (git clean + Map confirm) | ✅ 2026-04-27 (verified retrospectively as part of plan formation; not a separate execution beat) | — | `git status` clean post `45d2d4f` + `43feb20`; OrientationMap confirms sub-B as designated active sub-workstream |
 | 1 | Contract audit landed | ✅ 2026-04-27 | `45d2d4f` | 23-item audit table + 1 drift + 91% alignment + 5 adjacent observations + scope extension to caller + handler |
 | 2 | Drift Finding #1 fix (00-coord stale example) | ⏳ | — | First example block (lines 263-273) removed; canonical example (lines 282-297) becomes single response shape; preamble headers cleaned up |
-| 3 | (Optional) `deleteAllImages` type tightening | ⏳ (gated on Erik approval at Step 5 review) | — | `photoappApi.ts` line 54: `Promise<{ deleted: boolean }>` → `Promise<{ deleted: true }>`; tests stay green |
+| 3 | `deleteAllImages` type tightening (confirmed include per Q-Phase3 2026-04-27) | ⏳ | — | `photoappApi.ts` line 54: `Promise<{ deleted: boolean }>` → `Promise<{ deleted: true }>`; tests stay green |
 | 4 | Re-audit + validation | ⏳ | — | Audit doc updated: drift row → ✅; status banner 🔄 → ✅; bucket distribution updated; closeout-summary section filled |
 | 5 | Closeout (Map + plan tracker + summary) | ⏳ | — | Map sub-B row state → ✅ Closed; workstream Status updated; plan tracker rows all ✅ |
-| 6 | Push | ⏳ | — | Erik signal |
+| 6 | Push (with cred-sweep delta-check assessment + decision) | ⏳ | — | Step 6.0 assesses cred-sweep current capability + estimates LoE to add delta-check mode; Erik picks update-util-now vs queue-and-grep; Step 6.1 pre-push hygiene runs both full state scan + delta check |
 
 State legend per `Part03/MetaFiles/OrientationMap.md`.
 
@@ -82,16 +82,16 @@ Sub-B's changes are doc-only (Phase 2) + minimal-type (Phase 3). Backend Jest + 
 
 **Files:** none modified.
 
-- [ ] **Step 0.1:** Run `git status` from MBAi460-Group1 root. Expected: clean tree (we just pushed sub-A; only `45d2d4f` audit-doc commit since).
+- [x] **Step 0.1:** Run `git status` from MBAi460-Group1 root. Expected: clean tree (we just pushed sub-A; commits since: `45d2d4f` audit-doc + `43feb20` plan-doc = 2 commits ahead at Phase 0). Verified retrospectively as part of plan v2 formation 2026-04-27.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
 git status
 ```
 
-- [ ] **Step 0.2:** Read `Part03/MetaFiles/OrientationMap.md` Active section. Confirm: (a) Outstanding Integrations workstream is Active, (b) sub-A is ✅ Closed, (c) sub-B is the designated next sub-workstream (state should reflect Frame in flight, not yet ✅).
+- [x] **Step 0.2:** Read `Part03/MetaFiles/OrientationMap.md` Active section. Confirm: (a) Outstanding Integrations workstream is Active, (b) sub-A is ✅ Closed, (c) sub-B is the designated next sub-workstream (state reflects Frame in flight, not yet ✅). Verified retrospectively 2026-04-27.
 
-- [ ] **Step 0.3:** No commit (read-only phase). Phase 0 verification absorbed into Phase 2's commit (atomic close-out).
+- [x] **Step 0.3:** No commit (read-only phase). Phase 0 verification absorbed into plan v2 commit (since v1 was ⏳ on Phase 0; v2 reflects retrospective verification).
 
 ---
 
@@ -127,24 +127,15 @@ git commit -m "Part03 sub-B Phase 2: drift fix — single canonical Asset respon
 
 ---
 
-## Phase 3 (OPTIONAL): `deleteAllImages` type-precision tightening
+## Phase 3: `deleteAllImages` type-precision tightening
 
-**Status:** Gated on Erik's call at Step 5 (plan review). If Erik approves, execute. If not, skip + close at Phase 4.
+**Status:** Confirmed include per Q-Phase3 2026-04-27.
 
 **Files:**
 
 - Modify: `Part03/frontend/src/api/photoappApi.ts` (line 54 — narrow return type).
 
-**Why:** The contract specifies `DELETE /api/images` returns `{ deleted: true }` (literal `true`). The current TypeScript type is `Promise<{ deleted: boolean }>`, which permits a wider universe (could be `false`). Tightening to `Promise<{ deleted: true }>` aligns the type with the contract.
-
-**Trade-offs:**
-
-- ✅ Type matches contract exactly
-- ✅ Caller code (`DeleteAllConfirm.tsx`) doesn't need to handle a `false` case it can never see
-- ⚠️ Slightly more brittle if the contract ever changes to permit `false` (one place to update)
-- ⚠️ Pure type tightening with no runtime impact (the implementation always returns `true`); reasonable people could call this over-engineering
-
-**Recommendation at review:** include — single-line change, contract-precision improvement, zero risk. But not blocking; happy to skip if you prefer.
+**Why:** The contract specifies `DELETE /api/images` returns `{ deleted: true }` (literal `true`). The current TypeScript type is `Promise<{ deleted: boolean }>`, which permits a wider universe (could be `false`). Tightening to `Promise<{ deleted: true }>` aligns the type with the contract. Single-line change; pure type narrowing with no runtime impact.
 
 - [ ] **Step 3.1:** Edit `photoappApi.ts` line 54:
   ```diff
@@ -159,7 +150,7 @@ git commit -m "Part03 sub-B Phase 2: drift fix — single canonical Asset respon
 
 - [ ] **Step 3.2:** Run `npm run build` from `Part03/frontend/` to confirm TypeScript still compiles. (Tighter type means any consumer that branched on `deleted === false` would now error — but no consumer does, since the implementation always returns `true`.)
 
-- [ ] **Step 3.3:** Run `npm test -- --run` from `Part03/frontend/` to confirm Vitest stays at 17 files / 74 tests green.
+- [ ] **Step 3.3:** Run `npm test` from `Part03/frontend/` to confirm Vitest stays at 17 files / 74 tests green. (Note: frontend `package.json` `"test"` script is already `"vitest run"` — single-pass — no `-- --run` needed.)
 
 - [ ] **Step 3.4:** Atomic commit.
 
@@ -187,7 +178,7 @@ git commit -m "Part03 sub-B Phase 3: tighten deleteAllImages type — Promise<{d
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03 && npm test 2>&1 | tail -5
-cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend && npm test -- --run 2>&1 | tail -5
+cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend && npm test 2>&1 | tail -5
 ```
 
 Expected: 77 + 74 tests pass.
@@ -237,15 +228,39 @@ git commit -m "Part03 sub-B Phase 5: 🎯 sub-B COMPLETE — coherence audit + d
 
 ---
 
-## Phase 6: Push
+## Phase 6: Push (with cred-sweep delta-check assessment + decision)
 
-**Files:** none modified.
+**Files:** depend on Step 6.0 outcome:
+- If "update util now": modify `MBAi460-Group1/utils/cred-sweep` (extend with delta-check mode); possibly add a small test fixture.
+- If "queue + grep fallback": modify `MBAi460-Group1/MetaFiles/TODO.md` (add TODO entry to utils queue).
 
-- [ ] **Step 6.1:** Run pre-push hygiene (mirror sub-A's pattern):
+**Why a separate assessment step (per reviewer feedback #6 + Erik 2026-04-27):** Two distinct credential checks matter at pre-push:
+
+1. **Full state scan** — does `tracked files` contain credential patterns? `cred-sweep` does this today; WARN is expected (pre-existing course-mandated content).
+2. **Delta check** — did *MY new commits* introduce *NEW* credential patterns since origin? cred-sweep doesn't currently support this; sub-A used inline `git diff origin/main..HEAD | grep -E "abc123|def456"` as a fallback.
+
+The reviewer's framing was that the inline grep is brittle / placeholder-feeling — better to extend the utility OR explicitly queue the work + use grep transparently. Step 6.0 below resolves this before push.
+
+- [ ] **Step 6.0a (assess `cred-sweep` capability + LoE):** Read `MBAi460-Group1/utils/cred-sweep`. Surface to Erik:
+  - **What it does today:** scans tracked files (5 checks: AWS keys, known lab passwords `abc123!!`/`def456!!`, committed tfvars, RDS master-pw file, photoapp-config with live keys); exits 1 on any hit.
+  - **What the delta-check needs:** a mode that filters to NEW additions in `git diff <ref>..HEAD` rather than scanning the whole tracked-file surface; same regex patterns; zero matches required (vs. current tolerate-known-hits-then-WARN).
+  - **Estimated LoE for adding `--delta <ref>` mode:** ~30-60 min for a tight implementation: add CLI flag parsing, swap input from `git ls-files | xargs grep` to `git diff <ref>..HEAD | grep` (only `^+` added lines), update help text + docs, add a small smoke test. Not blocking; reasonable.
+
+- [ ] **Step 6.0b (Erik picks):**
+  - **Update-now path:** implement delta-check mode in `cred-sweep`; integrate into Step 6.1 hygiene as the canonical delta-check tool. Adds 1-2 commits to sub-B chain.
+  - **Queue-and-grep path:** add a TODO entry to `MBAi460-Group1/MetaFiles/TODO.md` ("[Tooling] cred-sweep — add `--delta <ref>` mode for pre-push delta hygiene; ~30-60 min LoE"); use the inline `git diff` grep as the explicit acknowledged fallback. Adds 1 commit (TODO entry).
+
+- [ ] **Step 6.0c (execute decision):** Per Erik's pick:
+  - If update-now: implement + smoke-test the new mode; commit (`Class Project: cred-sweep — add --delta mode for pre-push hygiene`). Then Step 6.1 uses the new mode.
+  - If queue + grep: add TODO entry; commit (`Class Project queue: cred-sweep --delta mode TODO`). Then Step 6.1 uses inline grep.
+
+- [ ] **Step 6.1:** Run pre-push hygiene:
   - `git status` clean
-  - `git log origin/main..HEAD --oneline` — review the chain
-  - `cred-sweep` — verify no new credential patterns
-  - `git diff origin/main..HEAD | grep -E "^\+.*abc123|^\+.*def456"` — confirm zero matches
+  - `git log origin/main..HEAD --oneline` — review the sub-B chain
+  - `cred-sweep` — full state scan (WARN expected; pre-existing course content unchanged from sub-A's last push)
+  - **Delta check** — confirm zero NEW credential patterns introduced by sub-B commits. Tool: per Step 6.0c outcome:
+    - If util updated: `cred-sweep --delta origin/main` — exit 0 required
+    - If queue + grep: `git diff origin/main..HEAD | grep -E "^\+.*abc123|^\+.*def456"` — zero matches required
   - Backend + Frontend test sweeps (already done in Phase 4; spot-confirm)
 
 - [ ] **Step 6.2:** Surface findings + notes for Erik before push (mirror sub-A's `Notes for you before you push` pattern).
