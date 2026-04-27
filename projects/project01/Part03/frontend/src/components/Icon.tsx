@@ -23,12 +23,10 @@ import {
   Grid as GridIcon,
   List as ListIcon,
   AlertCircle,
+  type LucideIcon,
 } from 'lucide-react';
-import type { ComponentType, SVGProps } from 'react';
 
-type IconComponent = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
-
-const map: Record<string, IconComponent> = {
+const map: Record<string, LucideIcon> = {
   search: Search,
   upload: Upload,
   document: FileText,
