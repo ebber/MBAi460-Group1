@@ -3,18 +3,22 @@
 > **For:** Post-compaction orientation + cross-workstream navigation. Read this first when resuming after a context break.
 > **Updated atomically** at each substep close-out, never from prediction (per `claude-workspace/memory/feedback_atomic_substep_updates.md`).
 > **Complements (does not replace)** plan documents: plans are specs (stable); this Map is execution state (mutable).
-> **Lifecycle:** This Map is grounded in the current Part 03 session. When the session/workstream-context closes, Erik will guide archival (likely a snapshot to a journal or `claude-workspace/`).
-> **Compass relationship:** the lite Compass at the end of in-conversation responses overlies this Map — an in-memory orientation echo so the whole Map doesn't need to be held in working memory; the Map is the durable surface, the Compass is the ephemeral mirror.
-> **Last updated:** 2026-04-27 — created at lab-root then relocated to Part 03 per Erik's Q1 ruling; sub-workstream C (Class Project ↔ Lab Root coordination) relocated to Class Project queue per Q3.
+> **Lifecycle:** This Map is grounded in the current Part 03 session. When the session/workstream-context closes, Erik will guide archival.
+> **Compass relationship:** there is NO Compass section in this Map. The lite Compass (`← Back / ● Now / → Next / ⬆ Up`) is in-chat only, printed at the end of in-conversation responses during active execution, and is derived on-the-fly from this Map's Active section. The Map is the authoritative durable state; the Compass is its ephemeral conversational echo. Compaction loses the Compass (convenience), not the Map (authority).
+> **Last updated:** 2026-04-27 — created at lab-root, relocated to Part 03 per Q1; sub-workstream C relocated to Class Project queue per Q3; status legend added (R1); Compass section removed (R3 — kept in-chat only).
 
 ---
 
-## Compass
+## Status legend
 
-- **← Back:** Project 01 Part 03 UI MVP shipped (10 commits pushed). PossiblePermissionsModel.md updated. Orientation Map drafted, relocated to Part 03 per Q1, sub-workstream C relocated to Class Project queue per Q3.
-- **● Now:** Map design complete (Q1–Q5 resolved); awaiting Erik's pick of which Outstanding Integrations sub-workstream (A / B / D / E) to engage first.
-- **→ Next:** Outstanding Integrations sub-workstream — Erik picks from A (Andrew MVP handshakes) / B (FE↔BE↔doc coherence audit) / D (visualization handoff) / E (Future-State queue prioritization).
-- **⬆ Up:** Sweep Class Project for drift (scope: doc + code + tracker per Q2 = all-of-above) → [TBD anchor — to be assessed in-place when reached] → ...
+| Symbol | Meaning |
+|---|---|
+| ⏳ | Queued / planned — not yet started |
+| 🔄 | In progress — actively being worked by this agent |
+| 🟡 | In-flight async — work is happening but outside this agent's direct execution (collaborators, Erik handles outside, async humans, background processes) |
+| ✅ | Complete — work confirmed via file evidence + commit |
+| 🚩 | Blocked / flagged for attention (also used for continuity-discrepancy flags per `feedback_flag_emoji.md`) |
+| ⚠️ | Executed pre-approval — reverification required at next resumption |
 
 ---
 
@@ -97,14 +101,14 @@
 
 1. **At each substep close-out:** flip status (⏳ → 🔄 → ✅), update pointer/notes, add commit hash if applicable. Update *only after confirmation*, never from prediction.
 2. **At workstream completion:** move row from Active to Closed (recent).
-3. **At new workstream start:** add row to Active (or surface from Pending); update Compass.
-4. **At every Compass-touching event:** refresh ← Back / ● Now / → Next / ⬆ Up to reflect current trajectory.
-5. **Before any forward execution after compaction:** re-read this Map, then perform the Refresh Ritual against it (per `feedback_refresh_ritual.md`).
+3. **At new workstream start:** add row to Active (or surface from Pending).
+4. **The lite Compass is in-chat only.** Print at the end of every active-execution response, deriving directly from the Active section of this Map. There is no on-disk Compass to keep in sync.
+5. **Before any forward execution after compaction:** re-read this Map, then perform the Refresh Ritual against it (per `feedback_refresh_ritual.md`). The Active section IS the execution-position claim — verify it against file state per the ritual's adversarial stance.
 
 ---
 
 ## Notes for cold-pickup readers
 
 - This Map intentionally has overlap with `MBAi460-Group1/MetaFiles/TODO.md` (Class Project queue) and `Part03/MetaFiles/TODO.md` (Part 03 queue). Those remain canonical for individual TODO content; this Map is for *navigation* — picking which surface to engage with next.
-- The lite Compass (`← Back / ● Now / → Next / ⬆ Up`) appended at the end of in-conversation responses is a snapshot of this Map's Compass section. The Map is durable; the lite version is ephemeral but always reflects the latest authoritative state at the time of the response.
+- The lite Compass (`← Back / ● Now / → Next / ⬆ Up`) appended at the end of in-conversation responses is **derived on-the-fly from this Map's Active section** — there is no on-disk Compass section to keep in sync. The Compass is ephemeral conversational orientation; the Map is durable authoritative state.
 - Plans (`Part03/MetaFiles/plans/*.md`) are still the source of truth for *how* to execute a workstream. This Map is the source of truth for *which* workstream is active and *where* execution is within it.
