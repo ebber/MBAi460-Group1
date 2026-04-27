@@ -91,3 +91,28 @@ Used by future agents (and any human reviewer) to understand the dependency chai
   - **Why we're not upgrading:** `npm audit fix --force` would install `uuid@14`, which is ESM-only and breaks Jest's CommonJS transform (would require jest config additions + likely break our test setup). The pin to v9 is intentional and the advisory is unreachable in our usage pattern.
 - **Notable warnings:** none beyond the audit notice above.
 - **Verification after install:** `npm test` re-run pending (next plan step) — confirm no regression in the 5 existing suites.
+
+---
+
+## 2026-04-27 — Phase 1.1 install: Vite + React 18.3.x + TypeScript strict (Part03/frontend)
+
+- **Source:** `01-ui-workstream-plan.md` Phase 1 Task 1.1 — frontend bootstrap.
+- **Working directory:** `MBAi460-Group1/projects/project01/Part03/frontend/` (NEW directory; previous content was the 02 placeholder `dist/` only — removed via `git rm` and replaced by the Vite build output).
+- **Bootstrap method:** scaffold files written manually (instead of `npm create vite@latest`, which is interactive and prompts on non-empty directory). Files created: `package.json`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `index.html`, `src/main.tsx`, `src/App.tsx`, `src/vite-env.d.ts`, `.gitignore`.
+- **Command:** `npm install` (from `Part03/frontend/`).
+- **Exit code:** `0`.
+- **Packages installed (direct deps in `package.json`):**
+  - `react@^18.3.1`
+  - `react-dom@^18.3.1`
+- **Packages installed (devDeps):**
+  - `@types/react@^18.3.12`
+  - `@types/react-dom@^18.3.1`
+  - `@vitejs/plugin-react@^4.3.3`
+  - `typescript@^5.6.0`
+  - `vite@^5.4.8` (resolved to v5.4.21)
+- **Vulnerabilities:** 2 moderate (devDeps only; `npm audit --omit=dev` reports 0). Acceptable for assignment scope.
+- **Notes:**
+  - React pinned to 18.3.x per Q7 (NOT React 19 — Andrew's MVP runs on 18.3.1; concurrent semantics differ in 19).
+  - `tsconfig.app.json` includes the strict additions per plan: `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride` (in addition to default `strict: true`).
+  - `dist/` is gitignored at the frontend level; build output is local.
+- **Verification after install:** `npm run build` succeeded (`vite v5.4.21`; 30 modules transformed; `dist/index.html` 0.33 kB + `dist/assets/index-cc7BSt1h.js` 142.78 kB / 45.85 kB gzipped). Wordmark "MBAi 460 — PhotoApp" present in built bundle.
