@@ -75,7 +75,7 @@ Decisions logged to `claude-workspace/scratch/system-plane-notes.md`. Hypothesis
 
 ### Visualization update — queued (per Erik 2026-04-27)
 
-Add a TODO entry in `Part03/MetaFiles/TODO.md` at MVP closeout: update `visualizations/Target-State-project01-part03-photoapp-architecture-v1.md` with Vite/Tailwind/shadcn details. **Not in plan execution scope** — Erik handles outside this session.
+Add a TODO entry in `Part03/MetaFiles/TODO.md` at MVP closeout: update `visualizations/Target-State-project01-part03-photoapp-architecture-v1.md` with Vite/Tailwind/custom-primitives stack details. **Not in plan execution scope** — Erik handles outside this session.
 
 ### Resumption protocol (post-crash recovery)
 
@@ -184,7 +184,7 @@ Expected output: `dist`
 
 **Reference:** 01 §Phase 1 (Tasks 1.1, 1.2, 1.3, 1.4). Task 1.5 was descoped (Playwright moved to Future-State).
 
-**Why main thread:** Phase 1 wires up an interlocking toolchain (Vite + Tailwind + shadcn + Zustand + Router all share `package.json`, `tsconfig.json`, and config files). Subagents would race on shared files.
+**Why main thread:** Phase 1 wires up an interlocking toolchain (Vite + Tailwind + Zustand + Router all share `package.json`, `tsconfig.json`, and config files). Subagents would race on shared files.
 
 ### Task 1.1: Vite + TypeScript strict app bootstrap
 
@@ -296,7 +296,7 @@ npm install -D tailwindcss@^3 postcss autoprefixer
 npx tailwindcss init -p
 ```
 
-(Pin Tailwind 3.x; Tailwind 4 has breaking config syntax + shadcn/ui ecosystem hasn't fully migrated.)
+(Pin Tailwind 3.x; Tailwind 4 has breaking config syntax changes that affect `tailwind.config.ts` structure and the PostCSS plugin interface — safer to stay on 3.x for the assignment window.)
 
 - [ ] **Step 1.2.2:** Replace `tailwind.config.ts` (or rename `tailwind.config.js` to `.ts`) with the token translation. File contents:
 
@@ -721,7 +721,7 @@ describe('App routing', () => {
 npm test
 ```
 
-Expected: all tests pass (Button + 2 Zustand + 5 App routing = 8 tests).
+Expected: all tests pass (2 Zustand + 5 App routing = 7 tests). No Button test — shadcn descoped per reviewer remediation R1.
 
 - [ ] **Step 1.5.6:** Smoke build. From `Part03/frontend/`:
 
@@ -860,7 +860,7 @@ export function Icon({
 npm test
 ```
 
-Expected: all prior 8 tests + 3 new Icon tests = 11 tests passing.
+Expected: all prior 7 tests + 3 new Icon tests = 10 tests passing.
 
 - [ ] **Step 2.1.5:** Append lucide-react install to `install-log.md`.
 
@@ -1335,7 +1335,7 @@ git commit -m "Part03 01 Phase 5+6 pre-dispatch: shared fixture file (mockPhotoA
   - `Part03/frontend/src/components/__tests__/Library.test.tsx`
   - `Part03/frontend/src/components/__tests__/AssetCard.test.tsx`
   - `Part03/frontend/src/components/__tests__/ListView.test.tsx`
-  - `Part03/frontend/src/__tests__/fixtures/assets.ts`
+  - _(does NOT create fixtures/assets.ts — created on main thread in Task P4.0)_
 - Subagent B creates:
   - `Part03/frontend/src/components/LoginScreen.tsx`
   - `Part03/frontend/src/components/RegisterScreen.tsx`
@@ -1352,7 +1352,7 @@ git commit -m "Part03 01 Phase 5+6 pre-dispatch: shared fixture file (mockPhotoA
   - Working directory: `Part03/frontend/`.
   - Source-of-truth: 01 §Phase 5 (or Phase 6) + Andrew's relevant `.jsx` source.
   - Goal: TS port + Tailwind classes + Vitest+RTL test files using fixtures.
-  - Mock data: import from `Part03/frontend/src/__tests__/fixtures/` (Subagent A creates the shared fixture file).
+  - Mock data: import from `Part03/frontend/src/__tests__/fixtures/` (created on main thread in Task P4.0 — file exists before dispatch).
   - Scope discipline: only your files; do NOT modify other components, App.tsx, photoappApi.ts, docs; do NOT commit.
   - Run only your tests.
   - Return shape: under 350 words.
@@ -1797,7 +1797,7 @@ git commit -m "Part03 01 Phase 8.2: DEMO-QUICKSTART.md for video teammate"
 - [ ] **Step 8.3.1:** Append to `Part03/MetaFiles/TODO.md` Active section:
 
 ```markdown
-- [ ] **[Visualization] Update Target-State-project01-part03-photoapp-architecture-v1.md** — UI MVP shipped 2026-04-XX with Vite + React 18.3.x + TypeScript strict + Tailwind + selective shadcn + Zustand. Update the architecture diagram + prose to reflect the actual implementation stack. (Erik handles outside the implementation session per 2026-04-27 routing.)
+- [ ] **[Visualization] Update Target-State-project01-part03-photoapp-architecture-v1.md** — UI MVP shipped 2026-04-XX with Vite + React 18.3.x + TypeScript strict + Tailwind + custom Tailwind-styled primitives (shadcn descoped 2026-04-27) + Zustand. Update the architecture diagram + prose to reflect the actual implementation stack. (Erik handles outside the implementation session per 2026-04-27 routing.)
 ```
 
 - [ ] **Step 8.3.2:** Verify Master Tracker has all phases ✅:
