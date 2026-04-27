@@ -197,3 +197,13 @@ This workstream is **mostly self-contained**. No backend changes required. But:
 - `MBAi460-Group1/MetaFiles/Future-State-Ideal-Lab.md` (lab-wide aspirational doc — overlaps with this workstream's deployment + observability sections; reconcile when promoting)
 - `MBAi460-Group1/MetaFiles/Manifesto-AWS-Lab-Sanctum.md` (governing principles — production credibility is one of them)
 - `MetaFiles/DesignDecisions.md` Q7 (frontend stack prescription) — affects CI tooling choices (TS strict, Tailwind, shadcn) here
+
+---
+
+## Andrew's accelerator artifacts (added 2026-04-27 per sub-A Phase 5)
+
+**No specific Accelerator subfolder for this workstream.** Production hardening is cross-cutting infrastructure (CI gates, security headers, deployment, dependency scanning) — not something Andrew ships as source artifacts. Andrew's spec sections drive the work; no curated source files apply.
+
+**Audit cross-refs:** rows 14 + 51-L4 + 132 (T7 a11y), 106 + 138 + 139 (T9 i18n + feature flags + telemetry), 126-partial + 128 (T10 server state + API client retry), 135 + 136 (T12 security + deployment), 133 (T8 perf budgets) in `Andrew-MVP-Integration.md`.
+
+Note: T8 (observability) + T11 (SLOs/metrics/edge cases) split into `Future-State-observability-workstream.md` per Q-Phase4-4 — see §4 above for the pointer.

@@ -115,3 +115,13 @@ Out of scope:
 - `ClaudeDesignDrop/raw/MBAi-460/src/tokens.css`
 - `Future-State-production-hardening-workstream.md`
 
+
+---
+
+## Andrew's accelerator artifacts (added 2026-04-27 per sub-A Phase 5)
+
+**No Accelerator subfolder for this workstream.** Andrew's spec recommended shadcn/ui primitives; this was DESCOPED 2026-04-27 per R1 reviewer remediation in favor of custom Tailwind-styled primitives. The shipped MVP has Button/Modal/Toast/etc. as custom components, not shadcn.
+
+This workstream is preserved as a historical record of the original recommendation and as the activation point if/when a future agent decides to migrate from custom Tailwind to shadcn primitives. Andrew's `tokens.css` is already translated to `tailwind.config.ts` — that translation persists regardless of shadcn adoption. There are no shadcn-specific source artifacts to accelerate from Andrew's drop.
+
+**Audit cross-ref:** row 118 (§11.7 shadcn recommendation — explicitly DESCOPED) in `Andrew-MVP-Integration.md`.

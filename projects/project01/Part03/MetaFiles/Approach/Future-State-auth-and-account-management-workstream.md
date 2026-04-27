@@ -100,3 +100,13 @@ Replace Part 03's mock-auth scaffold with real token-based authentication. Add u
 - `MetaFiles/Approach/01-ui-workstream.md` (current — references mock-auth scaffold)
 - `MetaFiles/DesignDecisions.md` Q10 (auth scaffold for v1, resolved)
 - Project 03 source: `projects/project03/create-authsvc.sql`, `register.zip`, `authenticate.zip`, `client/client.py`
+
+---
+
+## Andrew's accelerator artifacts (added 2026-04-27 per sub-A Phase 5)
+
+Andrew shipped multi-screen form patterns in `ClaudeDesignDrop/raw/MBAi-460/src/screens.jsx` covering auth-adjacent flows (SettingsScreen, AdminUsers, ForgotPasswordScreen). The curated copy is at `Part03/Accelerators/ArtifactsForFormLibrary/screens.jsx` (intentional cross-workstream sharing — `screens.jsx` is the canonical source for both Form Library + Auth migrations; the next agent splits per-screen during workstream activation).
+
+`auth.jsx` is NOT in Accelerators — it was already migrated to `LoginScreen.tsx` + `RegisterScreen.tsx` in shipped MVP (Q10 non-blocking). The `Accelerators/ArtifactsForFormLibrary/README.md` notes this overlap explicitly.
+
+**Audit cross-refs:** rows 80 (FR-AUTH-1..9), 101 (FR-PROFILE), 32 (Authentication header) in `Andrew-MVP-Integration.md`.

@@ -90,3 +90,13 @@ Out of scope:
 - `Future-State-shadcn-primitive-migration-workstream.md`
 - `Future-State-production-hardening-workstream.md`
 
+
+---
+
+## Andrew's accelerator artifacts (added 2026-04-27 per sub-A Phase 5)
+
+Andrew's `screens.jsx` may include a TweaksPanel or settings-overlay-style component in its multi-screen content. The curated copy is at `Part03/Accelerators/ArtifactsForFormLibrary/screens.jsx` (cross-workstream sharing — see `Accelerators/ArtifactsForFormLibrary/README.md` for the per-screen split note).
+
+`tokens.css` (already translated to `tailwind.config.ts`) is the canonical token source; no separate accelerator needed.
+
+**Audit cross-refs:** no specific row directly maps to a TweaksPanel; this workstream is more of an internal-developer-affordance concept than a user-facing requirement in Andrew's spec. When activated, identify TweaksPanel-relevant content in `screens.jsx` and decide migration scope.

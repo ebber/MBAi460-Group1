@@ -111,3 +111,13 @@ Wire Andrew's `ChatScreen` (already built as a working visual MVP) to Project 03
 - `ClaudeDesignDrop/raw/MBAi-460/src/data.jsx` (MOCK_MESSAGES, MOCK_CHAT_USERS — example shapes)
 - Project 03 source: `projects/project03/create-chatapp.sql`, `projects/project03/client/client.py` (reference webhook client)
 - `MBAi460-Group1/MetaFiles/Future-State-Ideal-Lab.md` (cloudflared tunnel for local webhook testing — already in backlog)
+
+---
+
+## Andrew's accelerator artifacts (added 2026-04-27 per sub-A Phase 5)
+
+Andrew's `ChatScreen` demo lives in `ClaudeDesignDrop/raw/MBAi-460/src/screens.jsx` (lines 130–228 per the existing source-refs). The curated copy is at `Part03/Accelerators/ArtifactsForFormLibrary/screens.jsx` (cross-workstream sharing — see `Accelerators/ArtifactsForFormLibrary/README.md` for the per-screen split note).
+
+There's no separate `ArtifactsForChat/` subfolder — chat-specific source code is bounded to the ChatScreen demo + mock data shapes (`data.jsx`'s `MOCK_MESSAGES` / `MOCK_CHAT_USERS`). When this workstream activates, the executing agent extracts the ChatScreen patterns from the multi-screen file.
+
+**Audit cross-refs:** rows 26 (J5 chat journey), 76 (chat full screen layout + states), 99 (FR-CHAT-1..8 grouped) in `Andrew-MVP-Integration.md`.

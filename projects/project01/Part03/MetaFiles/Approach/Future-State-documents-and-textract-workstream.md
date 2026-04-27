@@ -132,3 +132,13 @@ These items collectively constitute a "AI on-demand model" sub-stream within the
 - `MetaFiles/DesignDecisions.md` Q9 (Textract scope decision) — proposed in `DesignDecisions.md`
 - `MetaFiles/Andrew-MVP-Integration.md` rows 40, 70, 91-97 (audit detail for on-demand AI items)
 - AWS docs: [Textract DetectDocumentText](https://docs.aws.amazon.com/textract/latest/dg/API_DetectDocumentText.html), [AnalyzeDocument](https://docs.aws.amazon.com/textract/latest/dg/API_AnalyzeDocument.html), [StartDocumentTextDetection](https://docs.aws.amazon.com/textract/latest/dg/API_StartDocumentTextDetection.html)
+
+---
+
+## Andrew's accelerator artifacts (added 2026-04-27 per sub-A Phase 5)
+
+Andrew's `UploadScreen` + OCR-mode-picker lives in `ClaudeDesignDrop/raw/MBAi-460/src/screens.jsx`. The curated copy is at `Part03/Accelerators/ArtifactsForFormLibrary/screens.jsx` (cross-workstream sharing — `screens.jsx` is multi-screen and lives in the Form Library subfolder for primary attribution; OCR concerns reference it from there).
+
+`data.jsx` (mock document assets with `ocr_excerpt`, `ocr_status`, etc. — useful for schema design) is NOT in Accelerators — it's mock data only, superseded by live API. Reference from `raw/` directly when designing the document-asset schema fields.
+
+**Audit cross-refs (T6 — AI on-demand model):** rows 40 (POST /assets/:id/labels), 70 (DetectText fallback), 91 (FR-AI-1), 92 (FR-AI-2), 96 (FR-AI-6 manual re-run), 97 (FR-AI-7 client cache) in `Andrew-MVP-Integration.md`. Plus all OCR-specific rows: 5, 19, 24, 66, 67, 68, 93, 94, 95, 98.

@@ -43,7 +43,7 @@ Sub-A is complete when:
 | 2 | Audit `UI-Design-Requirements.md` (per-screen + per-feature triage table) → `Andrew-MVP-Integration.md` | ✅ 2026-04-27 | 5c6004e → 7fc1033 → eaa5b73 → a59f432 → 866840e → (this commit) | 147 audit rows across all 1609 lines + 17 sections; bucket distribution: 17 pure ✅ / 63 partial ✅ / 42 pure ⏳ / 3 ❌ / 20 pure 🚩; 63 rows total carry 🚩 markers (Phase 4 PAUSE-gate triage input). Spot-checks of ✅ claims (cream/coral tokens, Lucide named imports, Modal focus trap, searchImages wiring) all verified |
 | 3 | Set up `Accelerators/` scaffold (README only) | ✅ 2026-04-27 | (this commit) | `Accelerators/` directory + `Accelerators/README.md` documenting the pattern (curated artifacts; ArtifactsFor<WorkstreamName> convention; 1:1 mapping with Future-State docs; distinction from ClaudeDesignDrop/raw; lifecycle + provenance rules). Subfolder population deferred to Phase 4 per F2 |
 | 4 | Triage gaps from Phase 2 audit + populate confirmed `Accelerators/` subfolders (with ⚠️ PAUSE gate for routing confirmation) | ✅ 2026-04-27 | 933305b (4.2 routing) → c5beb76 (4.3 Accelerators) → (this commit, 4.4 + 4.5 close-out) | 13 routing themes confirmed via PAUSE gate (Q-Phase4-1..5b); 6 NEW Future-State workstream docs created (mobile/admin/library-polish/form-library/sharing/observability); 2 existing docs extended (Textract for AI on-demand model; production-hardening §4 → pointer to observability split); 9 NEW TODOs added to Part 03 queue; 3 Accelerators subfolders populated (ArtifactsForMobile 5 files / ArtifactsForLibraryPolish 1 / ArtifactsForFormLibrary 1) — 7 files cp'd, originals preserved per F1 |
-| 5 | Cross-references in Future-State workstream docs → `Accelerators/` | ⏳ | — | All applicable Future-State docs have pointer sections |
+| 5 | Cross-references in Future-State workstream docs → `Accelerators/` | ✅ 2026-04-27 | (this commit) | All 8 existing Future-State workstream docs got "Andrew's accelerator artifacts" sections added: 4 reference `Accelerators/ArtifactsForFormLibrary/screens.jsx` (auth, chat, documents-textract, tweaks-panel — `screens.jsx` is multi-screen; cross-workstream sharing); 4 explicitly note "no Accelerator subfolder" with audit-row cross-refs (command-palette, playwright-e2e, production-hardening, shadcn-migration). Each section includes audit row pointers into `Andrew-MVP-Integration.md`. The 6 NEW Future-State docs created in 4.2 already have these refs baked in |
 | 6 | Naming reconciliation note ("MBAi-460" vs `MBAi460-Group1`) | ⏳ | — | One-paragraph clarification in `00-coordination-and-contracts.md` (extends existing section if present per F10) |
 | 7 | Coordination follow-up journal entry | ⏳ | — | New `2026-04-27-mvp-closeout-andrew-handshake.md` |
 | 8 | Mark integration complete + close TODO entries + Map row update | ⏳ | — | Integration-status banner flipped to ✅ in 3 places; 3 Part-03 TODO entries closed; Map row Active→Closed |
@@ -312,13 +312,13 @@ git commit -m "Part03 sub-A Phase 4: triage <N> gaps from Andrew MVP audit (<X> 
 
 **Why:** Per Erik's Q-A2: each Future-State doc gets a "Andrew's accelerator artifacts" pointer section so the executing agent has direct access to relevant kickstarter material.
 
-- [ ] **Step 5.1:** For each Future-State workstream doc, identify which `Accelerators/ArtifactsFor<X>/` files (if any) are relevant. Some workstreams may have zero relevant artifacts — note this explicitly rather than skipping.
+- [x] **Step 5.1:** For each Future-State workstream doc, identify which `Accelerators/ArtifactsFor<X>/` files (if any) are relevant. Some workstreams may have zero relevant artifacts — note this explicitly rather than skipping.
 
-- [ ] **Step 5.2:** Add a "Andrew's accelerator artifacts" section near the top of each Future-State doc with:
+- [x] **Step 5.2:** Add a "Andrew's accelerator artifacts" section near the top of each Future-State doc with:
   - Bullet list of relevant files in `Accelerators/ArtifactsFor<X>/` (or "no specific artifacts; reference `UI-Design-Requirements.md` §X for spec")
   - Cross-ref to the audit row in `Andrew-MVP-Integration.md`
 
-- [ ] **Step 5.3:** Atomic commit.
+- [x] **Step 5.3:** Atomic commit.
 
 ```bash
 git add projects/project01/Part03/MetaFiles/Approach/Future-State-*.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md

@@ -109,3 +109,13 @@ Out of scope:
 - `ClaudeDesignDrop/raw/MBAi-460/src/library.jsx`
 - `Future-State-shadcn-primitive-migration-workstream.md`
 
+
+---
+
+## Andrew's accelerator artifacts (added 2026-04-27 per sub-A Phase 5)
+
+**No specific Accelerator subfolder for this workstream.** Andrew's spec specifies the command-palette pattern (⌘K, fuzzy search across name/labels/OCR, keyboard-only operable) but doesn't ship a corresponding source component — the palette is a pattern Andrew specifies but doesn't pre-build. References in `library.jsx` + `screens.jsx` (preserved in `raw/`) only show the trigger surface, not the palette itself.
+
+When this workstream activates, the executing agent builds the palette from scratch following Andrew's spec; Radix `Command` + custom Tailwind styling is the likely shape (no shadcn per R1).
+
+**Audit cross-refs:** rows 13 (keyboard-first principle), 55 (TopBar ⌘K), 60 (Library interactions: ⌘K + / + u key), 72 (search ⌘K command-palette style), 73 (search acceptance S1–S3), 78 (? help overlay) in `Andrew-MVP-Integration.md`.
