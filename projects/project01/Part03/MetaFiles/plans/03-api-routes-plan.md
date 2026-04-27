@@ -318,11 +318,11 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 ### Task 3.3: `listImages(userid?)` (with kind, mixed-kind round-trip)
 
-- [ ] **Step 3.3.1:** Write failing tests per 03 Task 3.3 (both query forms + mixed-kind result test).
-- [ ] **Step 3.3.2:** Run → RED.
-- [ ] **Step 3.3.3:** Implement per 03: SELECT includes `kind`; ORDER BY assetid ASC; with/without `WHERE userid = ?`.
-- [ ] **Step 3.3.4:** Run → GREEN.
-- [ ] Atomic doc update + commit: `Part03 03 Phase 3.3: listImages() with kind`.
+- [x] **Step 3.3.1:** Write failing tests per 03 Task 3.3 (both query forms + mixed-kind result test). _2026-04-27 — wrote 4 tests: no-userid, with-userid, mixed-kind round-trip, end()-on-failure._
+- [x] **Step 3.3.2:** Run → RED. _2026-04-27 — 4 fail / 2 pass (listImages undefined)._
+- [x] **Step 3.3.3:** Implement per 03: SELECT includes `kind`; ORDER BY assetid ASC; with/without `WHERE userid = ?`. _2026-04-27 — implemented; ternary on `userid !== undefined` to choose SQL form._
+- [x] **Step 3.3.4:** Run → GREEN. _2026-04-27 — 6/6 tests green._
+- [x] Atomic doc update + commit: `Part03 03 Phase 3.3: listImages() with kind`. _2026-04-27 — this commit._
 
 ### Task 3.4: `getImageLabels(assetid)`
 

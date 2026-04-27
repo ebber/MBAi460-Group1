@@ -1,6 +1,6 @@
 const { ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const aws = require('./aws');
-const { userRowToObject } = require('../schemas');
+const { userRowToObject, imageRowToObject } = require('../schemas');
 
 async function getPing() {
   const bucket = aws.getBucket();
@@ -32,4 +32,18 @@ async function listUsers() {
   }
 }
 
-module.exports = { getPing, listUsers };
+async function listImages(userid) {
+  const dbConn = await aws.getDbConn();
+  try {
+    const sql = userid !== undefined
+      ? 'SELECT assetid, userid, localname, bucketkey, kind FROM assets WHERE userid = ? ORDER BY assetid ASC'
+      : 'SELECT assetid, userid, localname, bucketkey, kind FROM assets ORDER BY assetid ASC';
+    const params = userid !== undefined ? [userid] : [];
+    const [rows] = await dbConn.execute(sql, params);
+    return rows.map(imageRowToObject);
+  } finally {
+    await dbConn.end();
+  }
+}
+
+module.exports = { getPing, listUsers, listImages };
