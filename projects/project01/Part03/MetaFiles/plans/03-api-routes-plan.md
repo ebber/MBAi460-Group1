@@ -6,7 +6,7 @@
 
 **Architecture:** Smooth Project 2's Express baseline into clean `routes/` + `services/` + `middleware/` structure. Node-native `@aws-sdk/client-s3` + `@aws-sdk/client-rekognition` + `mysql2/promise`. Photos go through Rekognition; documents (per Q9) skip Rekognition. Multer accepts all files (50MB limit). Centralized error middleware maps domain errors to HTTP status. `app.js` mounts router at `/api` (single integration point with Server Foundation 02; replaces the placeholder router from 02 Phase 7).
 
-**Tech Stack:** Node ≥24, Express 5, multer, `@aws-sdk/client-s3` ≥3.972, `@aws-sdk/client-rekognition` ≥3.946, `@aws-sdk/credential-providers` ≥3.969, `mysql2/promise` ≥3.16, `ini` ≥6, `uuid` (re-added — see Task 0.2), Jest 30, supertest 7. Node 20+ runtime.
+**Tech Stack:** Node ≥24, Express 5, multer, `@aws-sdk/client-s3` ≥3.972, `@aws-sdk/client-rekognition` ≥3.946, `@aws-sdk/credential-providers` ≥3.969, `mysql2/promise` ≥3.16, `ini` ≥6, `uuid` (re-added — see Task 0.2), Jest 30, supertest 7.
 
 **Approach doc (source of truth):** `MetaFiles/Approach/03-api-routes.md`. This plan adds **state tracking, evidence, atomic-update gates, parallelism dispatch, and recovery** — code snippets and full task content live in 03. Where this plan says "per 03 Task X.Y", read 03 for the failing-test code, expected commands, and implementation snippets.
 
@@ -75,7 +75,7 @@ Most commands run from `/Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/
 | 7 | `server/middleware/error.js` | ⏳ | — | error.test.js green |
 | (6+7 PARALLEL — subagent dispatch) | | | | |
 | 8 | live integration tests (opt-in) | ⏳ | — | PHOTOAPP_RUN_LIVE_TESTS=1 → green |
-| 9 | E2E smoke (after UI ready) | ⏳ | — | full curl evidence captured |
+| 9 | E2E smoke + README route-specific commands (after UI ready) | ⏳ | — | full curl evidence captured; README documents route-specific run/test commands |
 
 State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked · ⚠️ Executed pre-approval (reverification required at resumption)
 
@@ -87,7 +87,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 > **⚠️ Pre-approval execution flag (2026-04-27 refresh ritual):** Tasks 0.1 + 0.2 were executed during plan-writing 2026-04-26 in auto mode, **before plan review and approval**. The work landed in commit `a50ef8c` (npm install of `multer` + `ini` + `uuid@9`; install-log entry; smoke verification). When execution resumes post-approval, treat the outputs as an **untrusted accelerator** — re-verify each deliverable rather than skip the phase. Specifically:
 >
-> - Confirm the three packages are still installed at the recorded versions (`npm ls multer ini uuid` against `package.json` pins).
+> - Verify the three packages are installed (`npm ls multer ini uuid`) and spot-check installed versions against `package.json` `dependencies` pins.
 > - Re-run `npm test` to confirm 5/5 suites + 8/8 tests still green.
 > - Re-run the `/health` + `/api` smoke.
 > - Re-read `MetaFiles/install-log.md` 2026-04-26 entry for context (the audit-finding rationale especially).
@@ -102,7 +102,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 - [x] **Step 0.1.2:** Run `npm start` in background, then `curl -s http://localhost:8080/health` (expect `{"status":"running"}`), `curl -s http://localhost:8080/api` (expect placeholder envelope), kill the server. Confirms baseline still works post-doc-revisions. _2026-04-26 — `/health` returned `{"status":"running"}`; `/api` returned `{"message":"success","data":{"service":"photoapp-api","status":"placeholder"}}`._
 - [x] **Step 0.1.3:** Run `git status` — confirm working tree clean. _2026-04-26 — Clean (2 ahead of origin/main from plan commit + earlier work)._
 
-**Atomic doc update:** mark Task 0.1 ✅ in this plan tracker. (No 03 boxes apply — pre-03.) _Done — plan tracker flipped; will roll into Task 0.2 commit._
+**Atomic doc update:** mark Task 0.1 ⚠️ in this plan tracker — pre-approval execution per EOR-5 reframing (see Phase 0 blockquote above). (No 03 boxes apply — pre-03.) _Done 2026-04-26; plan tracker rolled into Task 0.2 commit a50ef8c. Phase 0 awaits reverification on resumption per Master Tracker ⚠️ state._
 
 **Commit:** none (read-only verification).
 
@@ -382,9 +382,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 **Hypothesis under test:** parallel subagents work well even with coupled tests, IF the integration step at the end verifies the merge cleanly.
 
-**Coordination concern:** both subagents edit `server/app.js`. Pre-divide the edits to non-overlapping regions:
-- Subagent A inserts: `app.use('/api', require('./routes/photoapp_routes'));` (replaces the placeholder mount from 02 Phase 7).
-- Subagent B inserts: `app.use(require('./middleware/error'));` AT THE END of app.js (last middleware, AFTER static + SPA fallback per Express convention).
+**Coordination concern:** only Subagent B touches `server/app.js`. Subagent A modifies `routes/photoapp_routes.js` (body replacement only — the `/api` mount in `app.js` is already in place from Server Foundation 02 and stays unchanged). Subagent B appends `app.use(require('./middleware/error'));` at the END of `app.js` (last middleware, AFTER static + SPA fallback per Express convention). No merge conflict surface.
 
 ### Task Q.1: Dispatch 2 subagents in parallel
 
@@ -394,7 +392,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 - Read 03 §Phase 6 (Tasks 6.1–6.9).
 - **Replace** the existing placeholder `server/routes/photoapp_routes.js` (created by 02 Phase 7) with the full router per 03. Imports: `express`, `Router`, `services/photoapp`, `middleware/upload` (just `upload`), `schemas` (both `successResponse` and `errorResponse`).
-- Implement all 9 routes per 03's per-task specs:
+- Implement all 8 routes per 03's per-task specs (Tasks 6.2–6.9; routes register WITHOUT the `/api` prefix — the mount in `app.js` makes them `/api/*` from the client's view):
   - `GET /ping` → `successResponse(getPing())`
   - `GET /users` → `successResponse(listUsers())`
   - `GET /images` (with `?userid=` parsing) → `successResponse(listImages(userid?))`
@@ -403,7 +401,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
   - `GET /images/:assetid/labels` → `successResponse(getImageLabels(assetid))`
   - `GET /search?label=` → validate non-empty, then `successResponse(searchImages(label))`
   - `DELETE /images` → `successResponse(deleteAll())`
-- Modify `server/app.js`: replace the placeholder `app.use('/api', require('./routes/index'))` (or whatever 02 used) with `app.use('/api', require('./routes/photoapp_routes'));`. Keep the mount BEFORE static, AFTER `/health` (per the 02 load-bearing order).
+- **Do NOT modify `server/app.js`** — Server Foundation 02 already mounted the placeholder router at `app.use('/api', require('./routes/photoapp_routes'))`. Phase 6's job is to replace the BODY of `routes/photoapp_routes.js` (the placeholder handler) with the real router; the mount line in `app.js` stays unchanged.
 - Tests in `server/tests/photoapp_routes.test.js` — `jest.mock('../services/photoapp')` and `jest.mock('../middleware/upload')` (multer mock); supertest against the exported `app`. Test all 9 routes plus edge cases (invalid userid → 400 envelope, missing file → 400 envelope, etc.).
 - Run `npm test -- photoapp_routes.test.js`. SOME tests will pass (success-path tests). Tests that assert error envelope shapes (e.g., "no such userid" → 400 with envelope) will FAIL until Subagent B's middleware lands. **Do not block on those failures** — note them in the return report as "pending Subagent B integration."
 - Mark Phase 6 task checkboxes `[x]` with date in 03 doc.
@@ -475,6 +473,17 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 - [ ] **Step 9.1.2:** Append a `## 2026-XX-XX — Phase 9 E2E smoke evidence` section to this plan at the bottom.
 - [ ] **Step 9.1.3:** Append a `## 2026-XX-XX — Server Foundation (02) + API Routes (03) + UI (01) integrated` entry to `Part03/MetaFiles/refactor-log.md`.
 - [ ] **Step 9.1.4:** Atomic doc update + commit: `Part03 03 Phase 9: end-to-end smoke green; full integration verified`.
+
+### Task 9.2: README updates for route-specific run/test commands
+
+**Files:**
+- Modify: `Part03/README.md`
+
+- [ ] **Step 9.2.1:** Append a "Running the API" section with: `npm install`, `npm test`, `npm start`, plus `PHOTOAPP_RUN_LIVE_TESTS=1 npm test` for live integration tests, plus a short curl walk for `/api/ping` and `/api/users` against a running server.
+- [ ] **Step 9.2.2:** Append a "Routes" section listing the 8 API endpoints with one-line summaries (link out to `MetaFiles/Approach/03-api-routes.md` for full spec).
+- [ ] **Step 9.2.3:** Atomic doc update + commit: `Part03 03 Phase 9.2: README route-specific run/test commands`.
+
+**Phase 9 wrap:** Master Tracker Phase 9 → ✅ once both Task 9.1 and Task 9.2 land. (Per 03's Acceptance Checklist line 1395: "README documents route-specific run/test commands.")
 
 ---
 

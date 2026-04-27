@@ -771,6 +771,7 @@ const { upload } = require('../middleware/upload');
 **Behavior:**
 
 - `cleanupTempFile(absPath)` deletes `absPath` if it exists; never throws.
+- Update the module exports to include `cleanupTempFile`: `module.exports = { upload, TEMP_DIR, cleanupTempFile };` (Task 4.1 ships with `{ upload, TEMP_DIR }` only).
 
 **Write failing test first:**
 
