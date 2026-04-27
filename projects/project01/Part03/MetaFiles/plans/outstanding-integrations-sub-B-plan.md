@@ -11,7 +11,7 @@
 **Reference:**
 - **Audit doc (canonical):** `Part03/MetaFiles/contract-audit-FE-BE-doc.md` (committed at `45d2d4f`).
 - **Drift Finding #1 location:** `Part03/MetaFiles/Approach/00-coordination-and-contracts.md` lines 263-273 (stale Asset example missing `kind`).
-- **Optional remediation location:** `Part03/frontend/src/api/photoappApi.ts` line 54 (deleteAllImages return type wider than contract literal).
+- **Phase 3 type-tightening location:** `Part03/frontend/src/api/photoappApi.ts` line 54 (deleteAllImages return type narrowing).
 - **Map:** sub-B row in `Part03/MetaFiles/OrientationMap.md`.
 
 **Execution mode:** Inline by main thread. No subagent dispatch (Q-B-4 confirmed by Erik 2026-04-27 — three interconnected files; relational audit; subagent overhead exceeds payoff).
@@ -172,7 +172,7 @@ git commit -m "Part03 sub-B Phase 3: tighten deleteAllImages type — Promise<{d
 
 - [ ] **Step 4.1:** Read `00-coordination-and-contracts.md` §GET /api/images post-Phase-2 fix; verify the stale block is gone + the canonical block is the single response example. Update audit table row 4 from 🚩 to ✅.
 
-- [ ] **Step 4.2:** (If Phase 3 executed) Read `photoappApi.ts` post-Phase-3 fix; verify the type is narrowed. Update Adjacent Observation E (deleteAllImages type-precision) from "optional remediation; defer to your call" to "✅ resolved at sub-B Phase 3".
+- [ ] **Step 4.2:** Read `photoappApi.ts` post-Phase-3 fix; verify the type is narrowed. Update Adjacent Observation E (deleteAllImages type-precision) from "optional remediation; defer to your call" to "✅ resolved at sub-B Phase 3".
 
 - [ ] **Step 4.3:** Re-run backend + frontend test sweeps; confirm both green.
 
@@ -185,8 +185,8 @@ Expected: 77 + 74 tests pass.
 
 - [ ] **Step 4.4:** Update `contract-audit-FE-BE-doc.md`:
   - Status banner: 🔄 → ✅ COMPLETE 2026-04-27
-  - Bucket distribution table: ✅ Aligned now 22-23 / 23 (depending on whether Phase 3 executed)
-  - Closeout summary section: filled with row count, drift resolution, optional remediation status, sub-B closeout commit ref
+  - Bucket distribution table: ✅ Aligned now 23 / 23 (Phase 3 type tightening + Drift Finding #1 fix both landed)
+  - Closeout summary section: filled with row count, drift resolution, Phase 3 type tightening status, sub-B closeout commit ref
 
 - [ ] **Step 4.5:** Atomic commit.
 
@@ -214,7 +214,7 @@ git commit -m "Part03 sub-B Phase 4: re-audit ✅ — zero 🚩 rows; audit doc 
 - [ ] **Step 5.3:** Fill the Acceptance Evidence section at the end of this plan with sub-B's stats:
   - Audit row count: 23 + 5 adjacent observations
   - Drift resolved: 1 / 1 (Drift Finding #1)
-  - Optional remediation: depends on Phase 3 execution
+  - Phase 3 type tightening: fill from actual Phase 3 execution results (commit ref + tests-stayed-green confirmation)
   - Sub-B closeout commit ref
   - Total commits in sub-B chain
 
@@ -275,7 +275,7 @@ _(Captured at sub-B Phase 5 close.)_
 
 - Audit row count: __ contract items + __ adjacent observations
 - Drift findings (canonical): 1 / 1 resolved (Drift Finding #1 — 00-coord stale example block)
-- Optional remediation status: __ (executed / skipped at Step 5 review)
+- Phase 3 type tightening: __
 - Bucket distribution post-fix: ✅ __ / ⏳ __ / 🚩 __
 - Sub-B chain commits: __
 - Sub-B closeout commit: __

@@ -164,5 +164,5 @@ _(Captured at validation step.)_
 - Drift findings (canonical): 1 (Drift #1 — stale example block in 00-coord)
 - Type-precision note (optional): 1 (deleteAllImages return type)
 - Remediation commits: __
-- Re-audit (Step 10) status: __
+- Re-audit (Plan Phase 4) status: __
 - Sub-B closeout commit: __
