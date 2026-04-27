@@ -131,18 +131,18 @@ This is the canonical record of significant design decisions for **Project 01 Pa
 - **shadcn/ui** — adopt the Radix-based primitives where they map to Andrew's components (Toast, Dialog, Popover, Dropdown, Tabs, Command). Style with Tailwind classes that consume the tokens.
 - **Zustand** — global UI state only (sidebar collapsed, theme selection, command-palette open, mock-auth flag). Local component state stays in component-level `useState`.
 - **Vitest + React Testing Library** — unit and component tests.
-- **Playwright** — E2E happy-path checks (mock-login → library → upload → asset-detail → search → delete).
 
-**Deferred to Future-State (Production Hardening workstream):**
+**Deferred to Future-State:**
 
-- **TanStack Query** — server-state library. Useful when network-latency stories grow (caching, refetching, optimistic updates), but the assignment-window UI is small enough that hand-written `useEffect + fetch` plus the `apiFetch` wrapper is fine.
+- **Playwright** — E2E happy-path checks (mock-login → library → upload → asset-detail → search → delete). Originally in Q7's active stack; descoped 2026-04-27 to its own focused workstream (`Future-State-playwright-e2e-workstream.md`) and marked **🔥 HIGH PRIORITY** post-MVP. The assignment-window E2E verification path is the manual CLI smoke in `MetaFiles/HumanTestInstructions/README.md`.
+- **TanStack Query** — server-state library. Useful when network-latency stories grow (caching, refetching, optimistic updates), but the assignment-window UI is small enough that hand-written `useEffect + fetch` plus the `apiFetch` wrapper is fine. Lands with Production Hardening.
 - **axe-core automated accessibility gate in CI** — adds CI-visible regressions catch. Real value, real friction; the design has accessibility built in (Andrew's `tokens.css` already has `prefers-reduced-motion`, focus-visible rings, color-not-only-state). Manual a11y review covers Part 03; the automated gate lands with Production Hardening.
 
 **Implicit defaults (not adopted unless needed):** React Hook Form + Zod (Andrew's Login/Register use plain controlled state — fine for v1). pnpm vs npm — stay with `npm` (Express baseline already uses it; Class Project tooling assumes `npm`). ESLint + Prettier — adopt as conventional defaults.
 
 **Rationale:**
 
-- **Production-quality scaffolding from day one.** TypeScript strict prevents whole categories of bugs and is the lab default; Tailwind + shadcn give a consistent design-system implementation aligned with the tokens; Zustand for global UI state is lightweight and matches the spec; Vitest + RTL + Playwright covers the testing pyramid.
+- **Production-quality scaffolding from day one.** TypeScript strict prevents whole categories of bugs and is the lab default; Tailwind + shadcn give a consistent design-system implementation aligned with the tokens; Zustand for global UI state is lightweight and matches the spec; Vitest + RTL covers the component-test surface (the Playwright-driven E2E layer is descoped to its own Future-State workstream — see Deferred section above).
 - **Migration cost is real but proportionate.** Andrew's MVP components reshape from `.jsx` → `.tsx`, inline-styles → Tailwind classes, and custom Modal/Toast → shadcn primitives. This is more than a rename; it's a re-implementation that *preserves component boundaries and accessibility behaviors* but changes the styling layer. The phased migration plan in `01-ui-workstream.md` accounts for this.
 - **TanStack Query + axe-core deferral is honest.** Both are genuine production wins, but each carries setup + maintenance cost that's higher value once the app is past assignment scope.
 

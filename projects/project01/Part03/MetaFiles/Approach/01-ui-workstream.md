@@ -4,7 +4,7 @@
 
 > **Dev mode (Q5):** Built-only. UI iteration on isolated components may use Vite dev server with mocked API responses, but full-stack testing always uses `npm run build` → `frontend/dist/` → Express static middleware on port 8080. No Vite-dev-server proxy.
 
-> **Stack (Q7, resolved 2026-04-26):** **React 18.3.x** (NOT React 19 — Andrew's MVP runs on React 18.3.1 from a CDN; concurrent-render semantics differ in 19) + Vite + **TypeScript strict** + **Tailwind CSS** + **selective shadcn/ui** + **Zustand** + **Vitest + React Testing Library** + **Playwright**. Andrew's `tokens.css` translates into a Tailwind theme config; Andrew's `.jsx` components migrate to `.tsx` with explicit types. Full replacement of every custom primitive with shadcn/Radix primitives is Future-State; Part 03 uses shadcn only where it accelerates required flows.
+> **Stack (Q7, resolved 2026-04-26; Playwright descoped 2026-04-27):** **React 18.3.x** (NOT React 19 — Andrew's MVP runs on React 18.3.1 from a CDN; concurrent-render semantics differ in 19) + Vite + **TypeScript strict** + **Tailwind CSS** + **selective shadcn/ui** + **Zustand** + **Vitest + React Testing Library**. Andrew's `tokens.css` translates into a Tailwind theme config; Andrew's `.jsx` components migrate to `.tsx` with explicit types. Full replacement of every custom primitive with shadcn/Radix primitives is Future-State; Part 03 uses shadcn only where it accelerates required flows. **Playwright E2E moved to its own Future-State workstream** (`Future-State-playwright-e2e-workstream.md`) — high priority post-MVP; the assignment demo verifies via Vitest+RTL component tests + manual smoke per `MetaFiles/HumanTestInstructions/`.
 
 > **Auth in v1 (Q10, resolved 2026-04-26):** **non-blocking visual scaffolds.** Login/Register exist for visual demo only; no auth guards on any route; default route is `/library`. Users demo the entire app without visiting `/login`. Real auth ships in `Future-State-auth-and-account-management-workstream.md`.
 
@@ -24,7 +24,7 @@ Convert Andrew's Claude Design export into a maintainable React/Vite frontend th
 - Implement Library (renders **both photos and documents**), Asset Detail (photo with Rekognition labels; document with basic file preview + "OCR coming soon" placeholder), Upload (accepts **any file**; server stores photos with Rekognition labels and documents with `kind='document'` and no labels per Q9), and Profile screens.
 - Add Login/Register screens **as non-blocking visual scaffolds** (Q10): default route `/library`; no auth guards.
 - Zustand store for global UI state needed by the MVP (sidebar collapsed, command-palette open if implemented, mock-auth flag). Theme/accent/density tweak controls are Future-State.
-- Test stack: Vitest + React Testing Library for components; Playwright for E2E happy paths (mock-login → library → upload → asset-detail → search → delete).
+- Test stack: **Vitest + React Testing Library for components only**. Playwright E2E is descoped to `Future-State-playwright-e2e-workstream.md` (🔥 high priority post-MVP). Assignment-window E2E verification relies on the manual CLI smoke in `MetaFiles/HumanTestInstructions/README.md`.
 - Accessibility: meet the spec's WCAG 2.1 AA baseline for the in-scope screens via manual review (automated axe-core CI gate is deferred — see Q7).
 - Vite build → `frontend/dist/` is what Express serves.
 
@@ -36,6 +36,7 @@ Convert Andrew's Claude Design export into a maintainable React/Vite frontend th
 - **CommandPalette keyboard launcher** → `Future-State-command-palette-workstream.md` (adds ⌘K search/navigation/actions after library/search/delete flows are stable).
 - **Full shadcn/ui primitive migration** → `Future-State-shadcn-primitive-migration-workstream.md` (replaces remaining custom primitives with standardized shadcn/Radix components after assignment-critical flows are green).
 - **TweaksPanel theme/accent/density controls** → `Future-State-tweaks-panel-workstream.md` (restores Andrew's design-time controls after the assignment MVP is stable).
+- **Playwright E2E test suite** → `Future-State-playwright-e2e-workstream.md` (🔥 **high priority** — first among the no-backend-dependency Future-State workstreams; closes the gap between component tests and manual smoke).
 - **Performance budgets, observability, security headers, multi-env deployment, feature flags, i18n** → `Future-State-production-hardening-workstream.md` (cross-cutting; lands incrementally).
 
 This workstream does **not** own:
@@ -115,14 +116,14 @@ projects/project01/Part03/
         AssetCard.test.tsx
         UploadScreen.test.tsx
         fixtures/               # ports of Andrew's data.jsx for component tests
-    e2e/                        # Playwright happy-path E2E
-      mock-login-to-delete.spec.ts
     dist/                       # Vite build output; served by Express
 ```
 
+(Playwright `e2e/` directory is descoped to `Future-State-playwright-e2e-workstream.md`.)
+
 ## Design Decisions (workstream-local)
 
-- **Frontend stack (per Q7, 2026-04-26):** React + Vite + TypeScript strict + Tailwind CSS + selective shadcn/ui + Zustand + Vitest+RTL + Playwright. Andrew's `tokens.css` becomes `tailwind.config.ts` theme; Andrew's `.jsx` components migrate to `.tsx` with explicit types. Full shadcn/Radix primitive replacement is deferred to `Future-State-shadcn-primitive-migration-workstream.md`.
+- **Frontend stack (per Q7, 2026-04-26; Playwright descoped 2026-04-27):** React 18.3.x + Vite + TypeScript strict + Tailwind CSS + selective shadcn/ui + Zustand + Vitest+RTL. Andrew's `tokens.css` becomes `tailwind.config.ts` theme; Andrew's `.jsx` components migrate to `.tsx` with explicit types. Full shadcn/Radix primitive replacement is deferred to `Future-State-shadcn-primitive-migration-workstream.md`. **Playwright E2E** is its own Future-State workstream (`Future-State-playwright-e2e-workstream.md`).
 - **Auth in v1 (per Q10, 2026-04-26):** **non-blocking.** Login/Register exist as visual scaffolds; no auth guards; default route is `/library`. The Login form's "Sign in" button optionally toggles a `mockAuth` flag in the Zustand store for visual differentiation only (e.g., topbar avatar). Real `POST /api/auth` deferred to `Future-State-auth-and-account-management-workstream.md`.
 - **Mock data:** Andrew's `data.jsx` (`window.MOCK`) ports into `__tests__/fixtures/` as ES-module imports. Component tests import fixtures directly. Runtime always fetches from `/api/*` (no `window.MOCK` reference in production code).
 - **Routing:** React Router 6 (per Q7's stack alignment with spec §13.1). Routes in scope: `/`, `/login`, `/register`, `/library`, `/asset/:id`, `/upload`, `/profile`, `/help`, `/404`. Auth-gated routes (`/admin/*`, `/profile/settings`, `/chat`) are Future-State; not in Part 03.
@@ -250,23 +251,9 @@ export const useUIStore = create<UIState>((set) => ({
 - [ ] **Failing test:** call `useUIStore.getState().toggleSidebar()`; assert `sidebarCollapsed` flipped.
 - [ ] Run test → green.
 
-### Task 1.5: Add Playwright
+### Task 1.5: ~~Add Playwright~~ — DESCOPED 2026-04-27
 
-**Files:**
-
-- Create: `frontend/playwright.config.ts`
-- Create: `frontend/e2e/.gitignore` (ignore Playwright output)
-
-**Steps:**
-
-- [ ] `npm install -D @playwright/test`.
-- [ ] `npx playwright install chromium` (browser binary).
-- [ ] Add `npm run e2e` script invoking `playwright test`.
-- [ ] Stub e2e file `e2e/mock-login-to-delete.spec.ts` with one passing assertion (homepage renders).
-
-**Check your work:**
-
-- Smoke: `npm run e2e` runs the stub and passes.
+Playwright E2E moved to `Future-State-playwright-e2e-workstream.md` (🔥 high priority post-MVP). MVP's E2E verification path is the manual CLI smoke per `MetaFiles/HumanTestInstructions/README.md`. The component test pyramid (Vitest + RTL) covers per-component contracts; the route-level `/api/*` contract is covered by the Phase 6+7+integration tests in the API workstream.
 
 ---
 
@@ -587,7 +574,7 @@ Borrowed from Andrew's spec §9 acceptance criteria, scoped to in-scope screens.
 - [ ] **A3.** File preview loads via `/api/images/:id/file` (no base64) for both photos and documents.
 - [ ] **A11Y1.** Manual a11y review passes for the in-scope screens (focus-visible, keyboard-only nav, screen-reader landmarks). **Automated axe-core CI gate is deferred** per Q7 — lands with `Future-State-production-hardening-workstream.md`.
 - [ ] `npm test` (Vitest) green; `npm run build` clean; TypeScript strict compiles with zero errors.
-- [ ] `npm run e2e` (Playwright) happy-path passes.
+- [ ] Manual CLI smoke per `MetaFiles/HumanTestInstructions/README.md` Tier 3+ passes against the built frontend served by Express. (Automated Playwright happy-path is descoped to `Future-State-playwright-e2e-workstream.md`.)
 - [ ] `npm run build` output served by Express renders identically to `npm run dev`.
 
 ### Task 8.2: Demo Quickstart guide for video teammate

@@ -12,23 +12,22 @@ This doc is a **roadmap index**, not a binding plan. Its job is to (a) name each
 The Part-03-in-scope subset of Andrew's design — driven by what the **assignment requires** AND what the **current Express backend supports** (or can support with workstream 03 alone):
 
 - Login / Register screens — **as visual scaffolds** (mock-auth; real auth deferred to Future-State Auth)
-- Library (grid + list of photos)
-- Asset Detail (photo with Rekognition labels)
-- Upload (photo only — Rekognition path)
+- Library (grid + list — both photos and documents per Q9)
+- Asset Detail (photo with Rekognition labels; document with PDF embed + "OCR coming soon" placeholder per Q9)
+- Upload (any file accepted per Q9; server derives `kind` per Q8)
 - Profile (read-only display of current user)
-- Search by label (uses existing `/api/search?label=` from workstream 03)
+- Search by label (uses existing `/api/search?label=` from workstream 03; lives in Library page header)
 - Delete all images
-- Shell components (TopBar, LeftRail, PageHeader, ToastProvider, Modal, CommandPalette)
-- Design tokens migration (`tokens.css`)
+- Shell components — **MVP shape**: TopBar (wordmark + avatar only), LeftRail, PageHeader, ToastProvider, Modal. **CommandPalette and TweaksPanel are deferred to their own Future-State workstreams.**
+- Design tokens migration (`tokens.css` → `tailwind.config.ts` theme)
 
 Optional polish (supported by current backend; not required by assignment; ship in Part 03 only if time permits):
 
-- TweaksPanel (theme/accent/density toggles)
 - HelpScreen (keyboard-shortcut reference)
 - Mobile responsive parity (mobile-* components)
 - Empty-state illustrations
 
-These optional items live in `01-ui-workstream.md` as a Backlog section, not a separate Future-State doc, because they don't require backend changes.
+These optional items live in `01-ui-workstream.md` as a Backlog section, not a separate Future-State doc, because they don't require backend changes. **TweaksPanel** is no longer "optional polish in Part 03" — promoted to its own Future-State workstream alongside CommandPalette + shadcn migration (see table below).
 
 ---
 
@@ -41,6 +40,10 @@ Four focused approach docs, each scoped around a coherent backend dependency:
 | [`Future-State-auth-and-account-management-workstream.md`](Future-State-auth-and-account-management-workstream.md) | Project 03's `authsvc` Lambdas (`authenticate.zip`, `register.zip`) + `authsvc.users` + `authsvc.tokens` + RBAC `users.role` column | §9.1–§9.3 (login/register/forgot), §9.10–§9.11 (settings, admin), §13.4 (auth handling) |
 | [`Future-State-documents-and-textract-workstream.md`](Future-State-documents-and-textract-workstream.md) | New AWS service: Textract (`DetectDocumentText` + `AnalyzeDocument`) + new IAM perms + new `POST /api/images/:id/ocr` endpoint + S3 layout for OCR JSON | §9.6 (asset detail — document), §9.7 (upload OCR mode), §13.6 (Textract integration) |
 | [`Future-State-chat-workstream.md`](Future-State-chat-workstream.md) | Project 03's `chatapp.registered` + chat Lambda handlers + SSE infrastructure for message delivery | §6 (chat endpoints), §9 (chat screen), `screens.jsx` ChatScreen demo |
+| [`Future-State-command-palette-workstream.md`](Future-State-command-palette-workstream.md) | No backend dependency beyond existing `/api/*` search/list endpoints. Depends on stable Library and Asset Detail routes. | Adds `⌘K` keyboard launcher for navigation, asset search, and common actions. |
+| [`Future-State-shadcn-primitive-migration-workstream.md`](Future-State-shadcn-primitive-migration-workstream.md) | No backend dependency. Depends on the Part 03 UI MVP being stable. | Converts selective shadcn usage into full primitive migration: dialogs, dropdowns, command palette, tabs, forms, toasts, menus. |
+| [`Future-State-tweaks-panel-workstream.md`](Future-State-tweaks-panel-workstream.md) | No backend dependency. Depends on stable frontend shell/tokens/Zustand. | Restores Andrew's TweaksPanel: theme, accent, density, and mock/demo controls after MVP flows are green. |
+| 🔥 **HIGH PRIORITY** [`Future-State-playwright-e2e-workstream.md`](Future-State-playwright-e2e-workstream.md) | No backend dependency beyond a running Express + AWS+RDS stack (already in place post-Phase-8). Depends on Part 03 UI MVP being stable. | Adds Playwright-driven happy-path E2E coverage from a real browser; closes the gap between Vitest+RTL component tests and the manual CLI smoke. |
 | [`Future-State-production-hardening-workstream.md`](Future-State-production-hardening-workstream.md) | Multi-environment deployment (S3+CloudFront+CDN), observability backend (Sentry/CloudWatch RUM), CI/CD (GHA), CSP at distribution layer, dependency-scan automation | §13.7 (a11y), §13.8 (performance), §13.9 (browser/device), §13.10 (security), §13.11 (deployment), §13.12 (observability), §13.13 (i18n), §13.14 (feature flags), §14.1 (success metrics) |
 
 ---
@@ -50,13 +53,19 @@ Four focused approach docs, each scoped around a coherent backend dependency:
 These phases are aspirational. Sequencing is Erik's call when the assignment window closes and we look at what comes next.
 
 ```
-Part 03 ships  →  ─┬─→  Future-State: Auth        (depends on Project 03 lambdas)
-                   ├─→  Future-State: Documents   (independent — new AWS service)
-                   ├─→  Future-State: Chat        (depends on Project 03 chat lambda)
-                   └─→  Future-State: Hardening   (cross-cutting; lands incrementally)
+Part 03 ships  →  ─┬─→  🔥 Future-State: Playwright   (HIGH PRIORITY — closes E2E gap)
+                   ├─→  Future-State: TweaksPanel    (no backend dependency)
+                   ├─→  Future-State: Command        (no backend dependency)
+                   ├─→  Future-State: shadcn         (no backend dependency)
+                   ├─→  Future-State: Auth           (depends on Project 03 lambdas)
+                   ├─→  Future-State: Documents      (independent — new AWS service)
+                   ├─→  Future-State: Chat           (depends on Project 03 chat lambda)
+                   └─→  Future-State: Hardening      (cross-cutting; lands incrementally)
 ```
 
-Auth and Chat both depend on Project 03 deliverables landing first. Documents+Textract is independent (just needs new AWS service). Hardening is cross-cutting and lands incrementally — pieces of it (CI bundle-size check, axe-core gate) are cheap to add early.
+**Playwright E2E is the highest-priority post-MVP workstream** — without it, the gap between component tests (Vitest+RTL) and the live AWS+RDS stack is covered only by the manual CLI smoke (`HumanTestInstructions/README.md`). For any continued evolution post-Canvas, the Playwright suite is the cheapest insurance against demo-path regressions.
+
+The TweaksPanel, CommandPalette, and shadcn primitive migration have no backend dependency; they should wait until assignment-critical UI flows are stable. Auth and Chat both depend on Project 03 deliverables landing first. Documents+Textract is independent (just needs new AWS service). Hardening is cross-cutting and lands incrementally — pieces of it (CI bundle-size check, axe-core gate) are cheap to add early.
 
 ---
 
