@@ -198,6 +198,9 @@ async function deleteAll() {
 
     await dbConn.execute('DELETE FROM labels');
     await dbConn.execute('DELETE FROM assets');
+    // Reset auto-increment so the next upload starts at 1001 again
+    // (matches the seed value in create-photoapp.sql).
+    await dbConn.execute('ALTER TABLE assets AUTO_INCREMENT = 1001');
   } finally {
     await dbConn.end();
   }

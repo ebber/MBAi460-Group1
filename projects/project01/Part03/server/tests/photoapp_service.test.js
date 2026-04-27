@@ -338,7 +338,8 @@ describe('deleteAll()', () => {
       execute: jest.fn()
         .mockResolvedValueOnce([[]])             // SELECT bucketkey: empty
         .mockResolvedValueOnce([{}])             // DELETE FROM labels
-        .mockResolvedValueOnce([{}]),            // DELETE FROM assets
+        .mockResolvedValueOnce([{}])             // DELETE FROM assets
+        .mockResolvedValueOnce([{}]),            // ALTER TABLE assets AUTO_INCREMENT = 1001
       end: jest.fn().mockResolvedValue(),
     };
     aws.getDbConn.mockResolvedValue(fakeDb);
@@ -360,6 +361,7 @@ describe('deleteAll()', () => {
           { bucketkey: 'p_sarkar/uuid-a.jpg' },
           { bucketkey: 'p_sarkar/uuid-b.pdf' },
         ]])
+        .mockResolvedValueOnce([{}])
         .mockResolvedValueOnce([{}])
         .mockResolvedValueOnce([{}]),
       end: jest.fn().mockResolvedValue(),
@@ -387,6 +389,33 @@ describe('deleteAll()', () => {
       { Key: 'p_sarkar/uuid-a.jpg' },
       { Key: 'p_sarkar/uuid-b.pdf' },
     ]);
+  });
+
+  test('resets assets AUTO_INCREMENT to 1001 after DELETE FROM assets', async () => {
+    const fakeDb = {
+      execute: jest.fn()
+        .mockResolvedValueOnce([[]])  // SELECT bucketkey: empty (keeps S3 path quiet)
+        .mockResolvedValueOnce([{}])  // DELETE FROM labels
+        .mockResolvedValueOnce([{}])  // DELETE FROM assets
+        .mockResolvedValueOnce([{}]), // ALTER TABLE assets AUTO_INCREMENT = 1001
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+    aws.getBucket.mockReturnValue({ send: jest.fn() });
+    aws.getBucketName.mockReturnValue('test-bucket');
+
+    await deleteAll();
+
+    const sqls = fakeDb.execute.mock.calls.map(c => c[0]);
+    expect(sqls).toEqual(expect.arrayContaining([
+      expect.stringMatching(/ALTER TABLE assets AUTO_INCREMENT = 1001/),
+    ]));
+
+    // ALTER must come AFTER DELETE FROM assets (otherwise the auto_increment
+    // would reset before there's anything to clear).
+    const deleteAssetsIdx = sqls.findIndex(s => /DELETE FROM assets/.test(s));
+    const alterIdx = sqls.findIndex(s => /ALTER TABLE assets AUTO_INCREMENT = 1001/.test(s));
+    expect(alterIdx).toBeGreaterThan(deleteAssetsIdx);
   });
 
   test('DB delete failure short-circuits before S3 is touched', async () => {

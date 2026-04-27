@@ -232,6 +232,25 @@ The team committed to **Express/Node** as the Part 03 backend (rather than the F
 
 ---
 
+## 2026-04-27 — Reviewer fix #2: `deleteAll()` resets `assets` AUTO_INCREMENT to 1001
+
+Reviewer pass on the Part 03 backend flagged that `deleteAll()` clears rows but doesn't reset MySQL's auto-increment counter. Effect: after a delete, the next upload picks up at the highest-ever assetid + 1, not at the table's seed value of 1001. Mismatch with `create-photoapp.sql`'s `ALTER TABLE assets AUTO_INCREMENT = 1001;` initial state.
+
+**Fix:** added `await dbConn.execute('ALTER TABLE assets AUTO_INCREMENT = 1001');` after `DELETE FROM assets` in `server/services/photoapp.js`. Sits inside the same try/finally so the connection still closes cleanly on failure.
+
+**Test:** new test in `server/tests/photoapp_service.test.js` `describe('deleteAll')`:
+- Asserts the SQL is among the executed statements.
+- Asserts ordering: ALTER must come AFTER DELETE FROM assets (otherwise resetting before there's anything to clear is meaningless).
+- Existing two `deleteAll` tests updated to mock the now-4 `execute` calls instead of 3.
+
+23/23 photoapp_service tests green; 12/12 suites + 73 tests overall green; 2 still skipped (live opt-in).
+
+**Why not also reset `labels`:** `labels` table has `(assetid, label)` composite PRIMARY KEY, no AUTO_INCREMENT. Nothing to reset.
+
+**Why not also reset `users`:** `users` table has its own AUTO_INCREMENT (80001), but `deleteAll()` doesn't touch users — only labels + assets.
+
+---
+
 ## 2026-04-27 — Phase 8: opt-in live integration tests + AWS credential-resolution architecture fix
 
 Live integration tests against real AWS+RDS land, gated behind `PHOTOAPP_RUN_LIVE_TESTS=1`. The first live run surfaced a real architectural smell that's now fixed.
