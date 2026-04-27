@@ -50,6 +50,4 @@ Hybrid — multiple file types in one drop:
 
 ## Integration Status
 
-🔄 **In progress** as of 2026-04-27 (Sub-A Phase 1 underway; Phase 2 audit follows).
-
-Will flip to ✅ when Sub-A Phase 8 closes — at which point all 1609 lines of `UI-Design-Requirements.md` have a routing decision, all relevant artifacts are in `Accelerators/`, all 8 Future-State workstream docs have cross-references, and the integration is recorded in 3 places (this section, `Andrew-MVP-Integration.md` banner, `01-ui-workstream.md` reference banner).
+✅ **COMPLETE** 2026-04-27 — Sub-A closed. All 1609 lines of `UI-Design-Requirements.md` audited via `Part03/MetaFiles/Andrew-MVP-Integration.md` (147 audit rows / 13 routing themes); 7 source files curated to `Part03/Accelerators/` (5 mobile + asset.jsx + screens.jsx); 6 NEW Future-State workstream docs created + 2 existing docs extended; 9 standalone TODOs added; all 8 existing Future-State workstream docs have cross-reference sections back to Accelerators + audit table.

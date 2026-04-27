@@ -46,7 +46,7 @@ Sub-A is complete when:
 | 5 | Cross-references in Future-State workstream docs → `Accelerators/` | ✅ 2026-04-27 | (this commit) | All 8 existing Future-State workstream docs got "Andrew's accelerator artifacts" sections added: 4 reference `Accelerators/ArtifactsForFormLibrary/screens.jsx` (auth, chat, documents-textract, tweaks-panel — `screens.jsx` is multi-screen; cross-workstream sharing); 4 explicitly note "no Accelerator subfolder" with audit-row cross-refs (command-palette, playwright-e2e, production-hardening, shadcn-migration). Each section includes audit row pointers into `Andrew-MVP-Integration.md`. The 6 NEW Future-State docs created in 4.2 already have these refs baked in |
 | 6 | Naming reconciliation note ("MBAi-460" vs `MBAi460-Group1`) | ✅ 2026-04-27 | (this commit) | New "Naming Conventions" section added in `00-coordination-and-contracts.md` (no existing section per Step 6.0 pre-read F10 fix). Documents 3 forms: "MBAi 460" (user-facing), "MBAi-460" (Andrew's drop-folder kebab-case), "MBAi460-Group1" (GitHub repo). Plus path conventions + provenance back to audit row 6 |
 | 7 | Coordination follow-up journal entry | ✅ 2026-04-27 | (this commit) | New `MBAi460-Group1/MetaFiles/Journal/2026-04-27-mvp-closeout-andrew-handshake.md` — TL;DR + what-landed-vs-spec table + audit-organization narrative + how-to-engage instructions + specific items requesting Andrew's eyes (asset.jsx + screens.jsx inventory + Mobile Q-MOB-1 + audit gaps) + coordination logistics |
-| 8 | Mark integration complete + close TODO entries + Map row update | ⏳ | — | Integration-status banner flipped to ✅ in 3 places; 3 Part-03 TODO entries closed; Map row Active→Closed |
+| 8 | Mark integration complete + close TODO entries + Map row update | ✅ 2026-04-27 (this commit) | (this commit) | Integration ✅ flipped in: (1) `Andrew-MVP-Integration.md` Status banner, (2) `export-notes.md` Integration Status, (3) `01-ui-workstream.md` reference banner at top. 3 Part-03 stale sub-A TODOs closed [x] with cross-refs to commits. Map sub-A row state: ✅ COMPLETE; workstream Status: sub-A done, sub-B/D/E remain |
 
 State legend per `Part03/MetaFiles/OrientationMap.md`.
 
@@ -390,28 +390,28 @@ git commit -m "Part03 sub-A Phase 7: coordination follow-up journal entry — MV
 
 **Pre-flight check (F4 reviewer fix):**
 
-- [ ] **Step 8.0a:** Run `git status` from MBAi460-Group1 root — expect clean tree (each prior phase's atomic commit completed). If staged/unstaged content exists, surface to Erik before proceeding.
-- [ ] **Step 8.0b:** Read `01-ui-workstream-plan.md` Master Tracker to confirm sub-A's edits to the 01 Approach doc don't conflict with concurrent 01 work. Note: 01-ui Phase 8 may be ✅ for autonomous portions and 🟡 in-flight for collaborator browser walk — that's expected and does NOT gate sub-A (the collaborator walk only touches `01-ui-workstream-plan.md` substep checkboxes, not `01-ui-workstream.md` Approach doc which sub-A modifies). Surface state to Erik for awareness, do not gate.
+- [x] **Step 8.0a:** Run `git status` from MBAi460-Group1 root — expect clean tree (each prior phase's atomic commit completed). If staged/unstaged content exists, surface to Erik before proceeding.
+- [x] **Step 8.0b:** Read `01-ui-workstream-plan.md` Master Tracker to confirm sub-A's edits to the 01 Approach doc don't conflict with concurrent 01 work. Note: 01-ui Phase 8 may be ✅ for autonomous portions and 🟡 in-flight for collaborator browser walk — that's expected and does NOT gate sub-A (the collaborator walk only touches `01-ui-workstream-plan.md` substep checkboxes, not `01-ui-workstream.md` Approach doc which sub-A modifies). Surface state to Erik for awareness, do not gate.
 
-- [ ] **Step 8.1:** Flip integration-status banner in `Andrew-MVP-Integration.md` (🔄 → ✅) with closeout note.
+- [x] **Step 8.1:** Flip integration-status banner in `Andrew-MVP-Integration.md` (🔄 → ✅) with closeout note.
 
-- [ ] **Step 8.2:** Flip "Integration Status" section in `export-notes.md` (🔄 → ✅).
+- [x] **Step 8.2:** Flip "Integration Status" section in `export-notes.md` (🔄 → ✅).
 
-- [ ] **Step 8.3:** Add reference banner to `01-ui-workstream.md`: "Andrew's UI Design Requirements have been fully audited + integrated — see `Part03/MetaFiles/Andrew-MVP-Integration.md` for the audit table + triage queue."
+- [x] **Step 8.3:** Add reference banner to `01-ui-workstream.md`: "Andrew's UI Design Requirements have been fully audited + integrated — see `Part03/MetaFiles/Andrew-MVP-Integration.md` for the audit table + triage queue."
 
-- [ ] **Step 8.4:** Close the 3 stale sub-A entries in `Part03/MetaFiles/TODO.md`:
+- [x] **Step 8.4:** Close the 3 stale sub-A entries in `Part03/MetaFiles/TODO.md`:
   - "[UI] Fill `ClaudeDesignDrop/notes/export-notes.md`..."
   - "[Coordination] Surface Express pivot + Q1–Q6 decisions to Andrew..."
   - "[UI/Coordination] Reconcile Andrew's design into the approach docs..."
   
   Each gets `[x]` + closure note + cross-ref to this commit.
 
-- [ ] **Step 8.5:** Update `OrientationMap.md`:
+- [x] **Step 8.5:** Update `OrientationMap.md`:
   - Move "Outstanding Integrations sub-A" from Active to Closed (recent)
   - Update Active workstream — sub-A row removed, sub-B / D / E remain *(defined in `OrientationMap.md` Active section — currently sub-B FE↔BE↔doc audit, sub-D viz handoff, sub-E Future-State prioritization; F8 footnote)*
   - Update Compass-derivable state (Active section reflects whatever sub Erik signals next)
 
-- [ ] **Step 8.6:** **Resolve all `<PLACEHOLDER>` markers** in the staged-files list (per the F9 placeholder-resolution rule). Then final atomic commit:
+- [x] **Step 8.6:** **Resolve all `<PLACEHOLDER>` markers** in the staged-files list (per the F9 placeholder-resolution rule). Then final atomic commit:
 
 ```bash
 # Replace <all touched files> with the actual paths from Phase 8.1–8.5 work.
@@ -422,13 +422,12 @@ git commit -m "Part03 sub-A Phase 8: 🎯 Andrew MVP integration COMPLETE — au
 
 ---
 
-## Acceptance Evidence (filled at end)
+## Acceptance Evidence (closeout 2026-04-27)
 
-_(Captured at Phase 8 closeout.)_
-
-- Audit row count: __
-- Bucket distribution: ✅ __ / ⏳ __ / 📋 __ / ❌ __ / 🚩 __ (gaps before triage)
-- Phase 4 triage outcomes: __ TODOs added / __ Future-State entries / __ rejected
-- Accelerators populated: ArtifactsForMobile/__files; other ArtifactsFor<X>/__ subfolders
-- Future-State docs cross-ref'd: __ / 8
-- Sub-A closeout commit: __
+- **Audit row count:** 147 rows (covers all 1609 lines of `UI-Design-Requirements.md` across 17 sections)
+- **Bucket distribution (pre-triage):** 17 pure ✅ / 63 partial ✅ / 42 pure ⏳ / 3 ❌ / 20 pure 🚩 / 63 rows containing 🚩 anywhere
+- **Phase 4 triage outcomes:** 9 NEW Part-03 TODOs added / 8 Future-State entries (6 NEW workstream docs + 2 EXTEND existing) / 3 rejected (Q10 auth, Phase-1 photoapp.py direct, shadcn per R1) / 13 routing themes total
+- **Accelerators populated:** ArtifactsForMobile/ (5 files: mobile-core, mobile-screens, mobile-shell, mobile.css, ios-frame) + ArtifactsForLibraryPolish/ (asset.jsx) + ArtifactsForFormLibrary/ (screens.jsx) = **3 subfolders / 7 files / ~146 KB**
+- **Future-State docs cross-ref'd:** 8 / 8 (auth, chat, command-palette, documents-textract, playwright-e2e, production-hardening, shadcn-migration, tweaks-panel) — each got an "Andrew's accelerator artifacts" section. The 6 NEW Future-State docs created in Phase 4.2 already had refs baked in. Total Future-State docs touched: **14** (8 existing + 6 NEW).
+- **Sub-A closeout commit:** _(this commit)_ — completes the 8-phase sub-A execution
+- **Total commits in sub-A:** 14 (plan v3 finalized → Phase 1 → Phase 2.1-2.6 → Phase 3 → Phase 4.2 → Phase 4.3 → Phase 4.4+4.5 → Phase 5 → Phase 6 → Phase 7 → Phase 8 closeout)

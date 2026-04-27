@@ -12,7 +12,7 @@
 
 ## Status
 
-🔄 **In progress** as of 2026-04-27. **Phase 2 audit complete** (147 rows, all 1609 lines routed); Phase 3 (Accelerators scaffold) + Phase 4 (triage with ⚠️ PAUSE gate for routing) next. Will flip to ✅ when Sub-A Phase 8 closes (gaps triaged; Accelerators populated; Future-State docs cross-referenced).
+✅ **COMPLETE** 2026-04-27 — Sub-A closed in this commit. **All 1609 lines of Andrew's `UI-Design-Requirements.md` audited, routed, and integrated.** 147 rows / 5 buckets / 13 routing themes / 3 Accelerators subfolders / 6 NEW Future-State workstream docs / 2 EXTEND / 9 TODOs.
 
 **Phase 2 audit summary (147 rows):**
 
