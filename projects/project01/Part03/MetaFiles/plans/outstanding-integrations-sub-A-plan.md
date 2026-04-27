@@ -182,7 +182,7 @@ git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/p
 git commit -m "Part03 sub-A Phase 2.2: audit §0–6 (metadata + glossary + vision + users + journeys)"
 ```
 
-- [ ] **Step 2.3:** Audit §9 — Screen-by-screen specs (the meat). Each screen Andrew specifies → one audit row. Cross-ref to our implementing page wrapper or component (e.g., LibraryPage.tsx, AssetDetailPage.tsx, etc.). Then commit (Phase 2 checkpoint #3):
+- [x] **Step 2.3:** Audit §9 — Screen-by-screen specs (the meat). Each screen Andrew specifies → one audit row. Cross-ref to our implementing page wrapper or component (e.g., LibraryPage.tsx, AssetDetailPage.tsx, etc.). Then commit (Phase 2 checkpoint #3):
 
 ```bash
 git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
