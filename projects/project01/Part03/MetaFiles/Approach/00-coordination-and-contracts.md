@@ -313,7 +313,9 @@ Failure examples:
 Implementation note:
 
 - Multer middleware accepts the multipart `file` field; initial implementation buffers to disk in a temp directory (parity with Part 2 semantics).
-- Service then: validates `userid` exists, generates `bucketkey = <username>/<uuid>-<localname>`, uploads buffer to S3, calls Rekognition `DetectLabels`, inserts asset row + label rows in MySQL.
+- Service then performs the shared upload path: validates `userid` exists, derives `kind`, generates `bucketkey = <username>/<uuid>-<localname>`, uploads the buffer to S3, and inserts the asset row in MySQL.
+- If `kind === "photo"`: call Rekognition `DetectLabels` and insert label rows in MySQL.
+- If `kind === "document"`: skip Rekognition and insert no label rows. Textract OCR is Future-State; document rows can be OCR'd retroactively when that workstream lands.
 - Temp file is cleaned up after success or failure (do not rely on multer auto-cleanup alone).
 
 UI behavior:
