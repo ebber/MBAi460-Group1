@@ -232,6 +232,32 @@ The team committed to **Express/Node** as the Part 03 backend (rather than the F
 
 ---
 
+## 2026-04-27 — Pre-Phase 1: Schema migration for `kind` column (live RDS migrated)
+
+The `photoapp.assets` table gained a `kind ENUM('photo','document') NOT NULL DEFAULT 'photo'` column on live RDS, per `DesignDecisions.md` Q8. Forward-only ALTER; one-shot.
+
+**Files created/modified:**
+
+- New: `MBAi460-Group1/projects/project01/migrations/2026-04-26-add-assets-kind.sql` — forward-only ALTER. **One-shot** — do NOT re-run after `utils/rebuild-db` (which now creates the column natively).
+- Modified: `MBAi460-Group1/projects/project01/create-photoapp.sql` — `kind` column now part of the assets DDL so fresh rebuilds include it.
+- Modified: `MBAi460-Group1/utils/_validate_db.py` — added single composite check (`assets.kind: ENUM('photo','document') NOT NULL`); total checks 26 → 27.
+
+**Live RDS execution:**
+
+- Migration ran clean: `Statements: 2 | OK: 2 | Errors: 0`.
+- Distribution: SELECT kind GROUP BY returned 1 group → all 10 existing rows defaulted to `'photo'`.
+- validate-db: 26/27 PASS — the new kind check passes; one **pre-existing unrelated failure** (validate-db expects empty assets table; live RDS has 10 rows from prior testing). Out-of-scope for Pre-Phase 1.
+
+**Side-finding (parser bug in `_run_sql.py`):**
+
+The initial draft of the migration SQL had semicolons inside `--` comments. `_run_sql.py` splits SQL on naked semicolons before filtering comments, so comment-internal semicolons broke the split. The parser saw two malformed statements instead of two clean ones, and the ALTER tried to run against the connection's default `sys` database (because `USE photoapp;` got chopped into a malformed statement upstream).
+
+Fix: rewrote the migration SQL with no semicolons inside comments. The fix is captured at the top of the migration file as a note for future authors. _Future polish (out-of-scope for Pre-Phase 1):_ harden `_run_sql.py` to skip semicolons inside `--` and `/* */` comments before splitting.
+
+**Reviewer-relevant note:** the migration is one-shot. Future agents should NOT re-run this file on a DB that has been rebuilt via `utils/rebuild-db` — the column already exists from `create-photoapp.sql`. See migration file header for the explicit warning.
+
+---
+
 ## 2026-04-27 — 03 Plan written, Phase 0 prematurely executed, refresh-ritual reframing
 
 **Plan written (2026-04-26, commit `93c26e2`):** Detailed 03 execution plan in `MetaFiles/plans/03-api-routes-plan.md` via `superpowers:writing-plans` — TDD per task, two parallel-subagent dispatch points (Phase 1+2+4, Phase 6+7), atomic doc-update gates per task.

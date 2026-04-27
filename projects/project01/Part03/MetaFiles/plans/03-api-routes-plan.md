@@ -64,7 +64,7 @@ Most commands run from `/Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/
 | Phase | Goal | State | Commit | Evidence |
 |---|---|---|---|---|
 | 0 | Pre-execution prep + dep install | ✅ 2026-04-26 / reverified 2026-04-27 | a50ef8c | install-log entry written; 5/5 suites + 8/8 tests green; `/health` + `/api` smoke confirmed; **reverification 2026-04-27: 3 packages at pinned versions, tests green, smoke green** |
-| Pre-1 | Schema migration (kind column) | ⏳ | — | validate-db green; SELECT kind shows photo |
+| Pre-1 | Schema migration (kind column) | ✅ 2026-04-27 | (this commit) | migration ran clean on live RDS; validate-db kind check PASSES; SELECT kind GROUP BY returned 1 group (all 10 existing rows defaulted to `'photo'`) |
 | 1 | `server/schemas.js` (envelope + converters + deriveKind) | ⏳ | — | jest schemas.test.js green |
 | 2 | `server/services/aws.js` (smooth helper.js) | ⏳ | — | jest aws.test.js green |
 | 4 | `server/middleware/upload.js` + cleanupTempFile | ⏳ | — | jest upload.test.js green |
@@ -159,59 +159,59 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 **Files:**
 - Create: `MBAi460-Group1/projects/project01/migrations/2026-04-26-add-assets-kind.sql`
 
-- [ ] **Step M.1.1:** Create the migrations directory if missing (`mkdir -p MBAi460-Group1/projects/project01/migrations`).
-- [ ] **Step M.1.2:** Create the SQL file with content from 03 Pre-Phase 1.
-- [ ] **Step M.1.3:** Visually inspect — confirm: ENUM ordering (`'photo','document'`), `NOT NULL`, `DEFAULT 'photo'`, `AFTER bucketkey`.
+- [x] **Step M.1.1:** Create the migrations directory if missing (`mkdir -p MBAi460-Group1/projects/project01/migrations`). _2026-04-27 — created._
+- [x] **Step M.1.2:** Create the SQL file with content from 03 Pre-Phase 1. _2026-04-27 — created `2026-04-26-add-assets-kind.sql`. **Parser bug surfaced + fixed:** initial draft had semicolons inside `--` comments; `_run_sql.py` splits naively on `;` and broke parsing. Rewrote without comment-semicolons; ran cleanly second time._
+- [x] **Step M.1.3:** Visually inspect — confirm: ENUM ordering (`'photo','document'`), `NOT NULL`, `DEFAULT 'photo'`, `AFTER bucketkey`. _2026-04-27 — confirmed._
 
-**Atomic doc update:** Task M.1 ✅. No commit yet (batch with M.2 + M.3).
+**Atomic doc update:** Task M.1 ✅. No commit yet (batch with M.2 + M.3). _Done._
 
 ### Task M.2: Update `create-photoapp.sql` for fresh-rebuild compatibility
 
 **Files:**
 - Modify: `MBAi460-Group1/projects/project01/create-photoapp.sql`
 
-- [ ] **Step M.2.1:** Read the existing `create-photoapp.sql`.
-- [ ] **Step M.2.2:** Find the `CREATE TABLE assets (...)` statement; add the column line:
+- [x] **Step M.2.1:** Read the existing `create-photoapp.sql`. _2026-04-27 — read._
+- [x] **Step M.2.2:** Find the `CREATE TABLE assets (...)` statement; add the column line:
   ```sql
   kind ENUM('photo','document') NOT NULL DEFAULT 'photo',
   ```
-  positioned AFTER `bucketkey` and BEFORE the closing `)`.
-- [ ] **Step M.2.3:** Visually inspect.
+  positioned AFTER `bucketkey` and BEFORE the closing `)`. _2026-04-27 — added; column-name padding aligned to existing 4 columns (type starts at col 18)._
+- [x] **Step M.2.3:** Visually inspect. _2026-04-27 — confirmed._
 
-**Atomic doc update:** Task M.2 ✅.
+**Atomic doc update:** Task M.2 ✅. _Done._
 
 ### Task M.3: Update validate-db check
 
 **Files:**
 - Modify: `MBAi460-Group1/utils/_validate_db.py`
 
-- [ ] **Step M.3.1:** Read `_validate_db.py`. Find the existing column-shape checks (style template).
-- [ ] **Step M.3.2:** Add a check that `assets.kind` exists with `ENUM('photo','document')` and `NOT NULL`. Match existing check style (function name, message format).
+- [x] **Step M.3.1:** Read `_validate_db.py`. Find the existing column-shape checks (style template). _2026-04-27 — read; `cols = {r[0]: r for r in cur.fetchall()}` pattern noted._
+- [x] **Step M.3.2:** Add a check that `assets.kind` exists with `ENUM('photo','document')` and `NOT NULL`. Match existing check style (function name, message format). _2026-04-27 — single composite check inserted after the bucketkey check; uses `detail=str(cols.get('kind'))` for diagnostic output. Total checks: 26 → 27._
 
-**Atomic doc update:** Task M.3 ✅.
+**Atomic doc update:** Task M.3 ✅. _Done._
 
 ### Task M.4: Run the migration on live RDS
 
 **Files:** none modified (executes SQL).
 
-- [ ] **Step M.4.1:** Confirm Docker up: `utils/lab-status` (from repo root `mbai460-client/`). If down, halt and prompt Erik.
-- [ ] **Step M.4.2:** Run `MBAi460-Group1/utils/run-sql MBAi460-Group1/projects/project01/migrations/2026-04-26-add-assets-kind.sql` (from repo root). Capture output.
-- [ ] **Step M.4.3:** Expect "Query OK" / 0 warnings. If error, halt and surface.
+- [x] **Step M.4.1:** Confirm Docker up: `utils/lab-status` (from repo root `mbai460-client/`). If down, halt and prompt Erik. _2026-04-27 — Lab operational (Colima + Docker daemon green, image present)._
+- [x] **Step M.4.2:** Run `MBAi460-Group1/utils/run-sql MBAi460-Group1/projects/project01/migrations/2026-04-26-add-assets-kind.sql` (from repo root). Capture output. _2026-04-27 — first run failed (comment-semicolon parser bug; see Step M.1.2 note); second run after SQL fix: `Statements: 2 | OK: 2 | Errors: 0 | All statements executed successfully.`_
+- [x] **Step M.4.3:** Expect "Query OK" / 0 warnings. If error, halt and surface. _2026-04-27 — both `USE photoapp` and `ALTER TABLE assets ADD COLUMN kind ...` reported `[OK] (rows affected: 0)`._
 
-**Atomic doc update:** Task M.4 ✅.
+**Atomic doc update:** Task M.4 ✅. _Done._
 
 ### Task M.5: Verify migration
 
-- [ ] **Step M.5.1:** Run `MBAi460-Group1/utils/validate-db` (from repo root). Expect 27/27 checks green (was 26/26 + the new kind check).
-- [ ] **Step M.5.2:** Run an inline `SELECT kind, COUNT(*) FROM photoapp.assets GROUP BY kind;` query via `run-sql` (write a tiny query.sql or use the inline mode). Expect `photo` rows only (existing 1 row = `01degu.jpg`).
+- [x] **Step M.5.1:** Run `MBAi460-Group1/utils/validate-db` (from repo root). Expect 27/27 checks green (was 26/26 + the new kind check). _2026-04-27 — kind check PASSED: `[PASS] assets.kind: ENUM('photo','document') NOT NULL — ('kind', "enum('photo','document')", 'NO', '', 'photo', '')`. **Pre-existing unrelated failure surfaced (out-of-scope):** validate-db expects empty assets table but live RDS has 10 rows (prior testing). 26 PASS / 1 FAIL — the FAIL is the assets-empty assertion, not the kind check. Soft flag for later cleanup._
+- [x] **Step M.5.2:** Run an inline `SELECT kind, COUNT(*) FROM photoapp.assets GROUP BY kind;` query via `run-sql` (write a tiny query.sql or use the inline mode). Expect `photo` rows only (existing 1 row = `01degu.jpg`). _2026-04-27 — wrote temp `_verify-kind.sql` inside `migrations/` (run-sql requires SQL files inside the Class Project repo); query returned 1 group (rows affected: 1) → all 10 existing rows defaulted to `'photo'`. Temp file cleaned up._
 
 **Atomic doc update for the whole Pre-Phase 1:**
-- Mark M.1–M.5 ✅ in this plan + Pre-Phase 1 boxes in 03.
-- Append a `## 2026-04-26 — Pre-Phase 1: Schema migration for kind column` entry to `Part03/MetaFiles/refactor-log.md` documenting: SQL run, validate-db output, baseline row count.
+- Mark M.1–M.5 ✅ in this plan + Pre-Phase 1 boxes in 03. _2026-04-27 — done._
+- Append a `## 2026-04-27 — Pre-Phase 1: Schema migration for kind column` entry to `Part03/MetaFiles/refactor-log.md` documenting: SQL run, validate-db output, baseline row count, parser-bug side-finding. _2026-04-27 — done in this commit._
 
 **Commit:** `Part03 03 Pre-Phase 1: schema migration for kind column (live RDS migrated; create-photoapp.sql + validate-db updated)`.
 
-**Risk note:** ALTER could fail if RDS is sleeping or creds drift. Capture full error verbatim if it happens. Rollback: `ALTER TABLE photoapp.assets DROP COLUMN kind;` (additive, no data loss).
+**Risk note:** ALTER could fail if RDS is sleeping or creds drift. Capture full error verbatim if it happens. Rollback: `ALTER TABLE photoapp.assets DROP COLUMN kind;` (additive, no data loss). _2026-04-27 — actual failure encountered was different: `_run_sql.py` naive `;`-split tripped on semicolons inside `--` comments. Fixed at SQL-file level (no comment-semicolons). The script-hardening fix is out-of-scope; captured as a TODO-worthy parser bug._
 
 ---
 

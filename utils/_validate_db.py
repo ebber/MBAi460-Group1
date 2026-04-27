@@ -72,6 +72,13 @@ check("assetid column exists",   "assetid"   in cols)
 check("userid column exists",    "userid"    in cols)
 check("localname column exists", "localname" in cols)
 check("bucketkey column exists", "bucketkey" in cols)
+check(
+    "assets.kind: ENUM('photo','document') NOT NULL",
+    "kind" in cols
+    and "enum('photo','document')" in (cols["kind"][1] or "").lower()
+    and (cols["kind"][2] or "").upper() == "NO",
+    detail=str(cols.get("kind"))
+)
 
 cur.execute("SHOW CREATE TABLE assets")
 ddl = cur.fetchone()[1]

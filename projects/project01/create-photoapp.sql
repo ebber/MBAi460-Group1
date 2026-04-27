@@ -33,6 +33,7 @@ CREATE TABLE assets
     userid       int not null,
     localname    varchar(128) not null,  -- original name from user
     bucketkey    varchar(128) not null,  -- random, unique name in bucket
+    kind         ENUM('photo','document') NOT NULL DEFAULT 'photo',  -- server-derived from extension; per DesignDecisions.md Q8
     PRIMARY KEY (assetid),
     FOREIGN KEY (userid) REFERENCES users(userid),
     UNIQUE      (bucketkey)

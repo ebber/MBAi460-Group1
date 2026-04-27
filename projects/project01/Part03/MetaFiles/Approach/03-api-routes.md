@@ -182,10 +182,10 @@ ALTER TABLE assets
 
 **Steps:**
 
-- [ ] Write migration SQL.
-- [ ] Run via `utils/run-sql projects/project01/migrations/2026-04-26-add-assets-kind.sql`.
-- [ ] Update `utils/validate-db` to add a check that the `kind` column exists with the expected enum.
-- [ ] Update `projects/project01/create-photoapp.sql` so a clean rebuild includes `kind` from the start.
+- [x] Write migration SQL. _2026-04-27 — `MBAi460-Group1/projects/project01/migrations/2026-04-26-add-assets-kind.sql`._
+- [x] Run via `utils/run-sql projects/project01/migrations/2026-04-26-add-assets-kind.sql`. _2026-04-27 — ran clean on live RDS (after fixing a comment-semicolon parser bug in the initial draft)._
+- [x] Update `utils/validate-db` to add a check that the `kind` column exists with the expected enum. _2026-04-27 — single composite check at `_validate_db.py`; PASSED on live RDS._
+- [x] Update `projects/project01/create-photoapp.sql` so a clean rebuild includes `kind` from the start. _2026-04-27 — column added AFTER `bucketkey`._
 
 **Note (Part 03 scope):** Both `'photo'` and `'document'` are **active** in Part 03. Per Q9, multer accepts all file types (Phase 4); image uploads land with `kind='photo'` and go through Rekognition; non-image uploads land with `kind='document'`, skip Rekognition, and create no label rows. Textract OCR is Future-State. The migration is forward-compatible — Future-State Textract adds OCR-specific columns alongside `kind` without re-touching the kind enum.
 
