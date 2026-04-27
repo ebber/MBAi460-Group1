@@ -95,7 +95,7 @@ Add a TODO entry in `Part03/MetaFiles/TODO.md` at MVP closeout: update `visualiz
 | 2 | Icon shim (Lucide named-imports) | ✅ 2026-04-27 | 6f878dc | 18 named-import icons; 3/3 Icon tests green; vitest total 10/10 |
 | 3 | Shell components (Toast, Modal, TopBar, LeftRail, PageHeader) | ✅ 2026-04-27 | (this commit) | 9 vitest files / 41 tests green; build clean (10.73 kB CSS); Calibration Test #3 — 3 parallel subagents saved ~46% wall vs sequential |
 | (3 PARALLEL — Calibration Test #3, 3 subagents) | | | | |
-| 4 | photoappApi.ts (typed fetch wrapper) | ⏳ | — | photoappApi.test.ts green |
+| 4 | photoappApi.ts (typed fetch wrapper) | ✅ 2026-04-27 | fc8d24e | 11 tests green; types.ts shared with Phase 5+6 fixtures |
 | 5+6 | Library set + Login/Register + Upload + AssetDetail | ⏳ | — | 4 component test files green; vitest full suite green |
 | (5+6 PARALLEL — Calibration Test #4, 4 subagents) | | | | |
 | 7 | Wire to live backend | ⏳ | — | manual CLI smoke green; **🎯 MILESTONE: clickable UI** |
