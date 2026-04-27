@@ -41,7 +41,7 @@ Sub-A is complete when:
 | 0 | Pre-execution baseline (git clean + Map confirmation) | ✅ 2026-04-27 | (folded into Phase 1 commit per plan) | `git status` clean post `0bdf53a` (plan v3 finalized); Map confirms Outstanding Integrations active, sub-A ⏳ designated next |
 | 1 | Fill `export-notes.md` with Andrew's export metadata | ✅ 2026-04-27 | (backfilled at Phase 8) | All template fields populated (Source/Date/File Type/Known Issues/Integration Notes + components mapping table); integration-status section added at 🔄 |
 | 2 | Audit `UI-Design-Requirements.md` (per-screen + per-feature triage table) → `Andrew-MVP-Integration.md` | ✅ 2026-04-27 | 5c6004e → 7fc1033 → eaa5b73 → a59f432 → 866840e → (this commit) | 147 audit rows across all 1609 lines + 17 sections; bucket distribution: 17 pure ✅ / 63 partial ✅ / 42 pure ⏳ / 3 ❌ / 20 pure 🚩; 63 rows total carry 🚩 markers (Phase 4 PAUSE-gate triage input). Spot-checks of ✅ claims (cream/coral tokens, Lucide named imports, Modal focus trap, searchImages wiring) all verified |
-| 3 | Set up `Accelerators/` scaffold (README only) | ⏳ | — | `Accelerators/` directory + `Accelerators/README.md` documenting the pattern. Subfolder population deferred to Phase 4 (post-triage) per F2 reviewer fix |
+| 3 | Set up `Accelerators/` scaffold (README only) | ✅ 2026-04-27 | (this commit) | `Accelerators/` directory + `Accelerators/README.md` documenting the pattern (curated artifacts; ArtifactsFor<WorkstreamName> convention; 1:1 mapping with Future-State docs; distinction from ClaudeDesignDrop/raw; lifecycle + provenance rules). Subfolder population deferred to Phase 4 per F2 |
 | 4 | Triage gaps from Phase 2 audit + populate confirmed `Accelerators/` subfolders (with ⚠️ PAUSE gate for routing confirmation) | ⏳ | — | Each 🚩 gap routed via Erik confirmation; subfolders created for confirmed workstreams; artifacts copied (not moved) from `raw/src/` per F1 fix |
 | 5 | Cross-references in Future-State workstream docs → `Accelerators/` | ⏳ | — | All applicable Future-State docs have pointer sections |
 | 6 | Naming reconciliation note ("MBAi-460" vs `MBAi460-Group1`) | ⏳ | — | One-paragraph clarification in `00-coordination-and-contracts.md` (extends existing section if present per F10) |
@@ -223,20 +223,20 @@ git commit -m "Part03 sub-A Phase 2.6: audit final-pass verification — every �
 
 **Why:** Curated, purpose-organized layer for future workstreams. Distinct from the raw drop. Erik's architectural decision 2026-04-27.
 
-- [ ] **Step 3.1:** Create `Accelerators/` directory.
+- [x] **Step 3.1:** Create `Accelerators/` directory.
 
 ```bash
 mkdir -p /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/Accelerators
 ```
 
-- [ ] **Step 3.2:** Author `Accelerators/README.md` documenting:
+- [x] **Step 3.2:** Author `Accelerators/README.md` documenting:
   - The pattern: curated artifacts from external contributors; subfolder per target Future-State workstream
   - Naming convention: `ArtifactsFor<WorkstreamName>` mirroring Future-State workstream names
   - 1:1 mapping with `Approach/Future-State-*.md` docs (e.g., `ArtifactsForMobile/` ↔ a Future-State Mobile workstream)
   - Lifecycle: artifacts stay until the target workstream consumes them, then they may be retired
   - Distinction from `ClaudeDesignDrop/`: raw/ = preserved export (don't modify); Accelerators/ = curated copies (modifiable, organized by purpose)
 
-- [ ] **Step 3.3:** Atomic commit.
+- [x] **Step 3.3:** Atomic commit.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
