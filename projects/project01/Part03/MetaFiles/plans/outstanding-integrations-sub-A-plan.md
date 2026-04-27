@@ -40,7 +40,7 @@ Sub-A is complete when:
 |---|---|---|---|---|
 | 0 | Pre-execution baseline (git clean + Map confirmation) | ✅ 2026-04-27 | (folded into Phase 1 commit per plan) | `git status` clean post `0bdf53a` (plan v3 finalized); Map confirms Outstanding Integrations active, sub-A ⏳ designated next |
 | 1 | Fill `export-notes.md` with Andrew's export metadata | ✅ 2026-04-27 | (backfilled at Phase 8) | All template fields populated (Source/Date/File Type/Known Issues/Integration Notes + components mapping table); integration-status section added at 🔄 |
-| 2 | Audit `UI-Design-Requirements.md` (per-screen + per-feature triage table) → `Andrew-MVP-Integration.md` | ⏳ | — | Audit table covers all 1609 lines via section sweep with checkpoint commits per section group; every row has a bucket assignment |
+| 2 | Audit `UI-Design-Requirements.md` (per-screen + per-feature triage table) → `Andrew-MVP-Integration.md` | ✅ 2026-04-27 | 5c6004e → 7fc1033 → eaa5b73 → a59f432 → 866840e → (this commit) | 147 audit rows across all 1609 lines + 17 sections; bucket distribution: 17 pure ✅ / 63 partial ✅ / 42 pure ⏳ / 3 ❌ / 20 pure 🚩; 63 rows total carry 🚩 markers (Phase 4 PAUSE-gate triage input). Spot-checks of ✅ claims (cream/coral tokens, Lucide named imports, Modal focus trap, searchImages wiring) all verified |
 | 3 | Set up `Accelerators/` scaffold (README only) | ⏳ | — | `Accelerators/` directory + `Accelerators/README.md` documenting the pattern. Subfolder population deferred to Phase 4 (post-triage) per F2 reviewer fix |
 | 4 | Triage gaps from Phase 2 audit + populate confirmed `Accelerators/` subfolders (with ⚠️ PAUSE gate for routing confirmation) | ⏳ | — | Each 🚩 gap routed via Erik confirmation; subfolders created for confirmed workstreams; artifacts copied (not moved) from `raw/src/` per F1 fix |
 | 5 | Cross-references in Future-State workstream docs → `Accelerators/` | ⏳ | — | All applicable Future-State docs have pointer sections |
@@ -203,7 +203,7 @@ git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/p
 git commit -m "Part03 sub-A Phase 2.5: audit §7–8 + §11–15 (system context + IA + visual + tech + NFR + roadmap)"
 ```
 
-- [ ] **Step 2.6:** Final review pass — verify every ✅ row by reading the implementing file (TDD-style claim-then-verify). Reclassify anything that appears ✅ but isn't actually shipped. Confirm 🚩 rows are well-formed for Phase 4 triage input. Then commit (Phase 2 close-out):
+- [x] **Step 2.6:** Final review pass — verify every ✅ row by reading the implementing file (TDD-style claim-then-verify). Reclassify anything that appears ✅ but isn't actually shipped. Confirm 🚩 rows are well-formed for Phase 4 triage input. Then commit (Phase 2 close-out):
 
 ```bash
 git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md

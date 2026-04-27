@@ -12,7 +12,20 @@
 
 ## Status
 
-🔄 **In progress** as of 2026-04-27. Phase 2 audit underway. Will flip to ✅ when Sub-A Phase 8 closes (all 1609 lines routed; gaps triaged; Accelerators populated; Future-State docs cross-referenced).
+🔄 **In progress** as of 2026-04-27. **Phase 2 audit complete** (147 rows, all 1609 lines routed); Phase 3 (Accelerators scaffold) + Phase 4 (triage with ⚠️ PAUSE gate for routing) next. Will flip to ✅ when Sub-A Phase 8 closes (gaps triaged; Accelerators populated; Future-State docs cross-referenced).
+
+**Phase 2 audit summary (147 rows):**
+
+| Bucket | Count | Notes |
+|---|---|---|
+| ✅ Pure (fully implemented in our shipped MVP) | 17 | Asset-first vocab, Claude-console-styled, MBAi 460 brand, Tailwind tokens (paper/ink/accent palette + 4px grid + radii + shadows + motion), Lucide icons, Modal focus-trap, etc. |
+| partial ✅ (mixed: shipped portion + 🚩 or ⏳ remainder) | 63 | Most "shape-✅ / detail-🚩" rows fall here — page wrappers + components that ship the structure but lack some of Andrew's specified polish (filter bar, sort, pagination, etc.) |
+| ⏳ Pure Future-State | 42 | Auth (FR-AUTH-1..9 + /me/password + Authentication header), chat (FR-CHAT-1..8), Textract (§9.6 + FR-AI-3..5), admin (FR-ADMIN-1..4), presigned URLs, observability stack |
+| ❌ Out-of-scope (explicitly rejected) | 3 | Q10 non-blocking auth (row 9), Phase-1 photoapp.py direct (row 15), shadcn primitives (row 118 — R1 descope) |
+| 🚩 Pure Gap-to-triage | 20 | Phase 4 input |
+| **Rows containing 🚩 (Phase 4 triage candidate count)** | **63** | Includes pure 🚩 + partial ✅ rows where the 🚩 component needs routing |
+
+Phase 4's ⚠️ PAUSE gate surfaces the full 63-row triage input to Erik for routing decisions.
 
 ---
 
