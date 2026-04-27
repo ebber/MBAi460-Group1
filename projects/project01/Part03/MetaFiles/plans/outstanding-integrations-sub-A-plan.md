@@ -278,7 +278,7 @@ git commit -m "Part03 sub-A Phase 3: Accelerators/ scaffold + README.md (subfold
   - **Future-State add** — extend an existing `Approach/Future-State-*.md` doc (preferred where the workstream already exists), OR draft a NEW Future-State doc following the existing pattern (e.g., `Future-State-mobile-workstream.md`). Naming the new file requires Erik approval per the naming rule (likely already given via the PAUSE gate).
   - **Reject** — capture explicit out-of-scope rationale in the audit row (no external file changes)
 
-- [ ] **Step 4.3:** For each Future-State workstream confirmed in Step 4.2 that has Andrew-source artifacts to accelerate it, create the matching `Accelerators/ArtifactsFor<X>/` subfolder and copy (`cp`) the relevant files from `ClaudeDesignDrop/raw/MBAi-460/src/`. **Use `cp` not `mv`** — originals stay in raw/ per the preservation contract (F1). Add `Accelerators/ArtifactsFor<X>/README.md` per subfolder describing what's there + the target workstream.
+- [x] **Step 4.3:** For each Future-State workstream confirmed in Step 4.2 that has Andrew-source artifacts to accelerate it, create the matching `Accelerators/ArtifactsFor<X>/` subfolder and copy (`cp`) the relevant files from `ClaudeDesignDrop/raw/MBAi-460/src/`. **Use `cp` not `mv`** — originals stay in raw/ per the preservation contract (F1). Add `Accelerators/ArtifactsFor<X>/README.md` per subfolder describing what's there + the target workstream.
 
 - [ ] **Step 4.4:** Update `Andrew-MVP-Integration.md`:
   - Mark each 🚩 gap row with its routing destination (cross-link to the TODO entry / Future-State doc / out-of-scope rationale)
