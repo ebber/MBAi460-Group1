@@ -37,7 +37,7 @@ Sub-B is complete when:
 |---|---|---|---|---|
 | 0 | Pre-execution baseline (git clean + Map confirm) | ✅ 2026-04-27 (verified retrospectively as part of plan formation; not a separate execution beat) | — | `git status` clean post `45d2d4f` + `43feb20`; OrientationMap confirms sub-B as designated active sub-workstream |
 | 1 | Contract audit landed | ✅ 2026-04-27 | `45d2d4f` | 23-item audit table + 1 drift + 91% alignment + 5 adjacent observations + scope extension to caller + handler |
-| 2 | Drift Finding #1 fix (00-coord stale example) | ⏳ | — | First example block (lines 263-273) removed; canonical example (lines 282-297) becomes single response shape; preamble headers cleaned up |
+| 2 | Drift Finding #1 fix (00-coord stale example) | ✅ 2026-04-27 | (this commit) | Stale "Success response:" preamble + JSON block (was lines 259-273) removed; canonical block's preamble relabeled from "Example response with `kind`:" to "Success response:". §GET /api/images now shows ONE canonical response example including `kind`. Verified via re-read |
 | 3 | `deleteAllImages` type tightening (confirmed include per Q-Phase3 2026-04-27) | ⏳ | — | `photoappApi.ts` line 54: `Promise<{ deleted: boolean }>` → `Promise<{ deleted: true }>`; tests stay green |
 | 4 | Re-audit + validation | ⏳ | — | Audit doc updated: drift row → ✅; status banner 🔄 → ✅; bucket distribution updated; closeout-summary section filled |
 | 5 | Closeout (Map + plan tracker + summary) | ⏳ | — | Map sub-B row state → ✅ Closed; workstream Status updated; plan tracker rows all ✅ |
@@ -111,13 +111,13 @@ Tracker entry kept here for completeness; no execution work required in this pha
 
 **Why:** The §GET /api/images section currently has TWO example response blocks. The first (lines 263-273) is stale (predates Q8 introduction of `kind`); the second (lines 282-297) is canonical. Cold readers may see the first and assume `kind` is optional. Fix: keep only the canonical shape with `kind` as the single response example.
 
-- [ ] **Step 2.1:** Edit `00-coordination-and-contracts.md` §GET /api/images:
+- [x] **Step 2.1:** Edit `00-coordination-and-contracts.md` §GET /api/images:
   - Remove the first example block (lines 263-273) including its `Success response:` preamble (line 259 ish) — the second block's preamble is what stays
   - Remove "Example response with `kind`:" header above the second block (line 282) and replace with simply "Success response:" — since it's now the single canonical example
 
   Net effect: §GET /api/images shows ONE response example, and that example includes `kind`. Prose at line 279 (which already correctly documents `kind`) stays as-is.
 
-- [ ] **Step 2.2:** Atomic commit.
+- [x] **Step 2.2:** Atomic commit.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1

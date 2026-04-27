@@ -256,22 +256,6 @@ Optional query:
 ?userid=80001
 ```
 
-Success response:
-
-```json
-{
-  "message": "success",
-  "data": [
-    {
-      "assetid": 1001,
-      "userid": 80001,
-      "localname": "01degu.jpg",
-      "bucketkey": "p_sarkar/uuid-01degu.jpg"
-    }
-  ]
-}
-```
-
 Implementation note:
 
 - `mysql2` rows map directly to the documented field set; preserve original column casing in the SQL and shape via a converter helper.
@@ -279,7 +263,7 @@ Implementation note:
 - Each asset row includes `kind: "photo" | "document"` (per Q8). Server-derived from the file extension at upload time: image extensions (`.jpg|.jpeg|.png|.heic|.heif`) → `"photo"`; **everything else** (including `.pdf`, `.txt`, unknown / extensionless) → `"document"`. Stored as a column on the `assets` table; not client-supplied.
 - **Part 03 accepts ALL file types.** Multer applies only a 50 MB size limit; no MIME filter. Photos go through Rekognition `DetectLabels` and produce label rows; documents are stored in S3 + DB with `kind='document'` and **no labels** (Textract OCR for documents is Future-State per Q9; existing document rows can be retroactively OCR'd when that workstream lands). UI uses `kind` to render photo cards (with Rekognition labels) vs. document cards (with metadata + "OCR processing coming soon" placeholder in Part 03).
 
-Example response with `kind`:
+Success response:
 
 ```json
 {
