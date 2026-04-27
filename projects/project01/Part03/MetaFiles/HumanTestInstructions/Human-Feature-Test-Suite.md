@@ -362,15 +362,13 @@ curl -is http://localhost:8080/random-path | head -20
 
 ---
 
-### `[x]` CLI-5 — Unmatched `/api/foo` returns 404 (NOT masked by SPA HTML)
+### `[x]` CLI-5 — Unmatched `/api/foo` returns 404 + JSON envelope (NOT masked by SPA HTML)
 
 ```bash
 curl -is http://localhost:8080/api/foo | head -10
 ```
 
-**Expected:** `404` status. Body is short (`Content-Length` ~146 — Express default error page), NOT the SPA's `index.html` (~406 bytes). This confirms the SPA fallback correctly defers `/api/*` rather than swallowing it.
-
-**Caveat (verified 2026-04-27):** the actual response Content-Type is `text/html; charset=utf-8` (Express's built-in 404), not `application/json`. The error middleware at `server/app.js` catches *thrown errors* via `next(err)`, but Express's default 404 for unmatched routes runs before middleware — so unmatched `/api/*` paths get the HTML default rather than the API envelope. To return JSON envelope for unmatched `/api/*`, an explicit `app.use('/api', (req, res) => res.status(404).json(...))` mount BEFORE the error middleware would be needed. Tracked as TODO in `Part03/MetaFiles/TODO.md`.
+**Expected:** `404` status, `Content-Type: application/json; charset=utf-8`, body is the API envelope (e.g., `{"message":"No route for GET /api/foo"}`). Confirms two boundary properties at once: (1) the SPA fallback correctly defers `/api/*` rather than swallowing it; (2) the `/api` 404 fallback at `server/app.js` returns the same JSON envelope shape used by every other `/api/*` route. Regression-guarded by `server/tests/api_404.test.js`.
 
 ---
 

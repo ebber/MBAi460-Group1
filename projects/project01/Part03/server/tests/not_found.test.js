@@ -1,18 +1,17 @@
-// Coverage review (post-Phase 9 polish): the placeholder /api should
-// scope to /api only, and unmatched paths should fall through to a 404
-// rather than being absorbed by static or the SPA fallback. These tests
-// guard against accidental scope creep when workstream 03 adds real
-// /api/* endpoints, and against any future static/fallback regression.
+// Routing boundary tests — unmatched /api/* paths return 404 (full
+// envelope coverage in api_404.test.js); unmatched non-/api paths
+// fall through to the SPA fallback added in Phase 7.
 
 const request = require('supertest');
 const app = require('../app');
 
-test('GET /api/foo returns 404 (placeholder is scoped to /api only)', async () => {
+test('GET /api/foo returns 404 (api routing boundary)', async () => {
   const res = await request(app).get('/api/foo');
   expect(res.status).toBe(404);
 });
 
-test('GET /random-non-existent returns 404 (no static, no SPA route)', async () => {
+test('GET /random-non-existent serves SPA index (post-Phase-7 fallback)', async () => {
   const res = await request(app).get('/random-non-existent');
-  expect(res.status).toBe(404);
+  expect(res.status).toBe(200);
+  expect(res.headers['content-type']).toMatch(/text\/html/);
 });

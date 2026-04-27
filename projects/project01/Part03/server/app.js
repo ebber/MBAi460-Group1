@@ -43,6 +43,16 @@ app.get('/health', (req, res) => {
 //    MUST be mounted BEFORE express.static.
 app.use('/api', photoappRoutes);
 
+// 3a. /api 404 fallback — JSON envelope for unmatched /api/* paths.
+//     Mounted after the real /api router so it only catches what fell
+//     through; ensures every /api/* response has the same shape as the
+//     rest of the API (no Express default HTML 404). The SPA fallback
+//     below already excludes /api/* so it never reaches this handler
+//     for non-/api paths.
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: `No route for ${req.method} ${req.originalUrl}` });
+});
+
 // 4. Static frontend assets.
 app.use(express.static(FRONTEND_DIST));
 
