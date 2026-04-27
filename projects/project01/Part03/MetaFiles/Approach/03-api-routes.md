@@ -618,14 +618,15 @@ test('listUsers returns user objects ordered by userid', async () => {
 
 **Behavior:**
 
-- If `userid` is provided: `SELECT assetid, userid, localname, bucketkey FROM assets WHERE userid = ? ORDER BY assetid ASC`.
-- Otherwise: same SELECT without WHERE clause.
-- Map rows through `imageRowToObject`.
+- If `userid` is provided: `SELECT assetid, userid, localname, bucketkey, kind FROM assets WHERE userid = ? ORDER BY assetid ASC`.
+- Otherwise: `SELECT assetid, userid, localname, bucketkey, kind FROM assets ORDER BY assetid ASC`.
+- Map rows through `imageRowToObject` (which now emits `kind` per Q8).
 
 **Write failing tests first:**
 
-- `listImages()` calls `dbConn.execute(sql, [])` and returns image objects.
+- `listImages()` calls `dbConn.execute(sql, [])` and returns image objects with `kind` populated.
 - `listImages(80001)` calls `dbConn.execute(sql, [80001])` with the parameterized variant.
+- Mixed-kind result test: mock `dbConn.execute` to return one `'photo'` row + one `'document'` row; assert both round-trip with their `kind` field intact.
 - DB connection is closed in both paths, including on failure.
 
 **Check your work:**
@@ -825,19 +826,33 @@ test('cleanupTempFile is a no-op when the file is missing', () => {
 
 **Behavior:**
 
+**Shared prelude (both kinds):**
+
 1. Validate `userid` exists: `SELECT userid, username FROM users WHERE userid = ?`. If missing → throw `Error('no such userid')`.
 2. Build `bucketkey = <username>/<uuid>-<localname>` (per `00`; deviates from existing baseline which used `uuid + ext`). Username comes from the user lookup row; `localname` is `multerFile.originalname`.
 3. Compute `kind = deriveKind(multerFile.originalname)` (per Q8 — image extensions → `'photo'`, everything else → `'document'`).
 4. Read `multerFile.path` from disk into a Buffer (or stream — Buffer is fine for assignment scope).
-5. `PutObjectCommand` to S3 with `Bucket`, `Key=bucketkey`, `Body=buffer`, optionally `ContentType` from extension. **This step runs regardless of `kind`** — both photos and documents are stored in S3.
-6. **Branch on `kind`:**
-   - **`kind === 'photo'`:** call `DetectLabelsCommand` against the just-uploaded S3 object (`Image: { S3Object: { Bucket, Name: bucketkey } }`, `MaxLabels: 100`, `MinConfidence: 80`). Collect the resulting labels.
-   - **`kind === 'document'`:** **skip** Rekognition entirely. No labels are produced in Part 03 (Textract OCR for documents is Future-State per Q9).
-7. INSERT row into `assets(userid, localname, bucketkey, kind)`; capture `result.insertId` as `assetid`. The row's `kind` reflects the actual file type and stays valid when Future-State Textract lands and starts populating `textract_text` for document rows.
-8. **If `kind === 'photo'`:** for each detected label: `INSERT IGNORE INTO labels(assetid, label, confidence) VALUES (?, ?, ROUND(?))`. **If `kind === 'document'`:** no label inserts.
-9. Return `{ assetid }`.
-10. **Always** call `cleanupTempFile(multerFile.path)` in `finally`, regardless of success or failure or branch.
-11. **Always** `await dbConn.end()` in `finally` for each opened connection.
+5. `PutObjectCommand` to S3 with `Bucket`, `Key=bucketkey`, `Body=buffer`, optionally `ContentType` from extension. **This step runs for both kinds** — every uploaded asset lands in S3.
+6. INSERT row into `assets(userid, localname, bucketkey, kind)`; capture `result.insertId` as `assetid`. The row's `kind` reflects the actual file type and stays valid when Future-State Textract lands and starts populating `textract_text` for document rows.
+
+**Branch on `kind` (mutually exclusive):**
+
+**Photo path (`kind === 'photo'`):**
+
+7a. Call `DetectLabelsCommand` against the just-uploaded S3 object (`Image: { S3Object: { Bucket, Name: bucketkey } }`, `MaxLabels: 100`, `MinConfidence: 80`). Collect the resulting labels.
+8a. For each detected label: `INSERT IGNORE INTO labels(assetid, label, confidence) VALUES (?, ?, ROUND(?))`.
+9a. Return `{ assetid }`.
+
+**Document path (`kind === 'document'`):**
+
+7b. **Skip Rekognition entirely.** Do not call `DetectLabelsCommand`. Do not produce label rows. (Textract OCR for documents is Future-State per Q9; existing document rows can be retroactively OCR'd when that workstream lands.)
+8b. **Skip the labels INSERT entirely.** No `labels` rows are created for documents in Part 03.
+9b. Return `{ assetid }`.
+
+**Shared epilogue (both kinds, `finally` block):**
+
+10. **Always** call `cleanupTempFile(multerFile.path)` — regardless of success or failure or branch.
+11. **Always** `await dbConn.end()` for each opened connection.
 
 **Add a failing test for the document branch:**
 

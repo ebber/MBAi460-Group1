@@ -73,7 +73,7 @@ The Frontend MVP (Andrew, 2026-04-26, in `ClaudeDesignDrop/raw/MBAi-460/`) ships
 | CommandPalette | `src/screens.jsx` | shadcn `Command` (⌘K open, fuzzy search, full keyboard nav) |
 | TweaksPanel | `src/screens.jsx` | TS rewrite; theme / accent / density / mock-data seed (design-time helper) |
 | Library (grid + list) | `src/library.jsx` | TS rewrite; Tailwind grid; filter, sort, view toggle, batch select, empty state |
-| AssetCard / ListView | `src/library.jsx` | TS rewrite; photo + document handling with OCR-excerpt rendering |
+| AssetCard / ListView | `src/library.jsx` | TS rewrite; **photo cards** render Rekognition labels (top 3 + "+N" pill); **document cards** render metadata (filename, size, date, kind badge) + an "OCR coming soon" placeholder where the labels/excerpt would go. Real OCR excerpts on document cards are Future-State (per Q9 — Documents + Textract workstream replaces the placeholder). |
 | LoginScreen / RegisterScreen | `src/auth.jsx` | TS rewrite as **non-blocking visual scaffolds** (Q10); shadcn `Input`; password-rules checklist |
 
 Design tokens live in `src/tokens.css` and are translated into a `tailwind.config.ts` theme (Q7). `src/data.jsx` exposes `window.MOCK` for demo runs; the production frontend imports test fixtures from `__tests__/fixtures/` rather than referencing the global.
@@ -105,13 +105,16 @@ projects/project01/Part03/
 
   frontend/
     package.json
+    tsconfig.json                   # "strict": true (Q7)
+    tailwind.config.ts              # theme = translated tokens.css (Q7)
     index.html
     src/
       api/
-        photoappApi.js
-      components/
-      App.jsx
-      main.jsx
+        photoappApi.ts              # typed fetch wrapper for /api/*
+        types.ts                    # Asset, User, Label, ApiEnvelope<T>
+      components/                   # all .tsx (Q7); shadcn primitives in components/ui/
+      App.tsx
+      main.tsx
     dist/                           # Vite build output; served by Express
 
   server/
@@ -535,7 +538,7 @@ Before deep UI or API work:
 - [ ] `Part03/server` exists with `app.js`, `server.js`, `routes/`, `tests/`.
 - [ ] `GET /` can serve either placeholder or built frontend.
 - [ ] `GET /api` returns the placeholder envelope; `/api/ping` contract is agreed, even if mocked.
-- [ ] UI has `photoappApi.js` wrapper.
+- [ ] UI has `photoappApi.ts` wrapper (typed; envelope-aware).
 - [ ] Server has `/api` placeholder router mounted.
 
 ### Checkpoint 2: Mock Integration
