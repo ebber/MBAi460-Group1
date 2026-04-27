@@ -299,14 +299,14 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 - Create: `server/services/photoapp.js`
 - Create: `server/tests/photoapp_service.test.js`
 
-- [ ] **Step 3.1.1:** Write the failing test per 03 Task 3.1 (jest.mock services/aws; fakeBucket + fakeDb mocks).
-- [ ] **Step 3.1.2:** Run `npm test -- photoapp_service.test.js`. Expected: RED (`getPing is not a function` or module not found).
-- [ ] **Step 3.1.3:** Implement `getPing()` per 03's behavior spec — `Promise.all([s3.send(ListObjectsV2Command), db.execute('SELECT count(userid) ...')])`; return `{s3_object_count, user_count}`; close DB in `finally`.
-- [ ] **Step 3.1.4:** Run `npm test -- photoapp_service.test.js`. Expected: GREEN.
+- [x] **Step 3.1.1:** Write the failing test per 03 Task 3.1 (jest.mock services/aws; fakeBucket + fakeDb mocks). _2026-04-27 — written._
+- [x] **Step 3.1.2:** Run `npm test -- photoapp_service.test.js`. Expected: RED (`getPing is not a function` or module not found). _2026-04-27 — RED confirmed (module not found at `require('../services/photoapp')`)._
+- [x] **Step 3.1.3:** Implement `getPing()` per 03's behavior spec — `Promise.all([s3.send(ListObjectsV2Command), db.execute('SELECT count(userid) ...')])`; return `{s3_object_count, user_count}`; close DB in `finally`. _2026-04-27 — implemented; `??` coalesce on `KeyCount` for safety._
+- [x] **Step 3.1.4:** Run `npm test -- photoapp_service.test.js`. Expected: GREEN. _2026-04-27 — 1/1 test green._
 
-**Atomic doc update:** Task 3.1 ✅ in this plan; 03 Task 3.1 boxes checked.
+**Atomic doc update:** Task 3.1 ✅ in this plan; 03 Task 3.1 boxes checked. _2026-04-27 — 03 has no task-level boxes for Phase 3 (only Pre-Phase 1 had them); plan Step 3.1 boxes flipped._
 
-**Commit:** `Part03 03 Phase 3.1: getPing() — S3 object count + user count`.
+**Commit:** `Part03 03 Phase 3.1: getPing() — S3 object count + user count`. _2026-04-27 — this commit._
 
 ### Task 3.2: `listUsers()`
 
