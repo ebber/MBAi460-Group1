@@ -38,7 +38,7 @@ Sub-B is complete when:
 | 0 | Pre-execution baseline (git clean + Map confirm) | ✅ 2026-04-27 (verified retrospectively as part of plan formation; not a separate execution beat) | — | `git status` clean post `45d2d4f` + `43feb20`; OrientationMap confirms sub-B as designated active sub-workstream |
 | 1 | Contract audit landed | ✅ 2026-04-27 | `45d2d4f` | 23-item audit table + 1 drift + 91% alignment + 5 adjacent observations + scope extension to caller + handler |
 | 2 | Drift Finding #1 fix (00-coord stale example) | ✅ 2026-04-27 | (this commit) | Stale "Success response:" preamble + JSON block (was lines 259-273) removed; canonical block's preamble relabeled from "Example response with `kind`:" to "Success response:". §GET /api/images now shows ONE canonical response example including `kind`. Verified via re-read |
-| 3 | `deleteAllImages` type tightening (confirmed include per Q-Phase3 2026-04-27) | ⏳ | — | `photoappApi.ts` line 54: `Promise<{ deleted: boolean }>` → `Promise<{ deleted: true }>`; tests stay green |
+| 3 | `deleteAllImages` type tightening (confirmed include per Q-Phase3 2026-04-27) | ✅ 2026-04-27 | (this commit) | `photoappApi.ts` lines 54+56 narrowed `Promise<{deleted:boolean}>` → `Promise<{deleted:true}>` (return-type annotation + inline `unwrap` generic). Build ✅ 1770 modules / 861ms (no module count change). Vitest ✅ 17 files / 74 tests pass (no regressions). Type aligns with contract literal |
 | 4 | Re-audit + validation | ⏳ | — | Audit doc updated: drift row → ✅; status banner 🔄 → ✅; bucket distribution updated; closeout-summary section filled |
 | 5 | Closeout (Map + plan tracker + summary) | ⏳ | — | Map sub-B row state → ✅ Closed; workstream Status updated; plan tracker rows all ✅ |
 | 6 | Push (with cred-sweep delta-check assessment + decision) | ⏳ | — | Step 6.0 assesses cred-sweep current capability + estimates LoE to add delta-check mode; Erik picks update-util-now vs queue-and-grep; Step 6.1 pre-push hygiene runs both full state scan + delta check |
@@ -137,7 +137,7 @@ git commit -m "Part03 sub-B Phase 2: drift fix — single canonical Asset respon
 
 **Why:** The contract specifies `DELETE /api/images` returns `{ deleted: true }` (literal `true`). The current TypeScript type is `Promise<{ deleted: boolean }>`, which permits a wider universe (could be `false`). Tightening to `Promise<{ deleted: true }>` aligns the type with the contract. Single-line change; pure type narrowing with no runtime impact.
 
-- [ ] **Step 3.1:** Edit `photoappApi.ts` line 54:
+- [x] **Step 3.1:** Edit `photoappApi.ts` line 54:
   ```diff
   -export async function deleteAllImages(): Promise<{ deleted: boolean }> {
   +export async function deleteAllImages(): Promise<{ deleted: true }> {
@@ -148,11 +148,11 @@ git commit -m "Part03 sub-B Phase 2: drift fix — single canonical Asset respon
   +  return unwrap<{ deleted: true }>(res);
   ```
 
-- [ ] **Step 3.2:** Run `npm run build` from `Part03/frontend/` to confirm TypeScript still compiles. (Tighter type means any consumer that branched on `deleted === false` would now error — but no consumer does, since the implementation always returns `true`.)
+- [x] **Step 3.2:** Run `npm run build` from `Part03/frontend/` to confirm TypeScript still compiles. (Tighter type means any consumer that branched on `deleted === false` would now error — but no consumer does, since the implementation always returns `true`.)
 
-- [ ] **Step 3.3:** Run `npm test` from `Part03/frontend/` to confirm Vitest stays at 17 files / 74 tests green. (Note: frontend `package.json` `"test"` script is already `"vitest run"` — single-pass — no `-- --run` needed.)
+- [x] **Step 3.3:** Run `npm test` from `Part03/frontend/` to confirm Vitest stays at 17 files / 74 tests green. (Note: frontend `package.json` `"test"` script is already `"vitest run"` — single-pass — no `-- --run` needed.)
 
-- [ ] **Step 3.4:** Atomic commit.
+- [x] **Step 3.4:** Atomic commit.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1

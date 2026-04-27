@@ -51,7 +51,7 @@ export async function searchImages(label: string): Promise<SearchHit[]> {
   return unwrap<SearchHit[]>(res);
 }
 
-export async function deleteAllImages(): Promise<{ deleted: boolean }> {
+export async function deleteAllImages(): Promise<{ deleted: true }> {
   const res = await fetch('/api/images', { method: 'DELETE' });
-  return unwrap<{ deleted: boolean }>(res);
+  return unwrap<{ deleted: true }>(res);
 }
