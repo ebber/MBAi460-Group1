@@ -7,7 +7,9 @@
 
 ## Goal
 
-Extend PhotoApp from photo-only to multi-asset: support documents (PDFs, scanned notes, handwritten pages) with **Textract OCR** to extract text + form structure. UI gets a document-class asset detail view (image + text split-pane); upload flow gains a document classification + OCR-mode selection.
+**Document upload is already in Part 03** (per Q9 — multer accepts any file; non-image files land in S3 + DB with `kind='document'`; no OCR yet). This workstream **adds the OCR pipeline** for those existing document rows: **Textract OCR** to extract text + form structure; an asset-detail document view that shows the OCR text alongside the file; an upload flow that triggers OCR mode selection at upload time (text vs. forms); and the supporting AWS service + IAM + schema additions.
+
+The schema starts in good shape: `kind ENUM('photo','document')` lands in Part 03 (Q8). This workstream **adds OCR-specific columns** (`textract_status`, `textract_text`, etc.) without touching `kind`. Existing document rows from Part 03 can be retroactively OCR'd through the new endpoint.
 
 ## Scope
 
@@ -28,12 +30,12 @@ Extend PhotoApp from photo-only to multi-asset: support documents (PDFs, scanned
   - `s3://photoapp-erik-mbai460/ocr/<bucketkey>.textract.json` (full Textract response)
   - `s3://photoapp-erik-mbai460/ocr/<bucketkey>.textract.txt` (flattened text)
 - IAM perms: add `textract:DetectDocumentText`, `textract:AnalyzeDocument`, `textract:StartDocumentTextDetection`, `textract:GetDocumentTextDetection` to the `Claude-Conjurer` policy (or a scoped service role).
-- **UI: Asset Detail (Document)** — Andrew's split-pane view (image left, OCR text right, with synchronized highlighting of bounding boxes).
-- **UI: Upload — document classification + OCR mode** — Andrew's `UploadScreen` "Classify as: photo / document / auto" + "OCR mode: text / forms" radios.
-- Asset `kind` field set to `"document"` for non-image MIME types (decision Q8 from `DesignDecisions.md`).
+- **UI: Asset Detail (Document) — full split-pane view** — Andrew's design (image left, OCR text right, with synchronized highlighting of bounding boxes). Replaces the Part 03 "OCR coming soon" placeholder with real Textract output.
+- **UI: Upload — OCR mode picker** — Andrew's `UploadScreen` "OCR mode: text / forms" radio (the `Classify as: photo / document` radio is already a UX hint in Part 03, but does nothing server-side; this workstream wires both).
 - Cost guards: per-user OCR rate limit (default 20/hour); per-asset re-run cap (3/day) — surfaced as friendly errors per spec §13.6.
-- Library renders document cards with OCR-excerpt instead of label pills.
-- Search includes OCR text across documents (Phase 2 of search; Part 03 search is labels-only).
+- Library updates document-card render: replace "OCR coming soon" placeholder with the OCR excerpt (when `textract_status='done'`); show progress state when `pending`; show error state when `error`.
+- Search extends to OCR text across documents (`WHERE labels.label LIKE ? OR assets.textract_text LIKE ?`). Part 03 search is labels-only.
+- Backfill path: an admin-only endpoint or migration that walks existing `kind='document'` rows from Part 03 and triggers OCR — captures rows uploaded before Textract was provisioned.
 
 **Out of scope (still — even at this workstream):**
 

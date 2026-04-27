@@ -170,39 +170,54 @@ This is the canonical record of significant design decisions for **Project 01 Pa
 
 - Makes `kind` authoritative for downstream services (Textract triggering, search indexing) without requiring the UI to send classification metadata.
 - The `auto` / `photo` / `document` upload radio in Andrew's spec becomes a *hint* (UX), not the source of truth.
-- Simple mapping: `.jpg|.jpeg|.png|.heic` → `'photo'`, `.pdf` → `'document'`, default to `'photo'`.
+- Simple mapping: image extensions (`.jpg|.jpeg|.png|.heic|.heif`) → `'photo'`; **everything else** (`.pdf`, `.txt`, `.docx`, unknown / extensionless) → `'document'`. Documents are stored in Part 03 (Q9), they just don't get OCR processing yet.
 
-**Schema impact (workstream 03):** `assets` table adds a `kind ENUM('photo','document') NOT NULL` column. Migration is forward-only; existing rows default to `'photo'` for the seed `01degu.jpg` etc.
+**Schema impact (workstream 03):** `assets` table adds a `kind ENUM('photo','document') NOT NULL` column. Migration is forward-only; existing rows default to `'photo'` for the seed `01degu.jpg` etc. Both enum values are **active in Part 03** — photos get Rekognition labels, documents are stored without further processing.
 
-**Implication for Part 03:** the multer file filter restricts uploads to photo MIME types (JPEG, PNG, HEIC), so all rows ship with `kind='photo'`. The `'document'` enum value is reserved for the Future-State Documents + Textract workstream.
-
-**Cross-refs:** `00-coordination-and-contracts.md` "Asset response shape"; `03-api-routes.md` Pre-Phase 1 schema migration + Phase 1 row converter + Phase 5 upload service; spec §6 endpoints table.
+**Cross-refs:** `00-coordination-and-contracts.md` "Asset response shape"; `03-api-routes.md` Pre-Phase 1 schema migration + Phase 1 row converter + Phase 5 upload service (with branch on `kind`); Q9 for the document-acceptance scope; spec §6 endpoints table.
 
 **Decided:** Erik 2026-04-26.
 
 ---
 
-## Q9 — Textract scope
+## Q9 — Textract OCR scope (and document-acceptance tension)
 
-**Status:** ✅ Resolved 2026-04-26 — **deferred to Future-State**.
+**Status:** ✅ Resolved 2026-04-26. Updated 2026-04-26 (later same day) after a reviewer flagged a tension between "photo-only" and Andrew's broader asset model. Final shape:
 
-**Decision:** Part 03 ships **photo-only**. Document support (Textract OCR) lands in `Future-State-documents-and-textract-workstream.md` after Part 03.
+**Decision:** **Textract OCR is deferred to Future-State.** But documents themselves are **accepted in Part 03** — stored in S3 + the `assets` table with `kind='document'` — they just don't get OCR processing yet.
+
+**Concretely:**
+
+- **Multer accepts ALL file types** (size-limited to 50 MB; no MIME filter).
+- **Server derives `kind` from extension** (Q8). Image extensions → `'photo'`; everything else → `'document'`.
+- **Photos** go through Rekognition `DetectLabels` and produce label rows.
+- **Documents** are uploaded to S3 + INSERT into `assets` with `kind='document'`. **Rekognition is skipped for documents.** No label rows. No Textract yet.
+- **When the Future-State Textract workstream lands**, existing document rows can be retroactively OCR'd via the new `POST /api/images/:id/ocr` endpoint — no data migration needed; the schema is forward-compatible.
 
 **Rationale:**
 
-- Part 03 is the Project 01 wrap-up; the assignment is photo-focused.
-- Textract is a new AWS service (not in current Terraform), needs new IAM permissions, new endpoint (`POST /api/images/:id/ocr`), schema additions (`textract_status`, `textract_text`, `textract_key`, `ocr_mode`, `ocr_confidence`), and cost guards (per-user rate limit, per-asset re-run cap).
-- Andrew's broader spec (auth, chat, Textract) is preserved in the four Future-State approach docs rather than discarded.
+- Andrew's spec (and the asset-first product principle) treats documents as first-class assets. Rejecting them in Part 03 would force users into "this isn't a photo, you can't upload it" dead-ends and contradict the spec.
+- Storing documents now with `kind='document'` and no OCR is a **clean intermediate state**: the UI can show them, the schema supports them, and the OCR pipeline lands cleanly when Textract is provisioned.
+- Part 03's assignment scope is photo-focused for the core demonstration (Rekognition labels), but document acceptance is a low-cost addition that future-proofs the schema and avoids artificial UX gates.
+
+**What's still deferred (Future-State Documents + Textract workstream):**
+
+- New AWS Textract service + IAM permissions (`textract:DetectDocumentText`, `textract:AnalyzeDocument`, async job APIs).
+- New endpoint: `POST /api/images/:id/ocr`.
+- Schema additions for OCR metadata: `textract_status`, `textract_text`, `textract_key`, `ocr_mode`, `ocr_confidence`.
+- UI: Asset Detail (Document) split-pane view with image + OCR text, bounding-box highlighting, low-confidence underlines.
+- Cost guards (per-user rate limit, per-asset re-run cap).
 
 **Implication for `01-ui-workstream.md`:**
 
-- Upload screen's `document` radio is disabled with "Coming soon — Textract integration in a future phase" tooltip.
-- Library does NOT need to render document cards in Part 03 (zero documents will exist; multer file filter blocks PDF uploads).
-- Asset Detail (Document) split-pane view is in `Future-State-documents-and-textract-workstream.md`, not Part 03.
+- Upload screen accepts any file; the `document` classification radio is a UX hint, not the source of truth (server derives `kind` from extension regardless).
+- Library renders both photo and document cards. Document cards show metadata (filename, size, date, kind badge) instead of labels/OCR-excerpt. An "OCR processing coming soon" pill or empty-state replaces the labels/excerpt section.
+- Asset Detail (Document) is **partially in scope for Part 03**: a basic file preview (PDF inline via `<embed>` or `<iframe>` for browsers that support it; download link for other types) + an "OCR coming soon" placeholder where the text panel will live. The full split-pane view with Textract output is Future-State.
+- Search by label only matches photo assets (correct — documents have no labels in Part 03). Search across OCR text is Future-State.
 
-**Cross-refs:** `Future-State-documents-and-textract-workstream.md` (full Textract scope, schema additions, IAM, cost guards); `Future-State-roadmap.md` (where Textract sits in the broader sequencing); spec §9.6, §13.6.
+**Cross-refs:** `Future-State-documents-and-textract-workstream.md` (full Textract scope, schema additions, IAM, cost guards); `Future-State-roadmap.md` (where Textract sits in the broader sequencing); spec §9.6, §13.6; Q8 for the `kind` derivation rules.
 
-**Decided:** Erik 2026-04-26.
+**Decided:** Erik 2026-04-26 (initial). Reviewer-flagged refinement 2026-04-26 (same day): documents accepted; only Textract OCR deferred.
 
 ---
 

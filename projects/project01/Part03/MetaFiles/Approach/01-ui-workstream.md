@@ -21,7 +21,7 @@ Convert Andrew's Claude Design export into a maintainable React/Vite frontend th
 - Initialize shadcn/ui (Radix-based primitives) and adopt them for Toast / Dialog / DropdownMenu / Command / Popover / Tabs.
 - Migrate Andrew's components from `ClaudeDesignDrop/raw/MBAi-460/src/*.jsx` → `Part03/frontend/src/components/*.tsx` (TS-strict types, Tailwind classes, shadcn primitives where applicable).
 - Wire components to a typed `photoappApi.ts` client that calls `/api/*` (per Q1).
-- Implement Library, Asset Detail (photo), Upload (photo path; no Textract per Q9), and Profile screens.
+- Implement Library (renders **both photos and documents**), Asset Detail (photo with Rekognition labels; document with basic file preview + "OCR coming soon" placeholder), Upload (accepts **any file**; server stores photos with Rekognition labels and documents with `kind='document'` and no labels per Q9), and Profile screens.
 - Add Login/Register screens **as non-blocking visual scaffolds** (Q10): default route `/library`; no auth guards.
 - Zustand store for global UI state (sidebar collapsed, theme selection, command-palette open, mock-auth flag).
 - Test stack: Vitest + React Testing Library for components; Playwright for E2E happy paths (mock-login → library → upload → asset-detail → search → delete).
@@ -94,7 +94,7 @@ projects/project01/Part03/
         CommandPalette.tsx      # built on shadcn Command primitive
         Library.tsx
         AssetCard.tsx, ListView.tsx
-        UploadScreen.tsx        # photo path only; Textract is Future-State (Q9)
+        UploadScreen.tsx        # accepts any file; documents stored without OCR (Q9)
         ProfileScreen.tsx
         LoginScreen.tsx, RegisterScreen.tsx  # visual scaffolds, non-blocking (Q10)
         EmptyLibrary.tsx
@@ -316,8 +316,8 @@ export function Icon({ name, size = 16, className }: { name: string; size?: numb
 
 **Files:**
 
-- Create: `frontend/src/components/ToastProvider.jsx` (port from `shell.jsx` lines 4–33)
-- Create: `frontend/src/components/Modal.jsx` (port from `shell.jsx` lines 35–68)
+- Create: `frontend/src/components/ToastProvider.tsx` (port from `shell.jsx` lines 4–33)
+- Create: `frontend/src/components/Modal.tsx` (port from `shell.jsx` lines 35–68)
 
 **Steps:**
 
@@ -330,27 +330,27 @@ export function Icon({ name, size = 16, className }: { name: string; size?: numb
 
 **Files:**
 
-- Create: `frontend/src/components/TopBar.jsx` (port from `shell.jsx` lines 70–165)
-- Create: `frontend/src/components/LeftRail.jsx` (port from `shell.jsx` lines 167–245)
-- Create: `frontend/src/components/PageHeader.jsx` (port from `shell.jsx` lines 247–270)
+- Create: `frontend/src/components/TopBar.tsx` (port from `shell.jsx` lines 70–165)
+- Create: `frontend/src/components/LeftRail.tsx` (port from `shell.jsx` lines 167–245)
+- Create: `frontend/src/components/PageHeader.tsx` (port from `shell.jsx` lines 247–270)
 
 **Steps:**
 
 - [ ] Failing tests for each: render, assert key text, click handler called.
 - [ ] Port code; replace `Object.assign(window, ...)` global exposure with proper exports.
-- [ ] Migrate `fmtBytes` / `fmtDate` / `fmtDateRel` from `shell.jsx` lines 273–281 into `frontend/src/utils/format.js`.
+- [ ] Migrate `fmtBytes` / `fmtDate` / `fmtDateRel` from `shell.jsx` lines 273–281 into `frontend/src/utils/format.ts`.
 - [ ] Run tests → pass.
 
 ---
 
-## Phase 4: Migrate `photoappApi.js`
+## Phase 4: Migrate `photoappApi.ts`
 
 ### Task 4.1: Typed fetch wrapper
 
 **Files:**
 
-- Create: `frontend/src/api/photoappApi.js`
-- Create: `frontend/src/api/__tests__/photoappApi.test.js`
+- Create: `frontend/src/api/photoappApi.ts`
+- Create: `frontend/src/api/__tests__/photoappApi.test.ts`
 
 **Required functions** (per `00-coordination-and-contracts.md`):
 
@@ -411,13 +411,13 @@ test('error envelope throws', async () => {
 
 ## Phase 5: Migrate Library, AssetCard, ListView
 
-### Task 5.1: Migrate `Library.jsx`
+### Task 5.1: Migrate Andrew's `library.jsx` → `Library.tsx`
 
 **Files:**
 
-- Create: `frontend/src/components/Library.jsx` (port from `library.jsx` lines 1–113, plus `SegmentedControl`, `Dropdown`, `Grid`, `EmptyLibrary` sub-components)
-- Create: `frontend/src/components/AssetCard.jsx` (port from `library.jsx` lines 182–258)
-- Create: `frontend/src/components/ListView.jsx` (port from `library.jsx` lines 260–299)
+- Create: `frontend/src/components/Library.tsx` (port from `library.jsx` lines 1–113, plus `SegmentedControl`, `Dropdown`, `Grid`, `EmptyLibrary` sub-components)
+- Create: `frontend/src/components/AssetCard.tsx` (port from `library.jsx` lines 182–258)
+- Create: `frontend/src/components/ListView.tsx` (port from `library.jsx` lines 260–299)
 
 **Test-first:**
 
@@ -497,17 +497,34 @@ test('default route renders Library, not Login', () => {
 
 **What lands in the Auth Future-State workstream (NOT here):** real `POST /api/auth` + `POST /api/users` calls; `<RequireAuth>` wrapper; default-route flip to `/login` for unauthenticated visitors; token storage + Bearer header injection; 401 → redirect-to-login flow. See `Future-State-auth-and-account-management-workstream.md`.
 
-### Task 6.2: UploadScreen (Rekognition path only — no Textract in v1)
+### Task 6.2: UploadScreen (accepts any file; per-kind processing per Q9)
 
 **Files:**
 
 - Create: `frontend/src/components/UploadScreen.tsx` (port from `screens.jsx` lines 6–119)
 
-**v1 simplifications (per Q9 — Textract deferred):**
+**Per Q9 (documents accepted; OCR deferred):**
 
-- Remove the `ocrMode` radio (Textract is Future-State).
-- The `classify` radio retains "auto" / "photo" / "document" but `document` shows "Coming soon (Textract)" disabled state with a tooltip linking to the Future-State Documents workstream.
+- Drop area + file picker accept **any file type** (photo, PDF, doc, etc.). Multer on the server applies only a 50 MB size limit.
 - Real upload calls `photoappApi.uploadImage(userid, file)`; UI optimistically appends to the queue + updates progress on response.
+- Server derives `kind` from filename extension (Q8). The UI doesn't send classification — the radio in Andrew's MVP is purely a **UX hint**.
+- The `classify` radio is preserved for visual fidelity. Selecting "auto" lets the server derive (the default behavior). Selecting "photo" or "document" is informational (no server contract change in Part 03 — server still derives from extension).
+- Drop the `ocrMode` radio (Textract is Future-State; the radio's "text" / "forms" options have no server-side wiring in Part 03).
+- Queue display shows status per item: photos get "analyzing… → done with N labels"; documents get "uploaded · stored as document · OCR coming soon".
+- Files larger than 50 MB → server returns 400; UI shows a per-item error toast; user can remove + retry with a smaller file.
+
+### Task 6.3: AssetDetail (Document) basic preview (per Q9)
+
+**Files:**
+
+- Create: `frontend/src/pages/AssetDetail.tsx` (already in scope for photos; extend with a per-kind branch)
+
+**Per-kind rendering:**
+
+- **`asset.kind === 'photo'`:** the existing photo view — image preview via `getImageFileUrl(assetid)`; labels list from `getImageLabels(assetid)` sorted by confidence DESC.
+- **`asset.kind === 'document'`:** basic preview — for PDFs, embed via `<embed src={getImageFileUrl(assetid)} type="application/pdf">` (browsers fall back to a download link if PDF embedding is blocked); for other document types, a download link with the filename. **No OCR text panel** in Part 03 — replaced by an "OCR coming soon" empty state with a one-line note pointing at `Future-State-documents-and-textract-workstream.md`.
+
+The full split-pane image+OCR view from spec §9.6 is Future-State.
 
 ---
 
@@ -525,9 +542,12 @@ Replace `MOCK.ASSETS` with a `useEffect` + `getImages()` call. Render skeleton w
 
 End-to-end: select user, select file, click Upload → multipart POST → success → refresh library.
 
-### Task 7.4: Asset detail (photo) — labels + file preview
+### Task 7.4: Asset detail — per-kind branch (photo + document)
 
-New route `/asset/:id`. Calls `getImageLabels(id)` for the labels list; uses `getImageFileUrl(id)` as the preview `<img src>`.
+New route `/asset/:id`. The page reads `asset.kind` from the asset payload and branches:
+
+- **Photo:** existing flow — `<img src={getImageFileUrl(id)}>` for the preview; `getImageLabels(id)` populates the labels list (sorted confidence DESC).
+- **Document:** basic preview only (per Q9). For PDF: `<embed src={getImageFileUrl(id)} type="application/pdf">` with a download-link fallback. For other document types: filename + size + download link. The text panel position shows an "OCR coming soon" empty state — Future-State Textract workstream populates it.
 
 ### Task 7.5: Search by label
 
@@ -550,11 +570,15 @@ Borrowed from Andrew's spec §9 acceptance criteria, scoped to in-scope screens.
 - [ ] **L3.** All in-scope routes render without an auth gate (`/library`, `/asset/:id`, `/upload`, `/profile`, `/help`).
 - [ ] **LIB1.** Library first-paints with ≤50 assets in <2s on a wired connection.
 - [ ] **LIB2.** Grid view: 2 cols <480px, 3 cols 480–768, 4 cols 768–1024, 5 cols ≥1024.
-- [ ] **LIB3.** Cards show ≤3 labels with "+N" pill for overflow.
-- [ ] **U1.** Upload accepts a JPG, returns an assetid, refreshes the library.
+- [ ] **LIB3.** Photo cards show ≤3 labels with "+N" pill for overflow.
+- [ ] **LIB4.** Document cards render with metadata (filename, size, date, kind badge) + "OCR coming soon" placeholder where labels would be (per Q9).
+- [ ] **U1.** Upload accepts a JPG, returns an assetid, refreshes the library; Library shows the new photo card with labels.
 - [ ] **U2.** Upload error is surfaced via toast (not silent).
-- [ ] **A1.** Asset detail shows labels in confidence-DESC order.
-- [ ] **A3.** File preview loads via `/api/images/:id/file` (no base64).
+- [ ] **U3.** Upload accepts a PDF (or other non-image), returns an assetid, refreshes the library; Library shows the new document card with the "OCR coming soon" placeholder (per Q9).
+- [ ] **U4.** Files >50 MB are rejected at the server with a friendly error toast.
+- [ ] **A1.** Asset detail (photo) shows labels in confidence-DESC order.
+- [ ] **A2.** Asset detail (document) shows file preview (PDF embed or download link) + "OCR coming soon" empty state where the text panel would be.
+- [ ] **A3.** File preview loads via `/api/images/:id/file` (no base64) for both photos and documents.
 - [ ] **S1.** ⌘K opens command palette in <100ms.
 - [ ] **S3.** CommandPalette is keyboard-only operable.
 - [ ] **A11Y1.** Manual a11y review passes for the in-scope screens (focus-visible, keyboard-only nav, screen-reader landmarks). **Automated axe-core CI gate is deferred** per Q7 — lands with `Future-State-production-hardening-workstream.md`.
@@ -584,7 +608,7 @@ Contents (sketch — fill during execution):
 - After Phase 1 (Vite app bootstrap + first test green)
 - After Phase 2 (tokens migrated + icon shim)
 - After Phase 3 (shell components migrated)
-- After Phase 4 (photoappApi.js with all envelope handling tests green)
+- After Phase 4 (photoappApi.ts with all envelope handling tests green)
 - After Phase 5 (library renders mock data)
 - After Phase 6 (auth scaffold + upload screen)
 - After each Phase 7 sub-task (live backend wiring is fragile; small commits help)

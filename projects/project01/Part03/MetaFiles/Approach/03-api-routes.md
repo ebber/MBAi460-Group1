@@ -353,15 +353,21 @@ test('deriveKind returns photo for image extensions', () => {
   expect(deriveKind('d.heic')).toBe('photo');
 });
 
-test('deriveKind returns document for pdf', () => {
+test('deriveKind returns document for non-image extensions', () => {
   expect(deriveKind('e.pdf')).toBe('document');
+  expect(deriveKind('f.docx')).toBe('document');
+  expect(deriveKind('g.txt')).toBe('document');
+  expect(deriveKind('h.zip')).toBe('document');
 });
 
-test('deriveKind defaults to photo for unknown extensions', () => {
-  // Part 03's multer file filter rejects non-image MIMEs, so unknown extensions
-  // shouldn't reach this helper at runtime; default to 'photo' to keep the
-  // column NOT NULL.
-  expect(deriveKind('weird.xyz')).toBe('photo');
+test('deriveKind defaults to document for unknown / extensionless files', () => {
+  // Multer accepts ALL file types in Part 03 (Q9). Anything that isn't a
+  // recognized image extension is classified as document; safer default
+  // because the asset still gets stored in S3 + DB with kind='document',
+  // and the Future-State Textract workstream can pick up these rows for
+  // OCR processing later.
+  expect(deriveKind('weird.xyz')).toBe('document');
+  expect(deriveKind('no-extension')).toBe('document');
 });
 ```
 
@@ -370,11 +376,11 @@ test('deriveKind defaults to photo for unknown extensions', () => {
 ```js
 const path = require('path');
 
+const PHOTO_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.heic', '.heif']);
+
 function deriveKind(filename) {
   const ext = path.extname(filename).toLowerCase();
-  if (['.jpg', '.jpeg', '.png', '.heic'].includes(ext)) return 'photo';
-  if (ext === '.pdf') return 'document';
-  return 'photo';
+  return PHOTO_EXTENSIONS.has(ext) ? 'photo' : 'document';
 }
 
 module.exports = { deriveKind, /* ... */ };
@@ -684,36 +690,54 @@ const os = require('os');
 
 const TEMP_DIR = path.join(os.tmpdir(), 'photoapp-uploads');
 
-// Part 03 is photo-only (Q9); Future-State Documents workstream extends to PDFs.
-const ALLOWED_PHOTO_MIMES = new Set([
-  'image/jpeg', 'image/png', 'image/heic', 'image/heif',
-]);
-
+// Part 03 accepts ALL file types. Photos and documents both flow through this
+// middleware; the upload service branches on `kind` (Q8) — photos go through
+// Rekognition, documents are stored as-is (OCR via Textract is Future-State,
+// per Q9). The 50 MB size limit is the only filter at this layer.
 const upload = multer({
   dest: TEMP_DIR,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
-  fileFilter: (req, file, cb) => {
-    if (ALLOWED_PHOTO_MIMES.has(file.mimetype)) return cb(null, true);
-    cb(new Error(`Unsupported file type: ${file.mimetype}. Part 03 accepts JPEG, PNG, HEIC.`));
-  },
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB per file
 });
 
-module.exports = { upload, TEMP_DIR, ALLOWED_PHOTO_MIMES };
+module.exports = { upload, TEMP_DIR };
 ```
 
-Add a test that the filter rejects non-photo MIMEs:
+Add a test that the middleware accepts both photos and documents:
 
 ```js
-test('upload middleware rejects non-photo MIMEs (Q9 — Part 03 photo-only)', async () => {
+test('upload middleware accepts a JPEG (photo)', async () => {
   const app = express();
-  app.post('/test-upload', upload.single('file'), (req, res) => res.sendStatus(200));
-  app.use((err, req, res, next) => res.status(400).json({ error: err.message }));
+  app.post('/test-upload', upload.single('file'), (req, res) => res.json({ ok: true, mime: req.file.mimetype }));
 
   const res = await request(app)
     .post('/test-upload')
-    .attach('file', Buffer.from('fake'), { filename: 'doc.pdf', contentType: 'application/pdf' });
+    .attach('file', Buffer.from('fake'), { filename: 'a.jpg', contentType: 'image/jpeg' });
+  expect(res.status).toBe(200);
+  expect(res.body.mime).toBe('image/jpeg');
+});
+
+test('upload middleware accepts a PDF (document)', async () => {
+  const app = express();
+  app.post('/test-upload', upload.single('file'), (req, res) => res.json({ ok: true, mime: req.file.mimetype }));
+
+  const res = await request(app)
+    .post('/test-upload')
+    .attach('file', Buffer.from('fake'), { filename: 'b.pdf', contentType: 'application/pdf' });
+  expect(res.status).toBe(200);
+  expect(res.body.mime).toBe('application/pdf');
+});
+
+test('upload middleware rejects files over 50 MB', async () => {
+  const app = express();
+  app.post('/test-upload', upload.single('file'), (req, res) => res.sendStatus(200));
+  app.use((err, req, res, next) => res.status(400).json({ error: err.code }));
+
+  const big = Buffer.alloc(51 * 1024 * 1024);
+  const res = await request(app)
+    .post('/test-upload')
+    .attach('file', big, { filename: 'huge.bin', contentType: 'application/octet-stream' });
   expect(res.status).toBe(400);
-  expect(res.body.error).toMatch(/Unsupported file type/);
+  expect(res.body.error).toBe('LIMIT_FILE_SIZE');
 });
 ```
 
@@ -803,15 +827,53 @@ test('cleanupTempFile is a no-op when the file is missing', () => {
 
 1. Validate `userid` exists: `SELECT userid, username FROM users WHERE userid = ?`. If missing → throw `Error('no such userid')`.
 2. Build `bucketkey = <username>/<uuid>-<localname>` (per `00`; deviates from existing baseline which used `uuid + ext`). Username comes from the user lookup row; `localname` is `multerFile.originalname`.
-3. Compute `kind = deriveKind(multerFile.originalname)` (per Q8; helper from `schemas.js` Task 1.3).
+3. Compute `kind = deriveKind(multerFile.originalname)` (per Q8 — image extensions → `'photo'`, everything else → `'document'`).
 4. Read `multerFile.path` from disk into a Buffer (or stream — Buffer is fine for assignment scope).
-5. `PutObjectCommand` to S3 with `Bucket`, `Key=bucketkey`, `Body=buffer`, optionally `ContentType` from extension.
-6. `DetectLabelsCommand` against the just-uploaded S3 object (`Image: { S3Object: { Bucket, Name: bucketkey } }`, `MaxLabels: 100`, `MinConfidence: 80`).
-7. INSERT row into `assets(userid, localname, bucketkey, kind)`; capture `result.insertId` as `assetid`.
-8. For each detected label: `INSERT IGNORE INTO labels(assetid, label, confidence) VALUES (?, ?, ROUND(?))`.
+5. `PutObjectCommand` to S3 with `Bucket`, `Key=bucketkey`, `Body=buffer`, optionally `ContentType` from extension. **This step runs regardless of `kind`** — both photos and documents are stored in S3.
+6. **Branch on `kind`:**
+   - **`kind === 'photo'`:** call `DetectLabelsCommand` against the just-uploaded S3 object (`Image: { S3Object: { Bucket, Name: bucketkey } }`, `MaxLabels: 100`, `MinConfidence: 80`). Collect the resulting labels.
+   - **`kind === 'document'`:** **skip** Rekognition entirely. No labels are produced in Part 03 (Textract OCR for documents is Future-State per Q9).
+7. INSERT row into `assets(userid, localname, bucketkey, kind)`; capture `result.insertId` as `assetid`. The row's `kind` reflects the actual file type and stays valid when Future-State Textract lands and starts populating `textract_text` for document rows.
+8. **If `kind === 'photo'`:** for each detected label: `INSERT IGNORE INTO labels(assetid, label, confidence) VALUES (?, ?, ROUND(?))`. **If `kind === 'document'`:** no label inserts.
 9. Return `{ assetid }`.
-10. **Always** call `cleanupTempFile(multerFile.path)` in `finally`, regardless of success or failure.
+10. **Always** call `cleanupTempFile(multerFile.path)` in `finally`, regardless of success or failure or branch.
 11. **Always** `await dbConn.end()` in `finally` for each opened connection.
+
+**Add a failing test for the document branch:**
+
+```js
+test('uploadImage stores a document without calling Rekognition (Q9)', async () => {
+  const fakeDb = {
+    execute: jest.fn()
+      .mockResolvedValueOnce([[{ userid: 80001, username: 'p_sarkar' }]])    // user lookup
+      .mockResolvedValueOnce([{ insertId: 1042 }])                            // assets INSERT
+      .mockResolvedValue([[]]),                                               // any extra calls
+    end: jest.fn().mockResolvedValue(),
+  };
+  aws.getDbConn.mockResolvedValue(fakeDb);
+  aws.getBucket.mockReturnValue({ send: jest.fn().mockResolvedValue({}) });
+  // Note: Rekognition mock is NOT armed; the test asserts it's never called.
+  const rekogSend = jest.fn();
+  aws.getRekognition.mockReturnValue({ send: rekogSend });
+
+  const fakeFile = { path: '/tmp/abc', originalname: 'lecture-notes.pdf' };
+  const result = await uploadImage(80001, fakeFile);
+
+  expect(result).toEqual({ assetid: 1042 });
+  expect(rekogSend).not.toHaveBeenCalled();   // ← key assertion: documents skip Rekognition
+  // assets INSERT received kind='document'
+  expect(fakeDb.execute).toHaveBeenCalledWith(
+    expect.stringMatching(/INSERT INTO assets/),
+    expect.arrayContaining([80001, 'lecture-notes.pdf', expect.any(String), 'document'])
+  );
+  // No labels INSERT for documents
+  expect(fakeDb.execute).not.toHaveBeenCalledWith(
+    expect.stringMatching(/INSERT IGNORE INTO labels/),
+    expect.anything()
+  );
+  expect(upload.cleanupTempFile).toHaveBeenCalledWith('/tmp/abc');
+});
+```
 
 **Write failing tests first:**
 
