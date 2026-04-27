@@ -2,11 +2,11 @@
 
 > **For agentic workers:** Inline execution by the active agent (lightweight pattern, mirroring 02 + 03; NOT full `superpowers:subagent-driven-development` ceremony — overhead is wrong for this scope per `feedback_subagent_overhead.md`). Steps use checkbox (`- [ ]`) syntax for tracking. **Updating this plan, the 01 approach doc, install-log, and source code are ATOMIC with each task's commit — not deferred.**
 
-**Goal:** Implement the Part 03 UI MVP per `MetaFiles/Approach/01-ui-workstream.md` — Vite + TS strict + Tailwind + selective shadcn + Zustand frontend; migrate Andrew's components to TypeScript; wire to the live `/api/*` backend; ship a clickable demo at http://localhost:8080. All TDD-disciplined; all Q7/Q9/Q10 design decisions honored.
+**Goal:** Implement the Part 03 UI MVP per `MetaFiles/Approach/01-ui-workstream.md` — Vite + TS strict + Tailwind + Zustand frontend (shadcn/ui descoped 2026-04-27 per reviewer remediation); migrate Andrew's components to TypeScript with custom Tailwind-styled primitives; wire to the live `/api/*` backend; ship a clickable demo at http://localhost:8080. All TDD-disciplined; all Q7/Q9/Q10 design decisions honored.
 
 **Architecture:** React 18.3.x app under `Part03/frontend/` built by Vite into `frontend/dist/` and served by Express static middleware on port 8080 (Q5 built-only). Andrew's `tokens.css` translates into Tailwind theme; `.jsx` components migrate to `.tsx` with explicit types. Zustand global UI state for sidebar + mockAuth. Vitest + React Testing Library for component tests. Manual CLI smoke per `HumanTestInstructions/README.md` for E2E (Playwright is its own Future-State workstream — see `Future-State-playwright-e2e-workstream.md`).
 
-**Tech Stack:** React 18.3.x, Vite (latest), TypeScript strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`, Tailwind CSS 3.x, shadcn/ui (selective: Button, Input, Dialog initially), Zustand, lucide-react, react-router-dom 6, Vitest, @testing-library/react, jsdom.
+**Tech Stack:** React 18.3.x, Vite (latest), TypeScript strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`, Tailwind CSS 3.x, Zustand, lucide-react, react-router-dom 6, Vitest, @testing-library/react, jsdom. Optional: `clsx` + `tailwind-merge` for a `cn()` helper if any component needs class composition. **shadcn/ui is NOT used** — descoped 2026-04-27 per reviewer remediation; UI primitives implemented as custom Tailwind-styled React components.
 
 **Approach doc (source of truth):** `MetaFiles/Approach/01-ui-workstream.md`. This plan adds **state tracking, evidence, atomic-update gates, parallelism dispatch, and recovery** — code snippets and full task content live in 01. Where this plan says "per 01 Task X.Y", read 01 for the failing-test code, expected commands, and implementation snippets.
 
@@ -91,7 +91,7 @@ Add a TODO entry in `Part03/MetaFiles/TODO.md` at MVP closeout: update `visualiz
 | Phase | Goal | State | Commit | Evidence |
 |---|---|---|---|---|
 | 0 | Pre-execution prep | ⏳ | — | working tree clean; backend baseline still 12/73 |
-| 1 | Vite + TS strict + Tailwind + selective shadcn + Zustand + Router | ⏳ | — | `npm run build` clean; placeholder shell renders via Express |
+| 1 | Vite + TS strict + Tailwind + Zustand + Router (shadcn descoped) | ⏳ | — | `npm run build` clean; placeholder shell renders via Express |
 | 2 | Icon shim (Lucide named-imports) | ⏳ | — | Icon.test.tsx green |
 | 3 | Shell components (Toast, Modal, TopBar, LeftRail, PageHeader) | ⏳ | — | 5 component test files green |
 | (3 PARALLEL — Calibration Test #3, 3 subagents) | | | | |
@@ -113,21 +113,23 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 **Files:** none modified. Read-only verification.
 
-- [ ] **Step 0.1.1:** From `Part03/`, run `npm test`. Expected: 12 suites / 71 passed + 2 skipped (live integration tests are opt-in).
+- [ ] **Step 0.1.1:** From `Part03/`, run `npm test`. **Expected: ≥73 passed, ≤2 skipped.** (Live integration tests are opt-in.) **Strictly higher count than the baseline below is acceptable** (backend may have grown since plan was written); lower count or new failures is a blocker.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03
 npm test
 ```
 
-Expected last 5 lines:
+Expected last 5 lines (current baseline 2026-04-27 post-reviewer-fixes):
 ```
 Test Suites: 1 skipped, 11 passed, 11 of 12 total
-Tests:       2 skipped, 71 passed, 73 total
+Tests:       2 skipped, 73 passed, 75 total
 Snapshots:   0 total
 Time:        ~0.6 s
 Ran all test suites.
 ```
+
+If count differs, run `git log --oneline -3` to confirm backend test additions landed since this plan was written. Strictly higher count = OK; equal-or-lower-with-failures = blocker.
 
 - [ ] **Step 0.1.2:** Run `git status`. Expected: `nothing to commit, working tree clean`.
 
@@ -178,7 +180,7 @@ Expected output: `dist`
 
 ---
 
-## Phase 1: App Bootstrap (Vite + TS strict + Tailwind + selective shadcn + Zustand + Router)
+## Phase 1: App Bootstrap (Vite + TS strict + Tailwind + Zustand + Router)
 
 **Reference:** 01 §Phase 1 (Tasks 1.1, 1.2, 1.3, 1.4). Task 1.5 was descoped (Playwright moved to Future-State).
 
@@ -454,64 +456,20 @@ git add projects/project01/Part03/frontend/ projects/project01/Part03/MetaFiles/
 git commit -m "Part03 01 Phase 1.2: Tailwind + Andrew's tokens.css → tailwind.config.ts theme"
 ```
 
-### Task 1.3: Selective shadcn/ui primitives (Button, Input, Dialog)
+### Task 1.3: ~~Selective shadcn/ui primitives~~ — DESCOPED 2026-04-27 (reviewer remediation)
 
-**Files:**
+shadcn/ui is **NOT used in the MVP**. UI primitives are implemented as custom Tailwind-styled React components:
 
-- Create: `Part03/frontend/components.json` (shadcn config)
-- Create: `Part03/frontend/src/lib/utils.ts` (cn helper)
-- Create: `Part03/frontend/src/components/ui/button.tsx`
-- Create: `Part03/frontend/src/components/ui/input.tsx`
-- Create: `Part03/frontend/src/components/ui/dialog.tsx`
+- **Modal** → custom component in Phase 3 Subagent A (`Modal.tsx` with Escape-key + click-outside close + focus return + portal rendering). Reused by Phase 7.6 delete confirmation.
+- **Button / Input** → native `<button>` / `<input>` with Tailwind utility classes (Phase 6 Subagent B uses these directly).
+- **DropdownMenu** (TopBar avatar) → custom Tailwind-styled `<div>` with toggle state + ARIA disclosure pattern (Phase 3 Subagent B).
+- **Toaster** → custom in Phase 3 Subagent A (`ToastProvider.tsx` with context-based pub/sub).
 
-- [ ] **Step 1.3.1:** Initialize shadcn-ui.
+**Optional:** `npm install clsx tailwind-merge` if any component needs a `cn()` helper for class composition. Not required for MVP — only install if a concrete need surfaces during execution.
 
-```bash
-cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend
-npx shadcn-ui@latest init
-```
+**Why descoped:** Phase 3 already creates a custom Modal (the only place shadcn's accessibility plumbing would have saved real work). Other primitives (Button, Input) are trivial Tailwind one-liners. The avatar dropdown (1–2 items) needs ARIA disclosure, not a full focus trap — manageable as a small custom component. Removing shadcn cuts a meaningful dep surface (@radix-ui/* transitive packages) and keeps stylistic coherence with Andrew's custom MVP.
 
-When prompted:
-- Style: **Default**
-- Base color: **Stone** (closest to Andrew's cream/coral; we override via tokens anyway)
-- CSS file: `src/styles/globals.css`
-- CSS variables: **yes** (token-friendly)
-- Tailwind config: `tailwind.config.ts`
-- Components alias: `@/components`
-- Utilities alias: `@/lib/utils`
-- React Server Components: **no** (Vite SPA, not Next.js)
-
-- [ ] **Step 1.3.2:** Add the three initial primitives.
-
-```bash
-npx shadcn-ui@latest add button input dialog
-```
-
-- [ ] **Step 1.3.3:** **Failing test:** `Part03/frontend/src/components/ui/__tests__/button.test.tsx`:
-
-```tsx
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { Button } from '../button';
-
-describe('Button (shadcn)', () => {
-  it('renders with provided text', () => {
-    render(<Button>Click me</Button>);
-    expect(screen.getByRole('button', { name: 'Click me' })).toBeInTheDocument();
-  });
-});
-```
-
-(Vitest setup happens in Task 1.4.5; for now the test file is just authored and committed. Will run green once Vitest is wired.)
-
-- [ ] **Step 1.3.4:** Append shadcn install to `install-log.md`.
-
-- [ ] **Step 1.3.5:** Atomic doc update + commit.
-
-```bash
-git add projects/project01/Part03/frontend/ projects/project01/Part03/MetaFiles/install-log.md projects/project01/Part03/MetaFiles/plans/01-ui-workstream-plan.md
-git commit -m "Part03 01 Phase 1.3: shadcn/ui init + selective primitives (Button, Input, Dialog)"
-```
+(Original Task 1.3 reviewed and removed 2026-04-27 per reviewer remediation R1.)
 
 ### Task 1.4: Zustand store + Vitest + RTL test infra
 
@@ -634,7 +592,7 @@ describe('useUIStore', () => {
 npm test
 ```
 
-Expected: 3 tests pass (Button + 2 Zustand). If Button test fails because Vitest can't resolve `@/lib/utils` or shadcn imports, confirm `vitest.config.ts` alias is correct and matches `tsconfig.json` paths.
+Expected: **2 tests pass (the 2 Zustand tests).** If Vitest can't resolve `@/...` aliases, confirm `vitest.config.ts` alias matches `tsconfig.json` paths. (No shadcn Button test — Task 1.3 descoped per reviewer remediation R1.)
 
 - [ ] **Step 1.4.8:** Append zustand + vitest install to `install-log.md`.
 
@@ -979,7 +937,7 @@ Plus the format helpers (lines 273–281: `fmtBytes`, `fmtDate`, `fmtDateRel`) p
 >
 > **MVP shape (per M-2 from the UI burr-patch, 2026-04-27):** wordmark on the left + avatar dropdown on the right. **OMIT** the ⌘K trigger button, tweaks toggle button, and notifications bell — those are deferred to their respective Future-State workstreams. NOT no-op visual stubs; physically removed from the JSX so no UX traps in the demo.
 >
-> Avatar: shadcn `DropdownMenu` (already installed) showing the user's initials when `mockAuth.isMockAuthed` is true (read from `useUIStore`), or an anonymous icon (`<Icon name="user" />`) when not.
+> Avatar dropdown: implement as a custom Tailwind-styled `<div>` with relative positioning and toggle state — do NOT use shadcn DropdownMenu (not installed per 2026-04-27 descope decision). Focus trap and keyboard close (Escape) must be implemented manually to maintain WCAG 2.1 AA compliance for the avatar control. **Implementation note:** for a simple avatar disclosure (1–2 items: Profile, Sign out), ARIA-correct disclosure (`aria-expanded` + `aria-haspopup="menu"` + Escape-close + click-outside-close + focus-visible ring) is sufficient; a full focus-trap pattern can be implemented if reviewer requires. The trigger shows the user's initials when `mockAuth.isMockAuthed` is true (read from `useUIStore`), or an anonymous icon (`<Icon name="user" />`) when not.
 >
 > Tests cover: render with `mockAuth.isMockAuthed = false` shows anonymous icon; render with `mockAuth = { isMockAuthed: true, givenname: 'Pooja', familyname: 'Sarkar' }` shows initials "PS" or similar.
 >
@@ -1320,6 +1278,51 @@ git commit -m "Part03 01 Phase 4.1: photoappApi.ts typed fetch wrapper with enve
 - **Subagent C (Upload):** UploadScreen (port from `screens.jsx`; Q9 — accepts any file; classify radio is UX hint only; ocrMode radio dropped).
 - **Subagent D (Asset detail):** AssetDetail page component scaffold with per-kind branch (per Task 6.3 redesign — component-only, fixtures; live wiring is Phase 7.4).
 
+### Task P4.0: Create shared fixture file (main thread, pre-dispatch)
+
+**Why (per reviewer remediation R2):** Subagent D imports fixtures from `__tests__/fixtures/assets.ts`. In a true parallel run, Subagent A would not have created the file when D starts. Pre-create the shared fixture on main thread; A and D both import.
+
+**Files:**
+
+- Create: `Part03/frontend/src/__tests__/fixtures/assets.ts`
+
+- [ ] **Step P4.0.1:** Create `Part03/frontend/src/__tests__/fixtures/assets.ts`:
+
+```ts
+import type { Asset, Label } from '@/api/types';
+
+export const mockPhotoAsset: Asset = {
+  assetid: 1001,
+  userid: 80001,
+  localname: '01degu.jpg',
+  bucketkey: 'p_sarkar/uuid-01degu.jpg',
+  kind: 'photo',
+};
+
+export const mockDocumentAsset: Asset = {
+  assetid: 1042,
+  userid: 80001,
+  localname: 'test.pdf',
+  bucketkey: 'p_sarkar/uuid-test.pdf',
+  kind: 'document',
+};
+
+export const mockAssets: Asset[] = [mockPhotoAsset, mockDocumentAsset];
+
+export const mockLabels: Label[] = [
+  { label: 'Animal', confidence: 99 },
+  { label: 'Dog', confidence: 92 },
+];
+```
+
+- [ ] **Step P4.0.2:** Atomic doc update + commit (precedes the 4-subagent dispatch):
+
+```bash
+cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
+git add projects/project01/Part03/frontend/src/__tests__/fixtures/assets.ts projects/project01/Part03/MetaFiles/plans/01-ui-workstream-plan.md
+git commit -m "Part03 01 Phase 5+6 pre-dispatch: shared fixture file (mockPhotoAsset, mockDocumentAsset, mockLabels) for Subagents A + D"
+```
+
 ### Task P4.1: Dispatch 4 subagents in parallel
 
 **Files (subagent territories):**
@@ -1381,7 +1384,7 @@ git commit -m "Part03 01 Phase 4.1: photoappApi.ts typed fetch wrapper with enve
 > - AssetCard document renders kind badge + "OCR coming soon".
 > - ListView renders rows for each asset.
 >
-> Fixtures file at `__tests__/fixtures/assets.ts` exports a small mocked `Asset[]` (use the seed `01degu.jpg` shape per Part 03 + a fake PDF). Include sample labels.
+> Fixtures file at `Part03/frontend/src/__tests__/fixtures/assets.ts` is created on main thread BEFORE this dispatch (Task P4.0); import `mockPhotoAsset`, `mockDocumentAsset`, `mockAssets`, `mockLabels` from it. Subagent A may EXTEND the file with additional fixtures specific to Library tests (e.g., a 5-asset list for filter testing) but must NOT redefine the shared exports.
 >
 > Constraints: TS strict; named exports.
 
@@ -1394,7 +1397,7 @@ git commit -m "Part03 01 Phase 4.1: photoappApi.ts typed fetch wrapper with enve
 > - The Register submit handler same: sets `mockAuth` for visual demo + navigates.
 > - "Forgot?" link opens a Modal placeholder pointing at staff contact (per spec §9.3). No password-reset call.
 >
-> Use shadcn `<Input>` for fields. Use shadcn `<Button>` for submit. Tailwind classes via translated theme.
+> Use native `<input>` and `<button>` elements with Tailwind utility classes. No shadcn primitives. Example: `<input className="w-full px-3 py-2 border border-paper-2 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-ring" />`, `<button className="px-4 py-2 bg-accent text-accent-fg rounded-md hover:bg-accent-2 focus:outline-none focus:ring-2 focus:ring-accent-ring">Submit</button>`. Preserve focus-visible behavior + accessible labels (`<label for>` pattern) for WCAG 2.1 AA.
 >
 > Tests:
 > - LoginScreen renders the form (username + password inputs).
@@ -1437,10 +1440,10 @@ git commit -m "Part03 01 Phase 4.1: photoappApi.ts typed fetch wrapper with enve
 >
 > Props: `{ asset: Asset; previewSrc?: string; labels?: Label[] }`. Phase 7.4 will pass `previewSrc = getImageFileUrl(asset.assetid)` and `labels = await getImageLabels(asset.assetid)` from live API.
 >
-> Tests:
-> - Photo asset (fixture from `__tests__/fixtures/assets.ts`) + sample labels: renders image + labels list (top label first by confidence DESC).
-> - Document asset (PDF fixture): renders `<embed>` + filename + "OCR coming soon" empty state. NO labels list rendered for documents.
-> - Unknown asset.kind: graceful fallback (no crash).
+> Tests (import fixtures from `@/__tests__/fixtures/assets.ts` — created on main thread before dispatch via Task P4.0):
+> - `mockPhotoAsset` + `mockLabels`: renders image + labels list (top label first by confidence DESC).
+> - `mockDocumentAsset`: renders `<embed>` + filename + "OCR coming soon" empty state. NO labels list rendered for documents.
+> - Unknown `asset.kind`: graceful fallback (no crash).
 >
 > Constraints: TS strict; named export `AssetDetail`. Use `Icon` shim where useful (download icon, etc.).
 
@@ -1613,7 +1616,7 @@ git commit -m "Part03 01 Phase 7.5: Search by label wired to /api/search (Librar
 
 - [ ] **Step 7.6.2:** Run RED.
 
-- [ ] **Step 7.6.3:** Implement using shadcn `Dialog`. Require type-the-name confirmation (e.g., user types "delete" to enable Confirm button).
+- [ ] **Step 7.6.3:** Implement using the **custom `Modal` component from Phase 3 Subagent A** (`Part03/frontend/src/components/Modal.tsx` — already provides Escape-key + click-outside close + focus return + portal rendering). Require type-the-name confirmation: user types "delete" to enable the Confirm button. No shadcn `Dialog`.
 
 - [ ] **Step 7.6.4:** Run GREEN.
 
