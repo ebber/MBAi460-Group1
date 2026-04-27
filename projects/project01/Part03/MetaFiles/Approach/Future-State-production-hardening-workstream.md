@@ -53,13 +53,15 @@ Move the PhotoApp UI from "works locally for the assignment" to "production-cred
 - S3 access via **presigned URLs only** (15-min expiry — per spec §13.10) — already partially in scope for workstream 03.
 - Dependency scanning: `npm audit` in CI; Dependabot (GitHub) on high/critical advisories.
 
-### 4. Observability
+### 4. Observability — split out 2026-04-27
 
-- Client-side structured logger (`logger` wrapper) — DEBUG in dev, INFO+ in prod.
-- Real User Monitoring: CloudWatch RUM for Web Vitals; sampling 100% in staging, 10% in prod.
-- Error reporting: Sentry (or self-hosted GlitchTip) with source maps; PII-scrubbing on payloads (strip password, token, OCR text unless user opts in).
-- Correlation IDs: ULID generated client-side; passed via `X-Correlation-Id` header; echoed on error surfaces (per spec §14.3 error taxonomy — every error gets a copy-to-clipboard correlation ID).
-- Synthetic checks: Playwright runs login + upload + view cycle every 5 minutes against prod.
+**See `Future-State-observability-workstream.md`** for the full scope: structured logger, RUM, error reporting, correlation IDs, synthetic checks, SLOs, success metrics, error taxonomy, edge case catalog.
+
+Per Erik's Q-Phase4-4 routing 2026-04-27 (sub-A audit triage), observability split out into its own workstream because it's a distinct concern from hardening (visibility vs. safety). Hardening keeps a brief pointer here; observability is canonical there.
+
+Brief pointer items that intersect both workstreams:
+- Source-map upload at build (deployment infrastructure here; consumed by Sentry there)
+- axe-core CI gate (here, per §2 a11y) feeds observability dashboards (there)
 
 ### 5. Multi-environment deployment
 

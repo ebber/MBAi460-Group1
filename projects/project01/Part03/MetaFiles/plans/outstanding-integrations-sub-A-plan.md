@@ -273,7 +273,7 @@ git commit -m "Part03 sub-A Phase 3: Accelerators/ scaffold + README.md (subfold
 
 ---
 
-- [ ] **Step 4.2:** Once Erik confirms the routing per the PAUSE gate, execute each routing:
+- [x] **Step 4.2:** Once Erik confirms the routing per the PAUSE gate, execute each routing:
   - **TODO add** — append entries to `Part03/MetaFiles/TODO.md` (Part-03-scoped) or `MBAi460-Group1/MetaFiles/TODO.md` (Class-Project-scoped) per Erik's confirmed scope
   - **Future-State add** — extend an existing `Approach/Future-State-*.md` doc (preferred where the workstream already exists), OR draft a NEW Future-State doc following the existing pattern (e.g., `Future-State-mobile-workstream.md`). Naming the new file requires Erik approval per the naming rule (likely already given via the PAUSE gate).
   - **Reject** — capture explicit out-of-scope rationale in the audit row (no external file changes)

@@ -109,10 +109,26 @@ The schema starts in good shape: `kind ENUM('photo','document')` lands in Part 0
 - **Risk:** Bounding-box highlighting (text panel ↔ image panel sync) is complex UI.
   - **Mitigation:** v1 of this workstream can ship without bounding-box sync; tag the sync as a v2 polish task.
 
+## Extension — AI on-demand model (added 2026-04-27 per sub-A audit T6)
+
+Beyond Textract OCR, our shipped MVP's AI model differs from Andrew's spec in a few ways that this workstream may want to reconcile:
+
+1. **Run-on-demand vs. run-at-upload.** Our shipped MVP auto-runs Rekognition labels at upload time and exposes them via `GET /api/images/:id/labels`. Andrew specs `POST /api/images/:id/labels` — i.e., trigger labels analysis on demand. Trade-off: our model is simpler + cheaper (no re-runs); Andrew's allows re-analysis without re-upload + matches the Textract on-demand pattern. **Recommendation:** keep auto-on-upload as the default; add a manual re-run endpoint for users to refresh stale results.
+2. **Manual re-run analysis.** Per spec FR-AI-6 (SHOULD): expose a "Re-analyze" button on Asset Detail. Server handles idempotency + cost guards. Required for the on-demand model + useful even with auto-on-upload (e.g., if Rekognition confidence improves over time).
+3. **Client-side cache for labels + OCR within session.** Per spec FR-AI-7 (SHOULD): cache results so navigating back to a previously-viewed asset doesn't re-fetch. TanStack Query (Future-State Production-Hardening §8.5) provides this naturally; depends on adopting that library.
+4. **DetectText fallback for ambiguous content-type classification.** Per spec FR-AI-1: when content-type alone is ambiguous, send the first 10KB to Rekognition `DetectText` as a cheap classification check; high text density → classify as document. Currently `deriveKind()` uses content-type only. Recommendation: defer until Textract lands (DetectText is cheap but adds latency to every upload; only worth it when document handling matters).
+
+These items collectively constitute a "AI on-demand model" sub-stream within the broader Documents + Textract workstream — the patterns mirror Textract's design (POST-trigger + idempotent re-runs).
+
+**Audit cross-refs:** rows 40 (POST /assets/:id/labels run-on-demand), 70 (DetectText fallback), 91 (FR-AI-1), 92 (FR-AI-2), 96 (FR-AI-6 manual re-run), 97 (FR-AI-7 client cache).
+
+---
+
 ## Source / cross-refs
 
-- Andrew's `UI-Design-Requirements.md`: §9.6 (asset detail — document split-pane), §9.7 (upload classification + OCR mode), §13.6 (Textract integration: API choices, async path, S3 layout, cost guards), §14.1 (95% OCR success target on supported types)
-- `ClaudeDesignDrop/raw/MBAi-460/src/screens.jsx` lines 6–119 (UploadScreen with OCR-mode picker)
+- Andrew's `UI-Design-Requirements.md`: §9.6 (asset detail — document split-pane), §9.7 (upload classification + OCR mode), §13.6 (Textract integration: API choices, async path, S3 layout, cost guards), §14.1 (95% OCR success target on supported types), §10.3 FR-AI-1..8 (AI requirements including the on-demand model items above)
+- `ClaudeDesignDrop/raw/MBAi-460/src/screens.jsx` lines 6–119 (UploadScreen with OCR-mode picker) — also at `Part03/Accelerators/ArtifactsForFormLibrary/screens.jsx` for the Form Library workstream
 - `ClaudeDesignDrop/raw/MBAi-460/src/data.jsx` (mock document assets with `ocr_excerpt`, `ocr_status`, `ocr_mode`, `ocr_conf`, `ocr_words`, `ocr_lines` — example shape for the schema)
 - `MetaFiles/DesignDecisions.md` Q9 (Textract scope decision) — proposed in `DesignDecisions.md`
+- `MetaFiles/Andrew-MVP-Integration.md` rows 40, 70, 91-97 (audit detail for on-demand AI items)
 - AWS docs: [Textract DetectDocumentText](https://docs.aws.amazon.com/textract/latest/dg/API_DetectDocumentText.html), [AnalyzeDocument](https://docs.aws.amazon.com/textract/latest/dg/API_AnalyzeDocument.html), [StartDocumentTextDetection](https://docs.aws.amazon.com/textract/latest/dg/API_StartDocumentTextDetection.html)
