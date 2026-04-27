@@ -33,6 +33,8 @@ Part 03-scoped TODOs. For project-wide concerns, see [`MBAi460-Group1/MetaFiles/
 
 - [ ] **[UI] Centralize `deriveKind()` into a shared util** — Subagent C's `UploadScreen` includes a client-side mirror of the server's `deriveKind` (so the queue display can show "done with N labels" for photos vs. "OCR coming soon" for documents BEFORE the server response lands). The server's `deriveKind` lives in `server/schemas.js`; the client mirror is duplicated. Centralize into `frontend/src/utils/deriveKind.ts` (or similar) and re-export from both server + frontend tests so they can't drift. (Surfaced 2026-04-27 in Subagent C's report.)
 
+- [ ] **[Backend] JSON envelope for unmatched `/api/*` paths** — Express's default 404 (HTML, no envelope) currently catches unmatched `/api/*` requests because the error middleware only handles `next(err)`-thrown errors, not no-route-matched cases. Surfaced 2026-04-27 during Phase 8.1 CLI-5 smoke (`curl /api/foo` → `text/html` Express default, not the `{message, data}` envelope used by every other `/api/*` route). Fix: mount `app.use('/api', (req, res) => res.status(404).json({ message: 'Not found' }))` BEFORE the error middleware in `server/app.js`. Add a route test (`server/tests/api_404.test.js`) asserting unmatched `/api/foo` returns 404 + `application/json` + envelope shape, parallel to the SPA-fallback regression test already queued.
+
 ## Backlog
 
 - [ ] **[Cleanup] Prune unused `response_page_size` from `server/config.js`** — `response_page_size: 12` is a leftover from the Project 2 baseline; not referenced by any post-Phase-9 server code. Workstream 03 will revisit `config.js` when adding the service module — fold this prune into that pass (or address standalone if 03 stalls). (Production review 2026-04-26)

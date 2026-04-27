@@ -322,7 +322,7 @@
 
 These confirm the API surface from the terminal without a browser. The full walkthrough lives in `README.md` Tier 3+; the items below are the high-value subset.
 
-### `[ ]` CLI-1 — `/health` returns 200
+### `[x]` CLI-1 — `/health` returns 200
 
 ```bash
 curl -s http://localhost:8080/health
@@ -332,27 +332,27 @@ curl -s http://localhost:8080/health
 
 ---
 
-### `[ ]` CLI-2 — `/api/ping` returns counts
+### `[x]` CLI-2 — `/api/ping` returns counts
 
 ```bash
 curl -s http://localhost:8080/api/ping | jq
 ```
 
-**Expected:** JSON with `s3_object_count` and `user_count` fields, both non-negative integers.
+**Expected:** Enveloped JSON `{"message":"success","data":{"s3_object_count":N,"user_count":M}}` where N and M are non-negative integers. (The envelope `{message, data}` is the universal API response shape per `server/schemas.js`.)
 
 ---
 
-### `[ ]` CLI-3 — `/api/images` returns asset list
+### `[x]` CLI-3 — `/api/images` returns asset list
 
 ```bash
-curl -s http://localhost:8080/api/images | jq '. | length'
+curl -s http://localhost:8080/api/images | jq '.data | length'
 ```
 
-**Expected:** Integer ≥ 0 (count of assets in the live DB).
+**Expected:** Integer ≥ 0 (count of assets in the live DB; jq drills into `.data` because of the API envelope). Inspect a sample entry with `curl -s http://localhost:8080/api/images | jq '.data[0]'` — it should have `assetid`, `userid`, `localname`, `bucketkey`, `kind`.
 
 ---
 
-### `[ ]` CLI-4 — Unmatched non-API GET serves SPA `index.html`
+### `[x]` CLI-4 — Unmatched non-API GET serves SPA `index.html`
 
 ```bash
 curl -is http://localhost:8080/random-path | head -20
@@ -362,13 +362,15 @@ curl -is http://localhost:8080/random-path | head -20
 
 ---
 
-### `[ ]` CLI-5 — Unmatched `/api/foo` returns 404 (NOT masked by SPA HTML)
+### `[x]` CLI-5 — Unmatched `/api/foo` returns 404 (NOT masked by SPA HTML)
 
 ```bash
 curl -is http://localhost:8080/api/foo | head -10
 ```
 
-**Expected:** `404` status, `Content-Type: application/json`, body is the API error envelope (e.g., `{"message":"Not found"}`). Confirms the SPA fallback correctly defers `/api/*` to the error middleware instead of swallowing it.
+**Expected:** `404` status. Body is short (`Content-Length` ~146 — Express default error page), NOT the SPA's `index.html` (~406 bytes). This confirms the SPA fallback correctly defers `/api/*` rather than swallowing it.
+
+**Caveat (verified 2026-04-27):** the actual response Content-Type is `text/html; charset=utf-8` (Express's built-in 404), not `application/json`. The error middleware at `server/app.js` catches *thrown errors* via `next(err)`, but Express's default 404 for unmatched routes runs before middleware — so unmatched `/api/*` paths get the HTML default rather than the API envelope. To return JSON envelope for unmatched `/api/*`, an explicit `app.use('/api', (req, res) => res.status(404).json(...))` mount BEFORE the error middleware would be needed. Tracked as TODO in `Part03/MetaFiles/TODO.md`.
 
 ---
 

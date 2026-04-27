@@ -1700,20 +1700,20 @@ Walk through each acceptance item and tick it off. If any fails, surface as a bl
 - [ ] **Step 8.1.13:** A2 — Asset detail (document) shows file preview (PDF embed or download link) + "OCR coming soon" empty state.
 - [ ] **Step 8.1.14:** A3 — File preview loads via `/api/images/:id/file` (no base64) for both kinds.
 - [ ] **Step 8.1.15:** A11Y1 — Manual a11y review (focus-visible, keyboard nav, screen-reader landmarks). Walk the app via keyboard only; verify focus indicators.
-- [ ] **Step 8.1.16:** `npm test` (Vitest) green.
+- [x] **Step 8.1.16:** `npm test` (Vitest) green.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend
 npm test
 ```
 
-- [ ] **Step 8.1.17:** `npm run build` clean; TypeScript strict zero errors.
+- [x] **Step 8.1.17:** `npm run build` clean; TypeScript strict zero errors.
 
 ```bash
 npm run build
 ```
 
-- [ ] **Step 8.1.18:** Manual CLI smoke per `Part03/MetaFiles/HumanTestInstructions/README.md` Tier 3+ passes against the built frontend served by Express.
+- [x] **Step 8.1.18:** Manual CLI smoke per `Part03/MetaFiles/HumanTestInstructions/README.md` Tier 3+ passes against the built frontend served by Express. (5/5 CLI tests in `Human-Feature-Test-Suite.md` passed 2026-04-27; CLI-5 surfaced a finding — Express default HTML 404 instead of JSON envelope for unmatched `/api/*` — TODO'd; the SPA-fallback safety property still holds.)
 
 - [ ] **Step 8.1.19:** Atomic doc update + commit.
 
