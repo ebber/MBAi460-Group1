@@ -19,9 +19,7 @@
     "ini": "^6.0.0",
     "is-network-error": "^1.1.0",
     "mysql2": "^3.16.1",
-    "p-retry": "^7.1.0",
-    "sqlite3": "^5.1.7",
-    "uuid": "^13.0.0"
+    "p-retry": "^7.1.0"
   },
   "engines": {
     "node": ">=24.x",

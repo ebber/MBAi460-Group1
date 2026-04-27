@@ -52,6 +52,15 @@ infra/terraform/*.tfplan
 MetaFiles/plans/
 
 # ============================================================
+# Node / npm ignores — applies to any node_modules/ at any depth
+# (Project 01 Part 03 has its own; future labs/projects may add more)
+# ============================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================================
 # Standard ignores
 # ============================================================
 **/.DS_Store

@@ -1,22 +1,13 @@
 //
 // PhotoApp Express application — exports the configured `app` instance.
-// Listening on a port is the responsibility of `server.js` (the entrypoint).
-// Splitting export from listen() lets Jest + supertest import the app
-// without binding a real port.
+// Listening is the responsibility of `server.js` (the entrypoint); splitting
+// export from listen() lets Jest + supertest import the app without binding
+// a real port.
 //
-// The legacy `app.get('/', ...)` uptime handler and the legacy
-// `api_get_*` requires were removed in Phase 2 of the Server Foundation
-// workstream (see MetaFiles/Approach/02-server-foundation.md and
-// MetaFiles/refactor-log.md 2026-04-26). The legacy `server/api_*.js`
-// source files remain on disk as a behavioral reference per the
-// Part 03 TODO queue; they are simply not wired into the app any more.
-//
-// Future mount order (load-bearing — see 02 §7):
-//   1. JSON middleware (already mounted below)
-//   2. /health liveness probe       → arrives in Phase 3
-//   3. /api router                  → arrives in Phase 7
-//   4. express.static(frontend/dist)→ arrives in Phase 5
-//   5. SPA index fallback for /     → arrives in Phase 5
+// The legacy `server/api_*.js` files from the Project 2 baseline remain on
+// disk as a behavioral reference per the Part 03 TODO queue; they are not
+// wired into this app. The /api contract is served by the placeholder
+// router below and replaced with real endpoints by workstream 03.
 //
 
 const express = require('express');
