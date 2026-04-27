@@ -90,8 +90,8 @@ Add a TODO entry in `Part03/MetaFiles/TODO.md` at MVP closeout: update `visualiz
 
 | Phase | Goal | State | Commit | Evidence |
 |---|---|---|---|---|
-| 0 | Pre-execution prep | ⏳ | — | working tree clean; backend baseline still 12/73 |
-| 1 | Vite + TS strict + Tailwind + Zustand + Router (shadcn descoped) | ⏳ | — | `npm run build` clean; placeholder shell renders via Express |
+| 0 | Pre-execution prep | ✅ 2026-04-27 | (read-only — no commit) | backend 73/75 + tree clean + tokens.css internalized |
+| 1 | Vite + TS strict + Tailwind + Zustand + Router (shadcn descoped) | 🔄 2026-04-27 | (Task 1.1: 6daf112) | `npm run build` clean (Task 1.1 ✅); 4 sub-tasks remain |
 | 2 | Icon shim (Lucide named-imports) | ⏳ | — | Icon.test.tsx green |
 | 3 | Shell components (Toast, Modal, TopBar, LeftRail, PageHeader) | ⏳ | — | 5 component test files green |
 | (3 PARALLEL — Calibration Test #3, 3 subagents) | | | | |
