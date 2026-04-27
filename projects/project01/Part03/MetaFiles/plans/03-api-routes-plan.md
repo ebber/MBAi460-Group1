@@ -69,7 +69,7 @@ Most commands run from `/Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/
 | 2 | `server/services/aws.js` (smooth helper.js) | ✅ 2026-04-27 | (this commit) | 4 tests green; 4 factories + module-private readPhotoAppConfig; explicit-await on getDbConn |
 | 4 | `server/middleware/upload.js` + cleanupTempFile | ✅ 2026-04-27 | (this commit) | 5 tests green; multer with no MIME filter (Q9), 50 MB limit, cleanupTempFile defensive on missing |
 | (1+2+4 PARALLEL — subagent dispatch) | | | | |
-| 3 | `server/services/photoapp.js` read use cases | ⏳ | — | photoapp_service.test.js read tests green |
+| 3 | `server/services/photoapp.js` read use cases | ✅ 2026-04-27 | (this commit) | 12 tests green covering getPing, listUsers, listImages (4 cases), getImageLabels (3 cases), searchImages (3 cases) |
 | 5 | `server/services/photoapp.js` write use cases | ⏳ | — | photoapp_service.test.js write tests green |
 | 6 | `server/routes/photoapp_routes.js` | ⏳ | — | photoapp_routes.test.js green |
 | 7 | `server/middleware/error.js` | ⏳ | — | error.test.js green |
@@ -334,13 +334,13 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 ### Task 3.5: `searchImages(label)`
 
-- [ ] **Step 3.5.1:** Write failing tests per 03 Task 3.5 (empty throws 'label is required'; non-empty returns mapped rows).
-- [ ] **Step 3.5.2:** Run → RED.
-- [ ] **Step 3.5.3:** Implement per 03: throw `Error('label is required')` on empty/whitespace; otherwise `SELECT assetid, label, confidence FROM labels WHERE label LIKE ? ORDER BY assetid ASC, label ASC` with `%${label}%`.
-- [ ] **Step 3.5.4:** Run → GREEN.
-- [ ] Atomic doc update + commit: `Part03 03 Phase 3.5: searchImages()`.
+- [x] **Step 3.5.1:** Write failing tests per 03 Task 3.5 (empty throws 'label is required'; non-empty returns mapped rows). _2026-04-27 — wrote 3 tests: empty string, whitespace-only, non-empty with mapped rows + LIKE pattern + ORDER BY assertion._
+- [x] **Step 3.5.2:** Run → RED. _2026-04-27 — 3 fail / 9 pass (searchImages undefined)._
+- [x] **Step 3.5.3:** Implement per 03: throw `Error('label is required')` on empty/whitespace; otherwise `SELECT assetid, label, confidence FROM labels WHERE label LIKE ? ORDER BY assetid ASC, label ASC` with `%${label}%`. _2026-04-27 — implemented; throw is BEFORE opening DB connection (saves a roundtrip on bad input)._
+- [x] **Step 3.5.4:** Run → GREEN. _2026-04-27 — 12/12 tests green._
+- [x] Atomic doc update + commit: `Part03 03 Phase 3.5: searchImages()`. _2026-04-27 — this commit._
 
-**Phase 3 wrap:** Master Tracker Phase 3 → ✅ with last commit hash.
+**Phase 3 wrap:** Master Tracker Phase 3 → ✅ with last commit hash. _2026-04-27 — done in this commit._
 
 ---
 

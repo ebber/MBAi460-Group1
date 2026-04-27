@@ -1,6 +1,6 @@
 jest.mock('../services/aws');
 const aws = require('../services/aws');
-const { getPing, listUsers, listImages, getImageLabels } = require('../services/photoapp');
+const { getPing, listUsers, listImages, getImageLabels, searchImages } = require('../services/photoapp');
 
 describe('getPing()', () => {
   test('returns counts from S3 and MySQL', async () => {
@@ -159,6 +159,38 @@ describe('getImageLabels()', () => {
     ]);
     const [labelsSql] = fakeDb.execute.mock.calls[1];
     expect(labelsSql).toMatch(/SELECT label, confidence FROM labels WHERE assetid = \? ORDER BY confidence DESC/);
+    expect(fakeDb.end).toHaveBeenCalled();
+  });
+});
+
+describe('searchImages()', () => {
+  test('empty string throws "label is required"', async () => {
+    await expect(searchImages('')).rejects.toThrow('label is required');
+  });
+
+  test('whitespace-only throws "label is required"', async () => {
+    await expect(searchImages('   ')).rejects.toThrow('label is required');
+  });
+
+  test('non-empty label returns mapped rows with case-insensitive LIKE', async () => {
+    const fakeDb = {
+      execute: jest.fn().mockResolvedValue([[
+        { assetid: 1001, label: 'Animal', confidence: 99 },
+        { assetid: 1002, label: 'Animal', confidence: 95 },
+      ]]),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+
+    const result = await searchImages('animal');
+
+    expect(result).toEqual([
+      { assetid: 1001, label: 'Animal', confidence: 99 },
+      { assetid: 1002, label: 'Animal', confidence: 95 },
+    ]);
+    const [sql, params] = fakeDb.execute.mock.calls[0];
+    expect(sql).toMatch(/SELECT assetid, label, confidence FROM labels WHERE label LIKE \? ORDER BY assetid ASC, label ASC/);
+    expect(params).toEqual(['%animal%']);
     expect(fakeDb.end).toHaveBeenCalled();
   });
 });

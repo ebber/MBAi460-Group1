@@ -1,6 +1,6 @@
 const { ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const aws = require('./aws');
-const { userRowToObject, imageRowToObject, labelRowToObject } = require('../schemas');
+const { userRowToObject, imageRowToObject, labelRowToObject, searchRowToObject } = require('../schemas');
 
 async function getPing() {
   const bucket = aws.getBucket();
@@ -66,4 +66,20 @@ async function getImageLabels(assetid) {
   }
 }
 
-module.exports = { getPing, listUsers, listImages, getImageLabels };
+async function searchImages(label) {
+  if (!label || !label.trim()) {
+    throw new Error('label is required');
+  }
+  const dbConn = await aws.getDbConn();
+  try {
+    const [rows] = await dbConn.execute(
+      'SELECT assetid, label, confidence FROM labels WHERE label LIKE ? ORDER BY assetid ASC, label ASC',
+      [`%${label}%`]
+    );
+    return rows.map(searchRowToObject);
+  } finally {
+    await dbConn.end();
+  }
+}
+
+module.exports = { getPing, listUsers, listImages, getImageLabels, searchImages };
