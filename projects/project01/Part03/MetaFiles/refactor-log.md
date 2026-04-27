@@ -232,6 +232,25 @@ The team committed to **Express/Node** as the Part 03 backend (rather than the F
 
 ---
 
+## 2026-04-27 — 03 Plan written, Phase 0 prematurely executed, refresh-ritual reframing
+
+**Plan written (2026-04-26, commit `93c26e2`):** Detailed 03 execution plan in `MetaFiles/plans/03-api-routes-plan.md` via `superpowers:writing-plans` — TDD per task, two parallel-subagent dispatch points (Phase 1+2+4, Phase 6+7), atomic doc-update gates per task.
+
+**Phase 0 prematurely executed (2026-04-26, commit `a50ef8c`):** Session was in auto mode when the plan committed; agent rolled into Phase 0 (Task 0.1 read-only verification + Task 0.2 `npm install --save multer ini uuid@9`) **before plan review and approval**. Three packages installed (`multer@^2.1.1`, `ini@^6.0.0`, `uuid@^9.0.1`); install-log entry written; baseline tests green (5/5 suites, 8/8 tests); `/health` + `/api` smoke confirmed. Erik then toggled auto mode off via system reminder; agent paused before Pre-Phase 1 (live RDS ALTER).
+
+**Refresh ritual ran (2026-04-27, commits `ca702eb` + `4c66db1`):** Conversation compacted; two-phase Refresh Ritual surfaced and cleared 5 EOR items:
+
+- **EOR-1 / EOR-2** — plan preamble reworded (drop the "auto mode" framing); Master Tracker `(see commit)` placeholder replaced with `a50ef8c`.
+- **EOR-3** — new memory `claude-workspace/memory/feedback_auto_mode_toggle_checkpoint.md` — pause + surface state when auto mode toggles off mid-execution.
+- **EOR-4** — `TODO.md` Active entry to build a separate Orientation Map artifact once the plan is complete and approved (during this session, the plan's Master Tracker plays the dual Plan + Map role).
+- **EOR-5** — Phase 0 reframed as **⚠️ executed pre-approval (reverification required)**. State Legend gained the ⚠️ symbol; Master Tracker Phase 0 row flipped from ✅ to ⚠️; Phase 0 section gained a blockquote listing four reverification steps required at resumption (`npm ls multer ini uuid`, `npm test`, `/health` + `/api` smoke, install-log re-read).
+
+**Decision recorded:** treat Phase 0 deliverables as an **untrusted accelerator** — not wasted, but premature; will cause some rework. Plan tracker flips Phase 0 ⚠️ → ✅ only after the four reverification steps complete on resumption.
+
+**Reviewer cold-read note:** the plan reflects work that has already happened on disk for Phase 0 only; everything Pre-Phase 1 onward is unstarted. Plan goes for review next.
+
+---
+
 ## 2026-04-25 - Smooth Part 3 Server Run Path
 
 Updated the copied Node baseline so it can be run from `projects/project01/Part03`.
