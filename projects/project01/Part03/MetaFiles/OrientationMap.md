@@ -24,21 +24,19 @@
 
 ## Active
 
-### Workstream — Outstanding Integrations
+**No workstream actively engaged 2026-04-27 — between workstreams.**
 
-**Goal:** Close the open integration threads between recently-shipped components (Andrew's MVP / backend / frontend / Class-Project / Lab-Root) before opening the next major arc.
+Outstanding Integrations workstream closed today (sub-A + sub-B + sub-D + sub-E all ✅; sub-C relocated to Class Project queue). See **Closed (recent)** below for the closeout entry + commit chain.
 
-**Status:** 🔄 Workstream in flight — sub-A + sub-B both ✅ COMPLETE 2026-04-27; sub-D + sub-E remain. Pick next sub-workstream to engage when ready.
+**Next workstream candidates** (pick one to engage):
 
-**Sub-workstreams:**
+- **Sweep Class Project for drift** (queued in Pending; was already next-in-line per Map design). All-of-above scope per Q2 — doc + code + tracker drift detection.
+- **Playwright E2E** (Future-State; 🔥 HIGH per its doc + Tier 1 in sub-E's recommendation). Cheapest infrastructure win; protects all subsequent work.
+- **Form Library** (Future-State; HIGH per sub-A Q-Phase4-1 + Tier 1 in sub-E). Foundation for auth + admin screens.
+- **Library Polish** (Future-State; HIGH; Tier 1). User-visible value.
+- Or pause + transition to Project 03 / Lab 03 / something else.
 
-| # | Sub-workstream | State | Pointer / source | Notes |
-|---|---|---|---|---|
-| A | Andrew's MVP — final handshakes | ✅ COMPLETE 2026-04-27 | `Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md` Master Tracker (all phases ✅); `Andrew-MVP-Integration.md` audit table; `Accelerators/ArtifactsFor*/` subfolders | All 8 phases done across ~14 commits this session. 147-row audit covering all 1609 lines; 6 NEW Future-State workstream docs + 2 EXTEND; 9 TODOs; 3 Accelerators subfolders / 7 files curated; naming-conventions section in `00-coordination-and-contracts.md`; coordination journal entry at `MetaFiles/Journal/2026-04-27-mvp-closeout-andrew-handshake.md` |
-| B | Frontend ↔ Backend ↔ Approach-doc coherence audit | ✅ COMPLETE 2026-04-27 | `Part03/MetaFiles/contract-audit-FE-BE-doc.md` (audit) + `Part03/MetaFiles/plans/outstanding-integrations-sub-B-plan.md` (plan tracker) | 23-item audit covering 5 files (extended scope per Q-B-6); 1 drift surfaced + resolved (00-coord stale example block); 1 type-precision adjacent observation tightened (deleteAllImages); post-remediation: 22 ✅ / 0 🚩 / 1 ⏳ (PingData intentional). Tests stay green at 77+74. |
-| ~~C~~ | ~~Class Project ↔ Lab Root coordination~~ | **MOVED** | — | Relocated to Class Project queue 2026-04-27 per Q3 — see `MBAi460-Group1/MetaFiles/TODO.md` |
-| D | Visualization handoff | ✅ COMPLETE 2026-04-27 | `MBAi460-Group1/visualizations/MetaFiles/TODO.md` (Active section — "[Update] Target-State... add concrete stack post-MVP") | Agent-side deliverable = "queue the viz update for Erik external execution"; complete when TODO entry lands. Actual viz update is Erik's external task; tracked in viz queue with full stack details (Vite + React 18.3.x + TS strict + Tailwind + Zustand + react-router-dom + lucide-react + custom Tailwind primitives; Express 5 + multer + AWS SDK v3 + mysql2 backend; Vitest+RTL+jsdom + Jest+supertest tests) |
-| E | Future-State workstream prioritization | ⏳ | `Part03/MetaFiles/Approach/Future-State-*.md` (8 workstreams) | Decision point — which (if any) activates next; sequencing. *Note: this sub-workstream might warrant promotion to its own top-level workstream — see refinement notes.* |
+See `Part03/MetaFiles/Approach/Future-State-roadmap.md` "Activation priority recommendation 2026-04-27 (sub-E)" for the full tiered analysis.
 
 ---
 
@@ -46,7 +44,7 @@
 
 | Workstream | State | Pointer | Notes |
 |---|---|---|---|
-| Sweep Class Project for drift | ⏳ Queued (next after Outstanding Integrations) | TBD | **Scope: all-of-above per Q2** — doc drift (plans vs. reality, approach docs vs. implementation), code drift (stale tests, untracked files, gitignore gaps), tracker drift (TODOs that should be closed, completed-but-not-flipped items) |
+| Sweep Class Project for drift | ⏳ Eligible for activation (Outstanding Integrations closed 2026-04-27) | TBD | **Scope: all-of-above per Q2** — doc drift (plans vs. reality, approach docs vs. implementation), code drift (stale tests, untracked files, gitignore gaps), tracker drift (TODOs that should be closed, completed-but-not-flipped items). Sub-E's "single-best-bet absent context" recommendation (`eeb4be2`) suggests this as the next workstream — clean substrate gate before any major Future-State activation |
 | [TBD #3] — anchor | ⏳ Placeholder | — | Per Q4: an explicit anchor we get to in a centered way, then assess in-place to choose direction. Not pre-filled. |
 | Project 01 Part 03 — collaborator browser walk | 🟡 In-flight async | `Part03/MetaFiles/HumanTestInstructions/Human-Feature-Test-Suite.md` | Collaborators walking L1–A11Y1 this afternoon (Erik 2026-04-27 routing); will tick checkboxes 8.1.1–15 + commit 8.1.19 |
 | Future-State Auth + Account Management | ⏳ Queued | `Part03/MetaFiles/Approach/Future-State-auth-and-account-management-workstream.md` | Visual scaffolds shipped (Q10 non-blocking); real auth deferred |
@@ -68,6 +66,7 @@
 
 | Workstream | State | Closeout | Notes |
 |---|---|---|---|
+| Outstanding Integrations workstream | ✅ COMPLETE 2026-04-27 | sub-A `1c4d2aa` (16 commits) + sub-B `324e855` (9 commits) + sub-D `a365807` + sub-E `eeb4be2` + this commit Action 3 | All 4 active sub-workstreams closed; sub-C moved to Class Project queue. Sub-A: Andrew MVP audit + Accelerators + 6 NEW Future-State docs + 9 TODOs. Sub-B: 23-row contract audit + 1 drift fix + type tightening (post-remediation: 22 ✅ / 0 🚩 / 1 ⏳). Sub-D: viz update queued for Erik external. Sub-E: 14-workstream priority recommendation in Future-State-roadmap.md (Tier 1: Playwright E2E + Form Library + Library Polish). |
 | Project 01 Part 03 — UI MVP (workstream 01) | ✅ DEV-COMPLETE 2026-04-27 | `378c8f3` (closeout) + `8f29463` (CLI-5 polish post-closeout) | Collaborator acceptance walk in flight |
 | Project 01 Part 03 — Server Foundation (workstream 02) | ✅ Closed prior | `dbe05d3` + `080456f` (SPA hotfix) | |
 | Project 01 Part 03 — API Routes (workstream 03) | ✅ Closed prior | (multi-commit Apr 26-27) | |
@@ -86,8 +85,8 @@
 | Class Project queue | Cred-sweep noise floor + util refresh (17 hits) | ⏳ Open (added `f014f85`) |
 | Class Project queue | Project 03 SQL committed passwords (B5) | ⏳ Open |
 | Class Project queue | VCS strategy / multi-collaborator gitignore | ⏳ Open |
-| Part 03 queue | Andrew MVP reconciliation suite (3 entries) | ⏳ Open — flows into Outstanding Integrations sub-A |
-| Part 03 queue | Visualization update | ⏳ Open — Outstanding Integrations sub-D |
+| Part 03 queue | Andrew MVP reconciliation suite (3 entries) | ✅ CLOSED at sub-A 2026-04-27 (`1c4d2aa`) |
+| Part 03 queue | Visualization update | ✅ CLOSED at sub-D 2026-04-27 (`a365807`) — viz TODO entry now in `visualizations/MetaFiles/TODO.md` for Erik's external execution |
 | Part 03 queue | Morgan request logging middleware | ⏳ Open — small-polish backlog |
 | Part 03 queue | `utils/_run_sql.py` parser hardening | ⏳ Open |
 | Part 03 queue | `utils/validate-db` empty-assets assertion drift | ⏳ Open |
