@@ -175,7 +175,7 @@ git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/p
 git commit -m "Part03 sub-A Phase 2.1: Andrew-MVP-Integration.md shell + audit table skeleton"
 ```
 
-- [ ] **Step 2.2:** Audit §0–6 of `UI-Design-Requirements.md` — Document metadata, glossary, vision, users, journeys. Mostly informational + design-decision conflicts with our Q1–Q6 + Q10 non-blocking auth model. Add audit rows per major claim. Apply TDD-style claim-then-verify per Standing Instructions. Then commit (Phase 2 checkpoint #2):
+- [x] **Step 2.2:** Audit §0–6 of `UI-Design-Requirements.md` — Document metadata, glossary, vision, users, journeys. Mostly informational + design-decision conflicts with our Q1–Q6 + Q10 non-blocking auth model. Add audit rows per major claim. Apply TDD-style claim-then-verify per Standing Instructions. Then commit (Phase 2 checkpoint #2):
 
 ```bash
 git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
