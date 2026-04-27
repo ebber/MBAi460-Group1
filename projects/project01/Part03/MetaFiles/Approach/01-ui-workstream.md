@@ -135,6 +135,8 @@ projects/project01/Part03/
 
 ## Phase 1: App Bootstrap (TypeScript + Tailwind + selective shadcn + Zustand + React Router)
 
+**Implementation status:** ✅ Implemented 2026-04-27 per Plan §1.1, §1.2, §1.4, §1.5. Task 1.3 (selective shadcn) DESCOPED 2026-04-27 per reviewer remediation R1 — replaced with custom Tailwind-styled primitives. Individual line checkboxes below describe approach intent and are not flipped (some describe descoped paths).
+
 ### Task 1.1: Create Vite + TypeScript app under `Part03/frontend/`
 
 **Files:**
@@ -197,7 +199,7 @@ projects/project01/Part03/
 - Unit: token-application test passes (e.g., `<div className="bg-paper">` resolves to `#F0EEE6`).
 - Integration: a sample button using `bg-accent text-accent-fg` renders coral with white text.
 
-### Task 1.3: Initialize selective shadcn/ui primitives
+### Task 1.3: ~~Initialize selective shadcn/ui primitives~~ — DESCOPED 2026-04-27 per R1 reviewer remediation
 
 **Files:**
 
@@ -259,6 +261,8 @@ Playwright E2E moved to `Future-State-playwright-e2e-workstream.md` (🔥 high p
 
 ## Phase 2: Migrate Design Tokens (already in Phase 1.2) + Add Icon shim
 
+**Implementation status:** ✅ Implemented 2026-04-27 per Plan §2.1.
+
 ### Task 2.1: Add Icon shim
 
 (Phase 1.2 already translated the design tokens to the Tailwind theme; this phase is just the icon shim.)
@@ -297,6 +301,8 @@ export function Icon({ name, size = 16, className }: { name: string; size?: numb
 
 ## Phase 3: Migrate Shell Components
 
+**Implementation status:** ✅ Implemented 2026-04-27 per Plan §P3 (Calibration Test #3 — 3 parallel subagents on Toast+Modal, TopBar, LeftRail+PageHeader, ~46% wall-time savings vs sequential).
+
 ### Task 3.1: ToastProvider + Modal
 
 **Files:**
@@ -329,6 +335,8 @@ export function Icon({ name, size = 16, className }: { name: string; size?: numb
 ---
 
 ## Phase 4: Migrate `photoappApi.ts`
+
+**Implementation status:** ✅ Implemented 2026-04-27 per Plan §4.1.
 
 ### Task 4.1: Typed fetch wrapper
 
@@ -396,6 +404,8 @@ test('error envelope throws', async () => {
 
 ## Phase 5: Migrate Library, AssetCard, ListView
 
+**Implementation status:** ✅ Implemented 2026-04-27 per Plan §P4 (Calibration Test #4 — combined with Phase 6 in 4 parallel subagents on Library set, Login+Register, Upload, AssetDetail; ~74% wall-time savings vs sequential).
+
 ### Task 5.1: Migrate Andrew's `library.jsx` → `Library.tsx`
 
 **Files:**
@@ -433,6 +443,8 @@ test('Library filters assets by type', async () => {
 ---
 
 ## Phase 6: Migrate Login + Register (non-blocking scaffolds, Q10) + Upload
+
+**Implementation status:** ✅ Implemented 2026-04-27 per Plan §P4 (combined with Phase 5 — see Phase 5 banner). Login/Register are non-blocking visual scaffolds per Q10; Upload accepts any file with per-kind processing per Q9.
 
 ### Task 6.1: LoginScreen + RegisterScreen — non-blocking visual scaffolds
 

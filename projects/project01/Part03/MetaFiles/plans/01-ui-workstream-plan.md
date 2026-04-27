@@ -91,12 +91,12 @@ Add a TODO entry in `Part03/MetaFiles/TODO.md` at MVP closeout: update `visualiz
 | Phase | Goal | State | Commit | Evidence |
 |---|---|---|---|---|
 | 0 | Pre-execution prep | ✅ 2026-04-27 | (read-only — no commit) | backend 73/75 + tree clean + tokens.css internalized |
-| 1 | Vite + TS strict + Tailwind + Zustand + Router (shadcn descoped) | ✅ 2026-04-27 | 6daf112 → 30675cd → 05eadf0 → (this commit) | `npm run build` clean; vitest 7/7 green (2 Zustand + 5 routing); Tailwind theme wired with Andrew's tokens; Q10 non-blocking routes scaffolded |
+| 1 | Vite + TS strict + Tailwind + Zustand + Router (shadcn descoped) | ✅ 2026-04-27 | 6daf112 → 30675cd → 05eadf0 → (close-out hash unrecoverable post-compaction) | `npm run build` clean; vitest 7/7 green (2 Zustand + 5 routing); Tailwind theme wired with Andrew's tokens; Q10 non-blocking routes scaffolded |
 | 2 | Icon shim (Lucide named-imports) | ✅ 2026-04-27 | 6f878dc | 18 named-import icons; 3/3 Icon tests green; vitest total 10/10 |
-| 3 | Shell components (Toast, Modal, TopBar, LeftRail, PageHeader) | ✅ 2026-04-27 | (this commit) | 9 vitest files / 41 tests green; build clean (10.73 kB CSS); Calibration Test #3 — 3 parallel subagents saved ~46% wall vs sequential |
+| 3 | Shell components (Toast, Modal, TopBar, LeftRail, PageHeader) | ✅ 2026-04-27 | (close-out hash unrecoverable post-compaction) | 9 vitest files / 41 tests green; build clean (10.73 kB CSS); Calibration Test #3 — 3 parallel subagents saved ~46% wall vs sequential |
 | (3 PARALLEL — Calibration Test #3, 3 subagents) | | | | |
 | 4 | photoappApi.ts (typed fetch wrapper) | ✅ 2026-04-27 | fc8d24e | 11 tests green; types.ts shared with Phase 5+6 fixtures |
-| 5+6 | Library set + Login/Register + Upload + AssetDetail | ✅ 2026-04-27 | (this commit) | 17 vitest files / 74 tests green; build clean (15.43 kB CSS, 162.73 kB JS); Calibration Test #4 — 4 parallel subagents saved ~74% wall vs sequential |
+| 5+6 | Library set + Login/Register + Upload + AssetDetail | ✅ 2026-04-27 | (close-out hash unrecoverable post-compaction) | 17 vitest files / 74 tests green; build clean (15.43 kB CSS, 162.73 kB JS); Calibration Test #4 — 4 parallel subagents saved ~74% wall vs sequential |
 | (5+6 PARALLEL — Calibration Test #4, 4 subagents) | | | | |
 | 7 | Wire to live backend | ⏳ | — | manual CLI smoke green; **🎯 MILESTONE: clickable UI** |
 | 8 | Acceptance + DEMO-QUICKSTART | ⏳ | — | All Phase 8 acceptance items; DEMO-QUICKSTART.md written |
@@ -113,7 +113,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 **Files:** none modified. Read-only verification.
 
-- [ ] **Step 0.1.1:** From `Part03/`, run `npm test`. **Expected: ≥73 passed, ≤2 skipped.** (Live integration tests are opt-in.) **Strictly higher count than the baseline below is acceptable** (backend may have grown since plan was written); lower count or new failures is a blocker.
+- [x] **Step 0.1.1:** From `Part03/`, run `npm test`. **Expected: ≥73 passed, ≤2 skipped.** (Live integration tests are opt-in.) **Strictly higher count than the baseline below is acceptable** (backend may have grown since plan was written); lower count or new failures is a blocker.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03
@@ -131,14 +131,14 @@ Ran all test suites.
 
 If count differs, run `git log --oneline -3` to confirm backend test additions landed since this plan was written. Strictly higher count = OK; equal-or-lower-with-failures = blocker.
 
-- [ ] **Step 0.1.2:** Run `git status`. Expected: `nothing to commit, working tree clean`.
+- [x] **Step 0.1.2:** Run `git status`. Expected: `nothing to commit, working tree clean`.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
 git status
 ```
 
-- [ ] **Step 0.1.3:** Verify `Part03/frontend/dist/index.html` and `Part03/frontend/dist/assets/app.css` placeholder files still exist (from Server Foundation 02 Phase 4). They will be **overwritten** by `npm run build` later in this plan.
+- [x] **Step 0.1.3:** Verify `Part03/frontend/dist/index.html` and `Part03/frontend/dist/assets/app.css` placeholder files still exist (from Server Foundation 02 Phase 4). They will be **overwritten** by `npm run build` later in this plan.
 
 ```bash
 ls -la projects/project01/Part03/frontend/dist/
@@ -152,13 +152,13 @@ Expected: `index.html` and `assets/app.css` both present.
 
 **Files:** none modified. Read-only.
 
-- [ ] **Step 0.2.1:** Read `ClaudeDesignDrop/raw/MBAi-460/src/tokens.css` to memorize the design tokens (cream/coral/serif palette, 4px spacing grid, fontFamily scale). These translate into `tailwind.config.ts` in Phase 1.2.
+- [x] **Step 0.2.1:** Read `ClaudeDesignDrop/raw/MBAi-460/src/tokens.css` to memorize the design tokens (cream/coral/serif palette, 4px spacing grid, fontFamily scale). These translate into `tailwind.config.ts` in Phase 1.2.
 
-- [ ] **Step 0.2.2:** Skim `ClaudeDesignDrop/raw/MBAi-460/src/shell.jsx` (lines 4–281). Note the components: ToastProvider/useToast (4–33), Modal (35–68), TopBar (70–165), LeftRail (167–245), PageHeader (247–270), format helpers (273–281).
+- [x] **Step 0.2.2:** Skim `ClaudeDesignDrop/raw/MBAi-460/src/shell.jsx` (lines 4–281). Note the components: ToastProvider/useToast (4–33), Modal (35–68), TopBar (70–165), LeftRail (167–245), PageHeader (247–270), format helpers (273–281).
 
-- [ ] **Step 0.2.3:** Skim `ClaudeDesignDrop/raw/MBAi-460/src/library.jsx` (Library, AssetCard, ListView, plus SegmentedControl/Dropdown/Grid/EmptyLibrary sub-components).
+- [x] **Step 0.2.3:** Skim `ClaudeDesignDrop/raw/MBAi-460/src/library.jsx` (Library, AssetCard, ListView, plus SegmentedControl/Dropdown/Grid/EmptyLibrary sub-components).
 
-- [ ] **Step 0.2.4:** Skim `ClaudeDesignDrop/raw/MBAi-460/src/auth.jsx` (LoginScreen 4–115, RegisterScreen 117–181) and `ClaudeDesignDrop/raw/MBAi-460/src/screens.jsx` (UploadScreen 6–119).
+- [x] **Step 0.2.4:** Skim `ClaudeDesignDrop/raw/MBAi-460/src/auth.jsx` (LoginScreen 4–115, RegisterScreen 117–181) and `ClaudeDesignDrop/raw/MBAi-460/src/screens.jsx` (UploadScreen 6–119).
 
 **Commit:** none (read-only).
 
@@ -166,7 +166,7 @@ Expected: `index.html` and `assets/app.css` both present.
 
 **Files:** none modified.
 
-- [ ] **Step 0.3.1:** Confirm `Part03/frontend/` exists and currently contains only `dist/` (placeholder content from 02). It does NOT yet contain `package.json`, `src/`, etc. — those are created in Phase 1.
+- [x] **Step 0.3.1:** Confirm `Part03/frontend/` exists and currently contains only `dist/` (placeholder content from 02). It does NOT yet contain `package.json`, `src/`, etc. — those are created in Phase 1.
 
 ```bash
 ls projects/project01/Part03/frontend/
@@ -198,7 +198,7 @@ Expected output: `dist`
 - Create: `Part03/frontend/src/App.tsx` (placeholder shell)
 - Create: `Part03/frontend/.gitignore` (ignore `dist/`, `node_modules/`)
 
-- [ ] **Step 1.1.1:** Bootstrap Vite TS template. From `Part03/frontend/`:
+- [x] **Step 1.1.1:** Bootstrap Vite TS template. From `Part03/frontend/`:
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend
@@ -207,14 +207,14 @@ npm create vite@latest . -- --template react-ts
 
 When prompted ("Current directory is not empty"), select **Ignore files and continue** (the only existing content is `dist/` from 02, which Vite's template will leave alone).
 
-- [ ] **Step 1.1.2:** Pin React to 18.3.x (NOT React 19 per Q7). Open `package.json` and confirm `"react": "^18.3.x"` and `"react-dom": "^18.3.x"`. If Vite's template defaulted to React 19, downgrade:
+- [x] **Step 1.1.2:** Pin React to 18.3.x (NOT React 19 per Q7). Open `package.json` and confirm `"react": "^18.3.x"` and `"react-dom": "^18.3.x"`. If Vite's template defaulted to React 19, downgrade:
 
 ```bash
 npm install react@^18.3.0 react-dom@^18.3.0
 npm install -D @types/react@^18.3.0 @types/react-dom@^18.3.0
 ```
 
-- [ ] **Step 1.1.3:** Tighten `tsconfig.json` strictness. Open `Part03/frontend/tsconfig.json`. Find the `compilerOptions` block. Add (or confirm) the following:
+- [x] **Step 1.1.3:** Tighten `tsconfig.json` strictness. Open `Part03/frontend/tsconfig.json`. Find the `compilerOptions` block. Add (or confirm) the following:
 
 ```json
 "strict": true,
@@ -225,7 +225,7 @@ npm install -D @types/react@^18.3.0 @types/react-dom@^18.3.0
 
 If `tsconfig.json` extends a base config (e.g., `tsconfig.app.json`), apply these in the extends-source.
 
-- [ ] **Step 1.1.4:** Replace the Vite template's `App.tsx` with a minimal placeholder shell. File: `Part03/frontend/src/App.tsx`.
+- [x] **Step 1.1.4:** Replace the Vite template's `App.tsx` with a minimal placeholder shell. File: `Part03/frontend/src/App.tsx`.
 
 ```tsx
 function App() {
@@ -241,13 +241,13 @@ export default App;
 
 (Tailwind classes won't resolve until Task 1.2; for now they're just CSS class strings.)
 
-- [ ] **Step 1.1.5:** Install (logged in `Part03/MetaFiles/install-log.md`).
+- [x] **Step 1.1.5:** Install (logged in `Part03/MetaFiles/install-log.md`).
 
 ```bash
 npm install
 ```
 
-- [ ] **Step 1.1.6:** Append entry to `Part03/MetaFiles/install-log.md`:
+- [x] **Step 1.1.6:** Append entry to `Part03/MetaFiles/install-log.md`:
 
 ```markdown
 ## 2026-04-27 — Phase 1.1 install: Vite + React 18.3.x + TypeScript strict (Part03/frontend)
@@ -261,7 +261,7 @@ npm install
 - **Notes:** TS strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes + noImplicitOverride. React pinned to 18.3.x per Q7 (NOT React 19).
 ```
 
-- [ ] **Step 1.1.7:** Smoke build.
+- [x] **Step 1.1.7:** Smoke build.
 
 ```bash
 npm run build
@@ -269,7 +269,7 @@ npm run build
 
 Expected: `dist/index.html` and `dist/assets/index-<hash>.js` written. The placeholder text `MBAi 460 — PhotoApp` should appear in the built HTML (or in the JS bundle).
 
-- [ ] **Step 1.1.8:** Atomic doc update + commit.
+- [x] **Step 1.1.8:** Atomic doc update + commit.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
@@ -288,7 +288,7 @@ git commit -m "Part03 01 Phase 1.1: Vite + React 18.3.x + TypeScript strict boot
 - Modify: `Part03/frontend/src/main.tsx` (add `import './styles/globals.css'`)
 - Modify: `Part03/frontend/tsconfig.json` (if Tailwind config TS path needs declaration)
 
-- [ ] **Step 1.2.1:** Install Tailwind toolchain.
+- [x] **Step 1.2.1:** Install Tailwind toolchain.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend
@@ -298,7 +298,7 @@ npx tailwindcss init -p
 
 (Pin Tailwind 3.x; Tailwind 4 has breaking config syntax changes that affect `tailwind.config.ts` structure and the PostCSS plugin interface — safer to stay on 3.x for the assignment window.)
 
-- [ ] **Step 1.2.2:** Replace `tailwind.config.ts` (or rename `tailwind.config.js` to `.ts`) with the token translation. File contents:
+- [x] **Step 1.2.2:** Replace `tailwind.config.ts` (or rename `tailwind.config.js` to `.ts`) with the token translation. File contents:
 
 ```ts
 import type { Config } from 'tailwindcss';
@@ -399,7 +399,7 @@ export default config;
 
 If exact hex values differ from `tokens.css`, prefer the values in `tokens.css` (it's the authoritative visual contract).
 
-- [ ] **Step 1.2.3:** Create `Part03/frontend/src/styles/globals.css`:
+- [x] **Step 1.2.3:** Create `Part03/frontend/src/styles/globals.css`:
 
 ```css
 @tailwind base;
@@ -417,9 +417,9 @@ body {
 }
 ```
 
-- [ ] **Step 1.2.4:** Wire `globals.css` into `main.tsx`. Edit `Part03/frontend/src/main.tsx`. Add `import './styles/globals.css';` near the top imports.
+- [x] **Step 1.2.4:** Wire `globals.css` into `main.tsx`. Edit `Part03/frontend/src/main.tsx`. Add `import './styles/globals.css';` near the top imports.
 
-- [ ] **Step 1.2.5:** Update `App.tsx` to use Tailwind classes that consume the theme:
+- [x] **Step 1.2.5:** Update `App.tsx` to use Tailwind classes that consume the theme:
 
 ```tsx
 function App() {
@@ -433,7 +433,7 @@ function App() {
 export default App;
 ```
 
-- [ ] **Step 1.2.6:** Verify build still works.
+- [x] **Step 1.2.6:** Verify build still works.
 
 ```bash
 npm run build
@@ -447,9 +447,9 @@ grep -c "bg-paper\|text-ink\|font-serif" dist/assets/index-*.css
 
 Expected: at least 1 match (Tailwind generated the utility for our usage).
 
-- [ ] **Step 1.2.7:** Append `tailwind + postcss + autoprefixer` install to `install-log.md` (same format as Task 1.1.6).
+- [x] **Step 1.2.7:** Append `tailwind + postcss + autoprefixer` install to `install-log.md` (same format as Task 1.1.6).
 
-- [ ] **Step 1.2.8:** Atomic doc update + commit.
+- [x] **Step 1.2.8:** Atomic doc update + commit.
 
 ```bash
 git add projects/project01/Part03/frontend/ projects/project01/Part03/MetaFiles/install-log.md projects/project01/Part03/MetaFiles/plans/01-ui-workstream-plan.md
@@ -481,7 +481,7 @@ shadcn/ui is **NOT used in the MVP**. UI primitives are implemented as custom Ta
 - Create: `Part03/frontend/src/stores/__tests__/ui.test.ts`
 - Modify: `Part03/frontend/package.json` (add `test` script: `vitest run`)
 
-- [ ] **Step 1.4.1:** Install Zustand + Vitest + RTL + jsdom.
+- [x] **Step 1.4.1:** Install Zustand + Vitest + RTL + jsdom.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend
@@ -489,7 +489,7 @@ npm install zustand
 npm install -D vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom @vitest/ui
 ```
 
-- [ ] **Step 1.4.2:** Create `Part03/frontend/vitest.config.ts`:
+- [x] **Step 1.4.2:** Create `Part03/frontend/vitest.config.ts`:
 
 ```ts
 import { defineConfig } from 'vitest/config';
@@ -510,13 +510,13 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 1.4.3:** Create `Part03/frontend/src/test/setup.ts`:
+- [x] **Step 1.4.3:** Create `Part03/frontend/src/test/setup.ts`:
 
 ```ts
 import '@testing-library/jest-dom/vitest';
 ```
 
-- [ ] **Step 1.4.4:** Update `package.json` `scripts`:
+- [x] **Step 1.4.4:** Update `package.json` `scripts`:
 
 ```json
 "scripts": {
@@ -528,7 +528,7 @@ import '@testing-library/jest-dom/vitest';
 }
 ```
 
-- [ ] **Step 1.4.5:** Implement `Part03/frontend/src/stores/ui.ts`:
+- [x] **Step 1.4.5:** Implement `Part03/frontend/src/stores/ui.ts`:
 
 ```ts
 import { create } from 'zustand';
@@ -554,7 +554,7 @@ export const useUIStore = create<UIState>((set) => ({
 }));
 ```
 
-- [ ] **Step 1.4.6:** Failing test `Part03/frontend/src/stores/__tests__/ui.test.ts`:
+- [x] **Step 1.4.6:** Failing test `Part03/frontend/src/stores/__tests__/ui.test.ts`:
 
 ```ts
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -586,7 +586,7 @@ describe('useUIStore', () => {
 });
 ```
 
-- [ ] **Step 1.4.7:** Run tests.
+- [x] **Step 1.4.7:** Run tests.
 
 ```bash
 npm test
@@ -594,9 +594,9 @@ npm test
 
 Expected: **2 tests pass (the 2 Zustand tests).** If Vitest can't resolve `@/...` aliases, confirm `vitest.config.ts` alias matches `tsconfig.json` paths. (No shadcn Button test — Task 1.3 descoped per reviewer remediation R1.)
 
-- [ ] **Step 1.4.8:** Append zustand + vitest install to `install-log.md`.
+- [x] **Step 1.4.8:** Append zustand + vitest install to `install-log.md`.
 
-- [ ] **Step 1.4.9:** Atomic doc update + commit.
+- [x] **Step 1.4.9:** Atomic doc update + commit.
 
 ```bash
 git add projects/project01/Part03/frontend/ projects/project01/Part03/MetaFiles/install-log.md projects/project01/Part03/MetaFiles/plans/01-ui-workstream-plan.md
@@ -611,14 +611,14 @@ git commit -m "Part03 01 Phase 1.4: Zustand store + Vitest + RTL + jsdom test in
 - Modify: `Part03/frontend/src/App.tsx` (add `<Routes>` with stub routes)
 - Create: `Part03/frontend/src/__tests__/App.test.tsx`
 
-- [ ] **Step 1.5.1:** Install react-router-dom.
+- [x] **Step 1.5.1:** Install react-router-dom.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend
 npm install react-router-dom@^6
 ```
 
-- [ ] **Step 1.5.2:** Update `Part03/frontend/src/main.tsx`:
+- [x] **Step 1.5.2:** Update `Part03/frontend/src/main.tsx`:
 
 ```tsx
 import React from 'react';
@@ -636,7 +636,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 );
 ```
 
-- [ ] **Step 1.5.3:** Update `Part03/frontend/src/App.tsx` with stub routes:
+- [x] **Step 1.5.3:** Update `Part03/frontend/src/App.tsx` with stub routes:
 
 ```tsx
 import { Routes, Route, Navigate } from 'react-router-dom';
@@ -671,7 +671,7 @@ function App() {
 export default App;
 ```
 
-- [ ] **Step 1.5.4:** Failing test `Part03/frontend/src/__tests__/App.test.tsx`:
+- [x] **Step 1.5.4:** Failing test `Part03/frontend/src/__tests__/App.test.tsx`:
 
 ```tsx
 import { describe, it, expect } from 'vitest';
@@ -715,7 +715,7 @@ describe('App routing', () => {
 });
 ```
 
-- [ ] **Step 1.5.5:** Run tests.
+- [x] **Step 1.5.5:** Run tests.
 
 ```bash
 npm test
@@ -723,7 +723,7 @@ npm test
 
 Expected: all tests pass (2 Zustand + 5 App routing = 7 tests). No Button test — shadcn descoped per reviewer remediation R1.
 
-- [ ] **Step 1.5.6:** Smoke build. From `Part03/frontend/`:
+- [x] **Step 1.5.6:** Smoke build. From `Part03/frontend/`:
 
 ```bash
 npm run build
@@ -731,9 +731,9 @@ npm run build
 
 Expected: `dist/index.html` and `dist/assets/index-<hash>.{js,css}` written.
 
-- [ ] **Step 1.5.7:** Append react-router-dom install to `install-log.md`.
+- [x] **Step 1.5.7:** Append react-router-dom install to `install-log.md`.
 
-- [ ] **Step 1.5.8:** Atomic doc update + commit.
+- [x] **Step 1.5.8:** Atomic doc update + commit.
 
 ```bash
 git add projects/project01/Part03/frontend/ projects/project01/Part03/MetaFiles/install-log.md projects/project01/Part03/MetaFiles/plans/01-ui-workstream-plan.md
@@ -755,14 +755,14 @@ git commit -m "Part03 01 Phase 1.5: react-router-dom + Q10 non-blocking routing 
 - Create: `Part03/frontend/src/components/Icon.tsx`
 - Create: `Part03/frontend/src/components/__tests__/Icon.test.tsx`
 
-- [ ] **Step 2.1.1:** Install lucide-react.
+- [x] **Step 2.1.1:** Install lucide-react.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend
 npm install lucide-react
 ```
 
-- [ ] **Step 2.1.2:** Failing test `Part03/frontend/src/components/__tests__/Icon.test.tsx`:
+- [x] **Step 2.1.2:** Failing test `Part03/frontend/src/components/__tests__/Icon.test.tsx`:
 
 ```tsx
 import { describe, it, expect } from 'vitest';
@@ -790,7 +790,7 @@ describe('Icon', () => {
 });
 ```
 
-- [ ] **Step 2.1.3:** Implement `Part03/frontend/src/components/Icon.tsx`:
+- [x] **Step 2.1.3:** Implement `Part03/frontend/src/components/Icon.tsx`:
 
 ```tsx
 import {
@@ -854,7 +854,7 @@ export function Icon({
 
 (Add named imports for additional icons as Andrew's components reference them in later phases. Per N-4 from the UI burr patch: NEVER `import * as LucideIcons` — defeats tree-shaking.)
 
-- [ ] **Step 2.1.4:** Run tests.
+- [x] **Step 2.1.4:** Run tests.
 
 ```bash
 npm test
@@ -862,9 +862,9 @@ npm test
 
 Expected: all prior 7 tests + 3 new Icon tests = 10 tests passing.
 
-- [ ] **Step 2.1.5:** Append lucide-react install to `install-log.md`.
+- [x] **Step 2.1.5:** Append lucide-react install to `install-log.md`.
 
-- [ ] **Step 2.1.6:** Atomic doc update + commit.
+- [x] **Step 2.1.6:** Atomic doc update + commit.
 
 ```bash
 git add projects/project01/Part03/frontend/ projects/project01/Part03/MetaFiles/install-log.md projects/project01/Part03/MetaFiles/plans/01-ui-workstream-plan.md
@@ -909,7 +909,7 @@ Plus the format helpers (lines 273–281: `fmtBytes`, `fmtDate`, `fmtDateRel`) p
   - `Part03/frontend/src/components/__tests__/PageHeader.test.tsx`
   - `Part03/frontend/src/utils/__tests__/format.test.ts`
 
-- [ ] **Step P3.1.1:** Single message with three Agent tool invocations (parallel runtime fan-out). Each subagent receives:
+- [x] **Step P3.1.1:** Single message with three Agent tool invocations (parallel runtime fan-out). Each subagent receives:
   - Working directory: `Part03/frontend/` (cd explicitly per Bash call).
   - Source-of-truth: 01 §Phase 3 + Andrew's `ClaudeDesignDrop/raw/MBAi-460/src/shell.jsx`.
   - Goal: TS port + Tailwind classes + lucide-react Icon shim + Vitest+RTL test files.
@@ -959,9 +959,9 @@ Plus the format helpers (lines 273–281: `fmtBytes`, `fmtDate`, `fmtDateRel`) p
 
 ### Task P3.2: Verify merge
 
-- [ ] **Step P3.2.1:** Receive all 3 subagent reports.
+- [x] **Step P3.2.1:** Receive all 3 subagent reports.
 
-- [ ] **Step P3.2.2:** From `Part03/frontend/`, run full `npm test`.
+- [x] **Step P3.2.2:** From `Part03/frontend/`, run full `npm test`.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend
@@ -970,13 +970,13 @@ npm test
 
 Expected: 11 prior + ~12 new (Toast 1 + Modal 1 + TopBar 2 + LeftRail 2 + PageHeader 1 + format 5) = ~23 tests. All green.
 
-- [ ] **Step P3.2.3:** Run `git status` to confirm only the expected files changed.
+- [x] **Step P3.2.3:** Run `git status` to confirm only the expected files changed.
 
 ### Task P3.3: Atomic doc update + single commit
 
-- [ ] **Step P3.3.1:** Update Master Tracker: Phase 3 → ✅.
+- [x] **Step P3.3.1:** Update Master Tracker: Phase 3 → ✅.
 
-- [ ] **Step P3.3.2:** Single commit.
+- [x] **Step P3.3.2:** Single commit.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
@@ -1004,7 +1004,7 @@ git commit -m "Part03 01 Phase 3: shell components — Toast + Modal + TopBar (M
 - Create: `Part03/frontend/src/api/photoappApi.ts`
 - Create: `Part03/frontend/src/api/__tests__/photoappApi.test.ts`
 
-- [ ] **Step 4.1.1:** Create `Part03/frontend/src/api/types.ts`:
+- [x] **Step 4.1.1:** Create `Part03/frontend/src/api/types.ts`:
 
 ```ts
 export interface ApiSuccess<T> {
@@ -1053,7 +1053,7 @@ export interface PingData {
 }
 ```
 
-- [ ] **Step 4.1.2:** Failing test `Part03/frontend/src/api/__tests__/photoappApi.test.ts`:
+- [x] **Step 4.1.2:** Failing test `Part03/frontend/src/api/__tests__/photoappApi.test.ts`:
 
 ```ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -1178,13 +1178,13 @@ describe('photoappApi', () => {
 });
 ```
 
-- [ ] **Step 4.1.3:** Run test → expect RED (`photoappApi` module not found).
+- [x] **Step 4.1.3:** Run test → expect RED (`photoappApi` module not found).
 
 ```bash
 npm test -- photoappApi.test.ts
 ```
 
-- [ ] **Step 4.1.4:** Implement `Part03/frontend/src/api/photoappApi.ts`:
+- [x] **Step 4.1.4:** Implement `Part03/frontend/src/api/photoappApi.ts`:
 
 ```ts
 import type {
@@ -1246,7 +1246,7 @@ export async function deleteAllImages(): Promise<{ deleted: boolean }> {
 }
 ```
 
-- [ ] **Step 4.1.5:** Run test → expect GREEN.
+- [x] **Step 4.1.5:** Run test → expect GREEN.
 
 ```bash
 npm test -- photoappApi.test.ts
@@ -1254,7 +1254,7 @@ npm test -- photoappApi.test.ts
 
 Expected: 11/11 photoappApi tests pass.
 
-- [ ] **Step 4.1.6:** Atomic doc update + commit.
+- [x] **Step 4.1.6:** Atomic doc update + commit.
 
 ```bash
 git add projects/project01/Part03/frontend/ projects/project01/Part03/MetaFiles/plans/01-ui-workstream-plan.md
@@ -1286,7 +1286,7 @@ git commit -m "Part03 01 Phase 4.1: photoappApi.ts typed fetch wrapper with enve
 
 - Create: `Part03/frontend/src/__tests__/fixtures/assets.ts`
 
-- [ ] **Step P4.0.1:** Create `Part03/frontend/src/__tests__/fixtures/assets.ts`:
+- [x] **Step P4.0.1:** Create `Part03/frontend/src/__tests__/fixtures/assets.ts`:
 
 ```ts
 import type { Asset, Label } from '@/api/types';
@@ -1315,7 +1315,7 @@ export const mockLabels: Label[] = [
 ];
 ```
 
-- [ ] **Step P4.0.2:** Atomic doc update + commit (precedes the 4-subagent dispatch):
+- [x] **Step P4.0.2:** Atomic doc update + commit (precedes the 4-subagent dispatch):
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
@@ -1348,7 +1348,7 @@ git commit -m "Part03 01 Phase 5+6 pre-dispatch: shared fixture file (mockPhotoA
   - `Part03/frontend/src/pages/AssetDetail.tsx`
   - `Part03/frontend/src/pages/__tests__/AssetDetail.test.tsx`
 
-- [ ] **Step P4.1.1:** Single message with four Agent tool invocations (parallel runtime fan-out). Each subagent receives:
+- [x] **Step P4.1.1:** Single message with four Agent tool invocations (parallel runtime fan-out). Each subagent receives:
   - Working directory: `Part03/frontend/`.
   - Source-of-truth: 01 §Phase 5 (or Phase 6) + Andrew's relevant `.jsx` source.
   - Goal: TS port + Tailwind classes + Vitest+RTL test files using fixtures.
@@ -1449,9 +1449,9 @@ git commit -m "Part03 01 Phase 5+6 pre-dispatch: shared fixture file (mockPhotoA
 
 ### Task P4.2: Verify merge
 
-- [ ] **Step P4.2.1:** Receive all 4 subagent reports.
+- [x] **Step P4.2.1:** Receive all 4 subagent reports.
 
-- [ ] **Step P4.2.2:** From `Part03/frontend/`, run full `npm test`.
+- [x] **Step P4.2.2:** From `Part03/frontend/`, run full `npm test`.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend
@@ -1460,13 +1460,13 @@ npm test
 
 Expected: ~23 prior + ~16 new (Library 2 + AssetCard 2 + ListView 1 + Login 2 + Register 2 + Upload 3 + AssetDetail 3 + EmptyLibrary 1) = ~39 tests. All green.
 
-- [ ] **Step P4.2.3:** `git status` to confirm clean delta.
+- [x] **Step P4.2.3:** `git status` to confirm clean delta.
 
 ### Task P4.3: Atomic doc update + single commit
 
-- [ ] **Step P4.3.1:** Update Master Tracker: Phases 5+6 → ✅.
+- [x] **Step P4.3.1:** Update Master Tracker: Phases 5+6 → ✅.
 
-- [ ] **Step P4.3.2:** Single commit.
+- [x] **Step P4.3.2:** Single commit.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
