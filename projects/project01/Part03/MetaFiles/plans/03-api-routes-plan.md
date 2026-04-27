@@ -1,6 +1,6 @@
 # API Routes (03) Execution Plan
 
-> **For agentic workers:** Inline execution by the active agent (per Erik 2026-04-26: auto mode + atomic doc updates). Steps use checkbox (`- [ ]`) syntax for tracking. **Updating this plan, the 03 approach doc, install-log, and source code are ATOMIC with each task's commit — not deferred.**
+> **For agentic workers:** Inline execution by the active agent. Atomic doc updates apply regardless of auto-mode state (per Erik 2026-04-26; see `feedback_atomic_substep_updates.md` + `feedback_auto_mode_toggle_checkpoint.md`). Steps use checkbox (`- [ ]`) syntax for tracking. **Updating this plan, the 03 approach doc, install-log, and source code are ATOMIC with each task's commit — not deferred.**
 
 **Goal:** Implement the Express `/api/*` backend per `MetaFiles/Approach/03-api-routes.md` — schemas + helpers, AWS clients factory, multer middleware, PhotoApp service module (read + write use cases), routes, error middleware, opt-in live tests, end-to-end smoke. All TDD-disciplined; all reviewer-flagged Q9 (documents accepted) and Q8 (kind from extension) requirements honored.
 
@@ -63,7 +63,7 @@ Most commands run from `/Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/
 
 | Phase | Goal | State | Commit | Evidence |
 |---|---|---|---|---|
-| 0 | Pre-execution prep + dep install | ✅ 2026-04-26 | (see commit) | install-log entry written; 5/5 suites still green; smoke `/health` + `/api` confirmed |
+| 0 | Pre-execution prep + dep install | ✅ 2026-04-26 | a50ef8c | install-log entry written; 5/5 suites still green; smoke `/health` + `/api` confirmed |
 | Pre-1 | Schema migration (kind column) | ⏳ | — | validate-db green; SELECT kind shows photo |
 | 1 | `server/schemas.js` (envelope + converters + deriveKind) | ⏳ | — | jest schemas.test.js green |
 | 2 | `server/services/aws.js` (smooth helper.js) | ⏳ | — | jest aws.test.js green |
