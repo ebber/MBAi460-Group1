@@ -241,16 +241,16 @@ git commit -m "Part03 sub-B Phase 5: 🎯 sub-B COMPLETE — coherence audit + d
 
 The reviewer's framing was that the inline grep is brittle / placeholder-feeling — better to extend the utility OR explicitly queue the work + use grep transparently. Step 6.0 below resolves this before push.
 
-- [ ] **Step 6.0a (assess `cred-sweep` capability + LoE):** Read `MBAi460-Group1/utils/cred-sweep`. Surface to Erik:
+- [x] **Step 6.0a (assess `cred-sweep` capability + LoE):** Read `MBAi460-Group1/utils/cred-sweep`. Surface to Erik:
   - **What it does today:** scans tracked files (5 checks: AWS keys, known lab passwords `abc123!!`/`def456!!`, committed tfvars, RDS master-pw file, photoapp-config with live keys); exits 1 on any hit.
   - **What the delta-check needs:** a mode that filters to NEW additions in `git diff <ref>..HEAD` rather than scanning the whole tracked-file surface; same regex patterns; zero matches required (vs. current tolerate-known-hits-then-WARN).
   - **Estimated LoE for adding `--delta <ref>` mode:** ~30-60 min for a tight implementation: add CLI flag parsing, swap input from `git ls-files | xargs grep` to `git diff <ref>..HEAD | grep` (only `^+` added lines), update help text + docs, add a small smoke test. Not blocking; reasonable.
 
-- [ ] **Step 6.0b (Erik picks):**
+- [x] **Step 6.0b (Erik picks):**
   - **Update-now path:** implement delta-check mode in `cred-sweep`; integrate into Step 6.1 hygiene as the canonical delta-check tool. Adds 1-2 commits to sub-B chain.
   - **Queue-and-grep path:** add a TODO entry to `MBAi460-Group1/MetaFiles/TODO.md` ("[Tooling] cred-sweep — add `--delta <ref>` mode for pre-push delta hygiene; ~30-60 min LoE"); use the inline `git diff` grep as the explicit acknowledged fallback. Adds 1 commit (TODO entry).
 
-- [ ] **Step 6.0c (execute decision):** Per Erik's pick:
+- [x] **Step 6.0c (execute decision):** Per Erik's pick:
   - If update-now: implement + smoke-test the new mode; commit (`Class Project: cred-sweep — add --delta mode for pre-push hygiene`). Then Step 6.1 uses the new mode.
   - If queue + grep: add TODO entry; commit (`Class Project queue: cred-sweep --delta mode TODO`). Then Step 6.1 uses inline grep.
 
