@@ -63,7 +63,7 @@ Most commands run from `/Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/
 
 | Phase | Goal | State | Commit | Evidence |
 |---|---|---|---|---|
-| 0 | Pre-execution prep + dep install | ⏳ | — | install-log entry; existing tests still green |
+| 0 | Pre-execution prep + dep install | ✅ 2026-04-26 | (see commit) | install-log entry written; 5/5 suites still green; smoke `/health` + `/api` confirmed |
 | Pre-1 | Schema migration (kind column) | ⏳ | — | validate-db green; SELECT kind shows photo |
 | 1 | `server/schemas.js` (envelope + converters + deriveKind) | ⏳ | — | jest schemas.test.js green |
 | 2 | `server/services/aws.js` (smooth helper.js) | ⏳ | — | jest aws.test.js green |
@@ -89,11 +89,11 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 
 **Files:** none modified. Read-only verification.
 
-- [ ] **Step 0.1.1:** From `Part03/`, run `npm test`. Expected: 5 suites / 8 tests / all green (the Server Foundation 02 result).
-- [ ] **Step 0.1.2:** Run `npm start` in background, then `curl -s http://localhost:8080/health` (expect `{"status":"running"}`), `curl -s http://localhost:8080/api` (expect placeholder envelope), kill the server. Confirms baseline still works post-doc-revisions.
-- [ ] **Step 0.1.3:** Run `git status` — confirm working tree clean.
+- [x] **Step 0.1.1:** From `Part03/`, run `npm test`. Expected: 5 suites / 8 tests / all green (the Server Foundation 02 result). _2026-04-26 — Confirmed: 5 suites / 8 tests, all green._
+- [x] **Step 0.1.2:** Run `npm start` in background, then `curl -s http://localhost:8080/health` (expect `{"status":"running"}`), `curl -s http://localhost:8080/api` (expect placeholder envelope), kill the server. Confirms baseline still works post-doc-revisions. _2026-04-26 — `/health` returned `{"status":"running"}`; `/api` returned `{"message":"success","data":{"service":"photoapp-api","status":"placeholder"}}`._
+- [x] **Step 0.1.3:** Run `git status` — confirm working tree clean. _2026-04-26 — Clean (2 ahead of origin/main from plan commit + earlier work)._
 
-**Atomic doc update:** mark Task 0.1 ✅ in this plan tracker. (No 03 boxes apply — pre-03.)
+**Atomic doc update:** mark Task 0.1 ✅ in this plan tracker. (No 03 boxes apply — pre-03.) _Done — plan tracker flipped; will roll into Task 0.2 commit._
 
 **Commit:** none (read-only verification).
 
@@ -106,9 +106,9 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 - `package-lock.json`
 - `Part03/MetaFiles/install-log.md` (append entry)
 
-- [ ] **Step 0.2.1:** From `Part03/`, run `npm install --save multer ini uuid@9`. Capture output.
+- [x] **Step 0.2.1:** From `Part03/`, run `npm install --save multer ini uuid@9`. Capture output. _2026-04-26 — exit 0; 15 packages added; 530 audited; 1 moderate vuln (uuid <14, unreachable in our usage; not fixed because v14 is ESM-only and would break Jest)._
 
-- [ ] **Step 0.2.2:** Append entry to `Part03/MetaFiles/install-log.md`:
+- [x] **Step 0.2.2:** Append entry to `Part03/MetaFiles/install-log.md`: _2026-04-26 — entry written._
 
 ```markdown
 ## 2026-04-26 — Phase 0 install: multer, ini, uuid@9 for /api/* implementation
@@ -122,9 +122,9 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked
 - **Notes:** these three packages are runtime deps for 03's PhotoApp service module + multipart upload middleware.
 ```
 
-- [ ] **Step 0.2.3:** Run `npm test` → confirm 5/5 suites green (no regression from new deps).
+- [x] **Step 0.2.3:** Run `npm test` → confirm 5/5 suites green (no regression from new deps). _2026-04-26 — 5/5 suites, 8/8 tests, all green._
 
-**Atomic doc update:** mark Task 0.2 ✅; install-log entry written.
+**Atomic doc update:** mark Task 0.2 ✅; install-log entry written. _Done._
 
 **Commit:** `Part03 03 Phase 0: install multer + ini + uuid@9 for /api/* implementation`. Files: `package.json`, `package-lock.json`, `MetaFiles/install-log.md`, this plan tracker update.
 

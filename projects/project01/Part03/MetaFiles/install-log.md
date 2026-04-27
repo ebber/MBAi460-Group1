@@ -70,3 +70,24 @@ Used by future agents (and any human reviewer) to understand the dependency chai
   - `npm test`: 5 suites / 8 tests still pass.
 - **Side-effect (textual, intentional):** the legacy `server/api_post_image.js` reference file requires `uuid`. With uuid removed from `dependencies`, that file is now require-broken — it remains as a *textual* reference only. This is acceptable per the Part 03 TODO disposition decision (legacy api_*.js kept as reference; final fate decided at end-of-Part-03). When workstream 03 reinstalls `uuid` (probably v14, with `transformIgnorePatterns` for jest's ESM handling), legacy files become require-functional again — though they should never actually be required at runtime.
 - **Decision recorded for workstream 03:** when re-adding `uuid`, decide between `uuid@14` (current, ESM-only — needs `transformIgnorePatterns: ['node_modules/(?!uuid)']` in `jest.config.js`) and `uuid@9.x` (CJS-compatible, last v9 release). Refactor-log 2026-04-26 Phase 2 entry already flagged this.
+
+---
+
+## 2026-04-26 — Phase 0 install: multer + ini + uuid@9 for /api/* implementation
+
+- **Source:** `03-api-routes-plan.md` Phase 0 Task 0.2 — runtime deps for the PhotoApp service module + multipart upload middleware.
+- **Working directory:** `MBAi460-Group1/projects/project01/Part03/`
+- **Command:** `npm install --save multer ini uuid@9`
+- **Exit code:** `0`
+- **Packages added (direct deps in `package.json#dependencies`):**
+  - `multer@^2.1.1`
+  - `ini@^6.0.0`
+  - `uuid@^9.0.1` (pinned to v9 for CommonJS compatibility — v14 is ESM-only and would require `transformIgnorePatterns: ['node_modules/(?!uuid)']` in `jest.config.js`. See refactor-log 2026-04-26 Phase 2 side-finding.)
+- **Net packages added to tree:** 15 (audited 530 total).
+- **Funding:** 82 packages requesting (`npm fund` for details).
+- **Vulnerabilities:** 1 moderate.
+  - **Advisory:** `uuid <14.0.0` — *Missing buffer bounds check in v3/v5/v6 when `buf` is provided* (`GHSA-w5hq-g745-h8pq`).
+  - **Reachable from our code?** No. The PhotoApp service uses `uuidv4()` for bucketkey generation only; we never pass a `buf` argument and never use v3/v5/v6 generators. The advisory does not affect our usage.
+  - **Why we're not upgrading:** `npm audit fix --force` would install `uuid@14`, which is ESM-only and breaks Jest's CommonJS transform (would require jest config additions + likely break our test setup). The pin to v9 is intentional and the advisory is unreachable in our usage pattern.
+- **Notable warnings:** none beyond the audit notice above.
+- **Verification after install:** `npm test` re-run pending (next plan step) — confirm no regression in the 5 existing suites.
