@@ -8,9 +8,7 @@
 
 ## Status
 
-🔄 **In progress** as of 2026-04-27. **Step 3 audit complete (this file)**; remediation plan + execute + re-validate to follow per the 12-step Frame.
-
-Will flip to ✅ when sub-B Plan Phase 4 (re-audit + validation) closes — drift resolved; re-audit shows zero 🚩; tests stay green. See `plans/outstanding-integrations-sub-B-plan.md` for the Plan-phase-numbered tracker (Plan has 7 phases 0-6; the broader 12-step Frame contains the Plan as Steps 4-11 of the Frame).
+✅ **COMPLETE** as of 2026-04-27 — re-audit (Plan Phase 4) confirms zero 🚩 rows. Drift Finding #1 resolved at commit `108d9c7` (sub-B Phase 2: stale example block removed in 00-coord §GET /api/images). Adjacent Observation E (deleteAllImages type-precision) resolved at commit `71034f4` (sub-B Phase 3: type narrowed to `Promise<{ deleted: true }>`). Tests: backend Jest 77/77 + frontend Vitest 74/74, both green at sub-B closeout.
 
 ---
 
@@ -54,7 +52,7 @@ Per Map sub-B + Q-B-6 extension (2026-04-27 — Erik approved scope expansion to
 | # | Contract item | types.ts | schemas.js | 00-coord | Bucket |
 |---|---|---|---|---|---|
 | 3 | User shape `{ userid, username, givenname, familyname }` | User ✅ | userRowToObject() ✅ | §GET /api/users line 228-232 ✅ | ✅ |
-| 4 | Asset shape `{ assetid, userid, localname, bucketkey, kind }` | Asset ✅ | imageRowToObject() ✅ | §GET /api/images prose (line 279) ✅; example block 1 (line 263-273) MISSING `kind`; example block 2 (line 282-297) ✅ includes `kind` | 🚩 **DRIFT — see Drift Finding #1** |
+| 4 | Asset shape `{ assetid, userid, localname, bucketkey, kind }` | Asset ✅ | imageRowToObject() ✅ | §GET /api/images: single canonical example with `kind` ✅ (post-Phase-2 fix at `108d9c7` — stale block removed) | ✅ |
 | 5 | Label shape `{ label, confidence }` | Label ✅ | labelRowToObject() ✅ | §GET /api/images/:id/labels line 384-388 ✅ | ✅ |
 | 6 | SearchHit shape `{ assetid, label, confidence }` | SearchHit ✅ | searchRowToObject() ✅ | §GET /api/search line 416-419 ✅ | ✅ |
 | 7 | PingData shape `{ s3_object_count, user_count }` | PingData ✅ | (no row converter — ping is service-assembled) ⏳ | §GET /api/ping line 195-196 ✅ | ⏳ — schemas.js absence is intentional (not a row-converter use case) |
@@ -98,7 +96,7 @@ Per Map sub-B + Q-B-6 extension (2026-04-27 — Erik approved scope expansion to
 | B | photoapp_routes.js validates inputs inline before calling service | Non-int userid/assetid + missing file/label all return 400 inline via `errorResponse()` — never reach the service layer. This matches the contract's status-code guidance (400 for invalid input). |
 | C | photoapp_routes.js wires stream errors into error middleware | `s3Result.Body.on('error', next)` before `.pipe(res)` — matches the §GET /api/images/:id/file implementation note about streaming failures. |
 | D | photoappApi.ts `getImageFileUrl` returns a string, not a Promise | Unlike other wrappers, this one is synchronous (URL builder). Used as image `src` per 00-coord §GET /api/images/:id/file UI behavior note. Aligned by design. |
-| E | photoappApi.ts `deleteAllImages` return type wider than contract | Contract: `{ deleted: true }`; type: `Promise<{ deleted: boolean }>`. Type permits a wider universe than the contract specifies. **Possible tightening: `Promise<{ deleted: true }>`** — minor TypeScript type-precision improvement; not a true drift. Optional remediation. |
+| E | photoappApi.ts `deleteAllImages` return type wider than contract | ✅ **RESOLVED at sub-B Phase 3 commit `71034f4`.** Type narrowed from `Promise<{ deleted: boolean }>` to `Promise<{ deleted: true }>` — matches contract literal exactly. Pre-resolution this was logged as "Optional remediation; not a true drift; minor TS type-precision improvement." Post-resolution: type aligned. |
 
 ---
 
@@ -144,25 +142,36 @@ A second example block at lines 282-297 includes `kind` correctly. The interveni
 
 ## Bucket distribution
 
+### Pre-remediation (Step 3 audit landing 2026-04-27)
+
 | Bucket | Count | % |
 |---|---|---|
 | ✅ Aligned | 21 / 23 | 91% |
-| 🚩 Drift | 1 / 23 | 4% |
-| ⏳ Documented gap | 1 / 23 | 4% |
+| 🚩 Drift | 1 / 23 | 4% (Drift Finding #1) |
+| ⏳ Documented gap | 1 / 23 | 4% (PingData absent in schemas.js — intentional) |
 
-Plus 5 adjacent observations (A–E above) — informational, not bucketed.
+Plus 5 adjacent observations (A–E above) — informational, not bucketed. One of those (Observation E — deleteAllImages type-precision) was logged as a possible Phase 3 type-tightening candidate.
 
-**Overall verdict: contract surface is remarkably tight.** Sub-B's expected high-volume drift didn't materialize — the disciplined Q-driven design + atomic-commit gates during 03 plan execution + sub-A's audit-as-cleanup all paid off. Single drift finding is doc-internal redundancy with no runtime impact.
+### Post-remediation (Plan Phase 4 re-audit 2026-04-27 — sub-B closeout)
+
+| Bucket | Count | % |
+|---|---|---|
+| ✅ Aligned | 22 / 23 | 96% |
+| 🚩 Drift | 0 / 23 | 0% (Drift #1 resolved at `108d9c7`) |
+| ⏳ Documented gap | 1 / 23 | 4% (PingData unchanged — still intentional) |
+
+Plus 5 adjacent observations: 4 unchanged (informational), 1 resolved (Observation E → ✅ at `71034f4`).
+
+**Overall verdict: contract surface is remarkably tight, and now drift-free.** Sub-B's expected high-volume drift didn't materialize — the disciplined Q-driven design + atomic-commit gates during 03 plan execution + sub-A's audit-as-cleanup all paid off. The single drift finding (doc-internal redundancy) is now closed; the type-precision adjacent observation also tightened.
 
 ---
 
-## Closeout summary (filled at sub-B Plan Phase 4-5 — re-audit + closeout)
+## Closeout summary (sub-B Plan Phase 4 re-audit — 2026-04-27)
 
-_(Captured at validation step.)_
-
-- Audit row count: 23 contract items + 5 adjacent observations
-- Drift findings (canonical): 1 (Drift #1 — stale example block in 00-coord)
-- Type-precision note (optional): 1 (deleteAllImages return type)
-- Remediation commits: __
-- Re-audit (Plan Phase 4) status: __
-- Sub-B closeout commit: __
+- **Audit row count:** 23 contract items + 5 adjacent observations
+- **Drift findings (canonical):** 1 → **0 / 1 unresolved**. Drift Finding #1 (00-coord §GET /api/images stale example block) resolved at sub-B Phase 2.
+- **Type-precision note (Adjacent Observation E — deleteAllImages):** RESOLVED. Type narrowed at sub-B Phase 3.
+- **Remediation commits:** `108d9c7` (Phase 2 — drift fix) + `71034f4` (Phase 3 — type tightening)
+- **Re-audit (Plan Phase 4) status:** ✅ All 23 rows now ✅ aligned (22) or ⏳ documented gap (1, PingData intentional). Zero 🚩 rows.
+- **Tests at re-audit:** Backend Jest 77/77 + 2 skipped (live integration); Frontend Vitest 17 files / 74 tests pass. No regressions from doc/type changes.
+- **Sub-B closeout commit:** _(filled at Phase 5 closeout)_

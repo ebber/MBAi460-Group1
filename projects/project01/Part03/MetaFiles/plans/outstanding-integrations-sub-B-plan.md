@@ -39,7 +39,7 @@ Sub-B is complete when:
 | 1 | Contract audit landed | ✅ 2026-04-27 | `45d2d4f` | 23-item audit table + 1 drift + 91% alignment + 5 adjacent observations + scope extension to caller + handler |
 | 2 | Drift Finding #1 fix (00-coord stale example) | ✅ 2026-04-27 | (this commit) | Stale "Success response:" preamble + JSON block (was lines 259-273) removed; canonical block's preamble relabeled from "Example response with `kind`:" to "Success response:". §GET /api/images now shows ONE canonical response example including `kind`. Verified via re-read |
 | 3 | `deleteAllImages` type tightening (confirmed include per Q-Phase3 2026-04-27) | ✅ 2026-04-27 | (this commit) | `photoappApi.ts` lines 54+56 narrowed `Promise<{deleted:boolean}>` → `Promise<{deleted:true}>` (return-type annotation + inline `unwrap` generic). Build ✅ 1770 modules / 861ms (no module count change). Vitest ✅ 17 files / 74 tests pass (no regressions). Type aligns with contract literal |
-| 4 | Re-audit + validation | ⏳ | — | Audit doc updated: drift row → ✅; status banner 🔄 → ✅; bucket distribution updated; closeout-summary section filled |
+| 4 | Re-audit + validation | ✅ 2026-04-27 | (this commit) | Audit doc Status banner 🔄 → ✅ COMPLETE; bucket distribution updated to pre + post-remediation tables (post: 22 ✅ / 0 🚩 / 1 ⏳); audit row 4 (Asset shape) flipped 🚩 → ✅ with cross-ref to `108d9c7`; Adjacent Observation E flipped to ✅ RESOLVED with cross-ref to `71034f4`; closeout summary populated. Tests verified: backend Jest 77/77 + frontend Vitest 74/74 |
 | 5 | Closeout (Map + plan tracker + summary) | ⏳ | — | Map sub-B row state → ✅ Closed; workstream Status updated; plan tracker rows all ✅ |
 | 6 | Push (with cred-sweep delta-check assessment + decision) | ⏳ | — | Step 6.0 assesses cred-sweep current capability + estimates LoE to add delta-check mode; Erik picks update-util-now vs queue-and-grep; Step 6.1 pre-push hygiene runs both full state scan + delta check |
 
@@ -170,11 +170,11 @@ git commit -m "Part03 sub-B Phase 3: tighten deleteAllImages type — Promise<{d
 
 **Goal:** Re-run the audit row-by-row against the post-fix state. Expect zero 🚩 rows. Update the audit doc to reflect the resolved drift + flip the Status banner to ✅.
 
-- [ ] **Step 4.1:** Read `00-coordination-and-contracts.md` §GET /api/images post-Phase-2 fix; verify the stale block is gone + the canonical block is the single response example. Update audit table row 4 from 🚩 to ✅.
+- [x] **Step 4.1:** Read `00-coordination-and-contracts.md` §GET /api/images post-Phase-2 fix; verify the stale block is gone + the canonical block is the single response example. Update audit table row 4 from 🚩 to ✅.
 
-- [ ] **Step 4.2:** Read `photoappApi.ts` post-Phase-3 fix; verify the type is narrowed. Update Adjacent Observation E (deleteAllImages type-precision) from "optional remediation; defer to your call" to "✅ resolved at sub-B Phase 3".
+- [x] **Step 4.2:** Read `photoappApi.ts` post-Phase-3 fix; verify the type is narrowed. Update Adjacent Observation E (deleteAllImages type-precision) from "optional remediation; defer to your call" to "✅ resolved at sub-B Phase 3".
 
-- [ ] **Step 4.3:** Re-run backend + frontend test sweeps; confirm both green.
+- [x] **Step 4.3:** Re-run backend + frontend test sweeps; confirm both green.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03 && npm test 2>&1 | tail -5
@@ -183,12 +183,12 @@ cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Pa
 
 Expected: 77 + 74 tests pass.
 
-- [ ] **Step 4.4:** Update `contract-audit-FE-BE-doc.md`:
+- [x] **Step 4.4:** Update `contract-audit-FE-BE-doc.md`:
   - Status banner: 🔄 → ✅ COMPLETE 2026-04-27
   - Bucket distribution table: ✅ Aligned now 23 / 23 (Phase 3 type tightening + Drift Finding #1 fix both landed)
   - Closeout summary section: filled with row count, drift resolution, Phase 3 type tightening status, sub-B closeout commit ref
 
-- [ ] **Step 4.5:** Atomic commit.
+- [x] **Step 4.5:** Atomic commit.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
