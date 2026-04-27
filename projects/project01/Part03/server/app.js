@@ -46,8 +46,17 @@ app.use('/api', photoappRoutes);
 // 4. Static frontend assets.
 app.use(express.static(FRONTEND_DIST));
 
-// 5. SPA index fallback for /.
-app.get('/', (req, res) => {
+// 5. SPA fallback — serve index.html for any unmatched GET so react-router
+//    can handle client-side routes (/login, /upload, /asset/:id, /profile,
+//    /help, /404, etc.). /api/* paths that fall through to here are
+//    intentionally NOT caught — they should return 404 / error envelope
+//    via the error middleware below, not get masked by the SPA HTML.
+//
+//    Express 5 changed path-to-regexp; '*' is no longer valid. Using
+//    `app.use` middleware instead, which bypasses path parsing entirely.
+app.use((req, res, next) => {
+  if (req.method !== 'GET') return next();
+  if (req.path.startsWith('/api')) return next();
   res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
 });
 
