@@ -160,7 +160,7 @@ git commit -m "Part03 sub-A Phase 1: fill export-notes.md with Andrew MVP metada
 
 **Checkpoint commit cadence (F6 reviewer fix):** rather than a single terminal commit at end of Phase 2, the audit lands in 5 incremental commits per logical section group of `UI-Design-Requirements.md`. Crash-recovery granularity is per-group, not per-1609-lines.
 
-- [ ] **Step 2.1:** Create `Andrew-MVP-Integration.md` shell with header structure:
+- [x] **Step 2.1:** Create `Andrew-MVP-Integration.md` shell with header structure:
   - Status banner (🔄 In progress; flips to ✅ at Phase 8)
   - Source pointers (UI-Design-Requirements.md, our 01-ui-workstream.md, our DesignDecisions.md)
   - Audit table skeleton (column headers; rows added in 2.2–2.5)
