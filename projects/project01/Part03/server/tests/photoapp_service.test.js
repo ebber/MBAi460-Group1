@@ -7,7 +7,7 @@ jest.mock('fs', () => ({
 
 const aws = require('../services/aws');
 const upload = require('../middleware/upload');
-const { getPing, listUsers, listImages, getImageLabels, searchImages, uploadImage, downloadImage } = require('../services/photoapp');
+const { getPing, listUsers, listImages, getImageLabels, searchImages, uploadImage, downloadImage, deleteAll } = require('../services/photoapp');
 
 describe('getPing()', () => {
   test('returns counts from S3 and MySQL', async () => {
@@ -329,6 +329,81 @@ describe('downloadImage()', () => {
     const result = await downloadImage(1099);
 
     expect(result.contentType).toBe('application/octet-stream');
+  });
+});
+
+describe('deleteAll()', () => {
+  test('empty DB: no S3 call, returns { deleted: true }', async () => {
+    const fakeDb = {
+      execute: jest.fn()
+        .mockResolvedValueOnce([[]])             // SELECT bucketkey: empty
+        .mockResolvedValueOnce([{}])             // DELETE FROM labels
+        .mockResolvedValueOnce([{}]),            // DELETE FROM assets
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+    const s3Send = jest.fn();
+    aws.getBucket.mockReturnValue({ send: s3Send });
+    aws.getBucketName.mockReturnValue('test-bucket');
+
+    const result = await deleteAll();
+
+    expect(result).toEqual({ deleted: true });
+    expect(s3Send).not.toHaveBeenCalled();
+    expect(fakeDb.end).toHaveBeenCalled();
+  });
+
+  test('non-empty: DELETE FROM labels BEFORE DELETE FROM assets, S3 DeleteObjects AFTER both', async () => {
+    const fakeDb = {
+      execute: jest.fn()
+        .mockResolvedValueOnce([[
+          { bucketkey: 'p_sarkar/uuid-a.jpg' },
+          { bucketkey: 'p_sarkar/uuid-b.pdf' },
+        ]])
+        .mockResolvedValueOnce([{}])
+        .mockResolvedValueOnce([{}]),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+    const s3Send = jest.fn().mockResolvedValue({});
+    aws.getBucket.mockReturnValue({ send: s3Send });
+    aws.getBucketName.mockReturnValue('test-bucket');
+
+    const result = await deleteAll();
+
+    expect(result).toEqual({ deleted: true });
+
+    // Order check: labels DELETE before assets DELETE before S3
+    const sqls = fakeDb.execute.mock.calls.map(c => c[0]);
+    const labelsIdx = sqls.findIndex(s => /DELETE FROM labels/.test(s));
+    const assetsIdx = sqls.findIndex(s => /DELETE FROM assets/.test(s));
+    expect(labelsIdx).toBeGreaterThan(-1);
+    expect(assetsIdx).toBeGreaterThan(labelsIdx);
+
+    // S3 DeleteObjects called with both bucketkeys
+    expect(s3Send).toHaveBeenCalledTimes(1);
+    const cmd = s3Send.mock.calls[0][0];
+    expect(cmd.input.Delete.Objects).toEqual([
+      { Key: 'p_sarkar/uuid-a.jpg' },
+      { Key: 'p_sarkar/uuid-b.pdf' },
+    ]);
+  });
+
+  test('DB delete failure short-circuits before S3 is touched', async () => {
+    const fakeDb = {
+      execute: jest.fn()
+        .mockResolvedValueOnce([[{ bucketkey: 'p_sarkar/uuid-a.jpg' }]])
+        .mockRejectedValueOnce(new Error('FK constraint')),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+    const s3Send = jest.fn();
+    aws.getBucket.mockReturnValue({ send: s3Send });
+    aws.getBucketName.mockReturnValue('test-bucket');
+
+    await expect(deleteAll()).rejects.toThrow('FK constraint');
+    expect(s3Send).not.toHaveBeenCalled();
+    expect(fakeDb.end).toHaveBeenCalled();
   });
 });
 

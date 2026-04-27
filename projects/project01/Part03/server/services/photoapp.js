@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const { ListObjectsV2Command, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { ListObjectsV2Command, PutObjectCommand, GetObjectCommand, DeleteObjectsCommand } = require('@aws-sdk/client-s3');
 const { DetectLabelsCommand } = require('@aws-sdk/client-rekognition');
 
 const CONTENT_TYPE_BY_EXT = {
@@ -189,4 +189,27 @@ async function downloadImage(assetid) {
   }
 }
 
-module.exports = { getPing, listUsers, listImages, getImageLabels, searchImages, uploadImage, downloadImage };
+async function deleteAll() {
+  const dbConn = await aws.getDbConn();
+  let bucketkeys = [];
+  try {
+    const [rows] = await dbConn.execute('SELECT bucketkey FROM assets');
+    bucketkeys = rows.map(r => r.bucketkey);
+
+    await dbConn.execute('DELETE FROM labels');
+    await dbConn.execute('DELETE FROM assets');
+  } finally {
+    await dbConn.end();
+  }
+
+  if (bucketkeys.length > 0) {
+    await aws.getBucket().send(new DeleteObjectsCommand({
+      Bucket: aws.getBucketName(),
+      Delete: { Objects: bucketkeys.map(k => ({ Key: k })) },
+    }));
+  }
+
+  return { deleted: true };
+}
+
+module.exports = { getPing, listUsers, listImages, getImageLabels, searchImages, uploadImage, downloadImage, deleteAll };

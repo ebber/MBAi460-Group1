@@ -70,7 +70,7 @@ Most commands run from `/Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/
 | 4 | `server/middleware/upload.js` + cleanupTempFile | ✅ 2026-04-27 | (this commit) | 5 tests green; multer with no MIME filter (Q9), 50 MB limit, cleanupTempFile defensive on missing |
 | (1+2+4 PARALLEL — subagent dispatch) | | | | |
 | 3 | `server/services/photoapp.js` read use cases | ✅ 2026-04-27 | (this commit) | 12 tests green covering getPing, listUsers, listImages (4 cases), getImageLabels (3 cases), searchImages (3 cases) |
-| 5 | `server/services/photoapp.js` write use cases | ⏳ | — | photoapp_service.test.js write tests green |
+| 5 | `server/services/photoapp.js` write use cases | ✅ 2026-04-27 | (this commit) | 10 new tests across uploadImage (3, with photo+document branches), downloadImage (4, with content-type fallback chain), deleteAll (3, DB-first ordering verified). 22/22 photoapp_service tests green |
 | 6 | `server/routes/photoapp_routes.js` | ⏳ | — | photoapp_routes.test.js green |
 | 7 | `server/middleware/error.js` | ⏳ | — | error.test.js green |
 | (6+7 PARALLEL — subagent dispatch) | | | | |
@@ -376,13 +376,13 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 ### Task 5.3: `deleteAll()` — DB-first ordering
 
-- [ ] **Step 5.3.1:** Write failing tests per 03 Task 5.3 (empty DB → no S3; non-empty → DELETE labels before DELETE assets, then S3 DeleteObjects; DB delete failure short-circuits).
-- [ ] **Step 5.3.2:** Run → RED.
-- [ ] **Step 5.3.3:** Implement per 03 — read bucketkeys, DELETE FROM labels, DELETE FROM assets, close conn, then S3 DeleteObjects (batched).
-- [ ] **Step 5.3.4:** Run → GREEN.
-- [ ] Atomic doc update + commit: `Part03 03 Phase 5.3: deleteAll() with DB-first ordering`.
+- [x] **Step 5.3.1:** Write failing tests per 03 Task 5.3 (empty DB → no S3; non-empty → DELETE labels before DELETE assets, then S3 DeleteObjects; DB delete failure short-circuits). _2026-04-27 — wrote 3 tests covering all three scenarios._
+- [x] **Step 5.3.2:** Run → RED. _2026-04-27 — 3 fail / 19 pass (deleteAll undefined)._
+- [x] **Step 5.3.3:** Implement per 03 — read bucketkeys, DELETE FROM labels, DELETE FROM assets, close conn, then S3 DeleteObjects (batched). _2026-04-27 — implemented; S3 call sits OUTSIDE the try/finally so if the DB delete throws, S3 is correctly skipped (verified by short-circuit test)._
+- [x] **Step 5.3.4:** Run → GREEN. _2026-04-27 — 22/22 photoapp_service tests green._
+- [x] Atomic doc update + commit: `Part03 03 Phase 5.3: deleteAll() with DB-first ordering`. _2026-04-27 — this commit._
 
-**Phase 5 wrap:** Master Tracker Phase 5 → ✅.
+**Phase 5 wrap:** Master Tracker Phase 5 → ✅. _2026-04-27 — done in this commit._
 
 ---
 
