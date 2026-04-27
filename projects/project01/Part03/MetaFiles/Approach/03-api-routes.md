@@ -187,12 +187,14 @@ ALTER TABLE assets
 - [ ] Update `utils/validate-db` to add a check that the `kind` column exists with the expected enum.
 - [ ] Update `projects/project01/create-photoapp.sql` so a clean rebuild includes `kind` from the start.
 
-**Note (Part 03 scope):** the enum value `'document'` is reserved for the Future-State Documents + Textract workstream. In Part 03 the multer file filter (Phase 4) rejects non-photo MIME types, so no `'document'` rows will exist yet — the migration is forward-compatible.
+**Note (Part 03 scope):** Both `'photo'` and `'document'` are **active** in Part 03. Per Q9, multer accepts all file types (Phase 4); image uploads land with `kind='photo'` and go through Rekognition; non-image uploads land with `kind='document'` and skip Rekognition (Textract OCR is Future-State). The migration is forward-compatible — Future-State Textract adds OCR-specific columns alongside `kind` without re-touching the kind enum.
+
+**Migration vs. `utils/rebuild-db` interaction (gotcha):** updating `create-photoapp.sql` to include `kind` from the start AND running the migration on the live DB are both correct — but they must not both happen on the same DB. Running the migration is for the **live** RDS only; running `rebuild-db` from `create-photoapp.sql` (post-update) recreates the column from scratch. Re-running the migration after a `rebuild-db` would fail with "column already exists." Document the migration as one-shot and link to `refactor-log.md`.
 
 **Check your work:**
 
 - Integration: `utils/validate-db` passes.
-- Smoke: `SELECT kind FROM assets LIMIT 5;` returns `'photo'` for all existing rows.
+- Smoke: `SELECT kind FROM assets LIMIT 5;` returns `'photo'` for all existing rows (only photos exist pre-Part-03).
 
 ---
 
@@ -459,7 +461,8 @@ test('getRekognition returns a RekognitionClient', () => {
 
 **Implementation notes:**
 
-- Read the ini file once per call (matches existing `helper.js` semantics; we can memoize later if it bites perf).
+- Read the ini file once per call (matches existing `helper.js` semantics; per-request file reads are acceptable at assignment scope — ~5–10 reads per `/api/*` call. **Future polish:** memoize at module load if bitten by perf; flagged for end-of-Part-03 if needed).
+- Define a small **module-private** `readPhotoAppConfig()` helper inside `server/services/aws.js`. It reads `config.photoapp_config_filename` via `fs.readFileSync` and parses with the `ini` package. All four exported factories (`getDbConn`, `getBucket`, `getBucketName`, `getRekognition`) call it. Don't export it.
 - Use `fromIni({ profile: config.photoapp_s3_profile })` for S3 + Rekognition credentials.
 - For `mysql2`, use `mysql2.createConnection({...})` with `multipleStatements: false` (we will not depend on multi-statement queries; the DELETE all path issues two separate `execute()` calls).
 - Export named functions (camelCase). The legacy `helper.js` used snake_case; the new factory uses camelCase to match Node convention. Update all callers.
@@ -661,6 +664,8 @@ test('listUsers returns user objects ordered by userid', async () => {
 - SQL: `SELECT assetid, label, confidence FROM labels WHERE label LIKE ? ORDER BY assetid ASC, label ASC`, with the parameter as `%${label}%` (case-insensitive LIKE preserved from existing baseline).
 - Map rows through `searchRowToObject`.
 
+**Future-proofing note:** the search result shape (`{assetid, label, confidence}`) does not include `kind`. In Part 03 this is a non-issue — documents have no labels (Rekognition skipped per Q9), so every search result is necessarily a photo. When **Future-State Documents + Textract** workstream extends search to OCR text (`WHERE labels.label LIKE ? OR assets.textract_text LIKE ?`), the result rows should also include `kind` so the UI can render hits differently per kind. Capture as a follow-on schema update at that time; not in scope for Part 03.
+
 **Write failing tests first:**
 
 - `searchImages('')` throws `Error('label is required')`.
@@ -742,29 +747,12 @@ test('upload middleware rejects files over 50 MB', async () => {
 });
 ```
 
-**Write failing test first (supertest, with a stub route mounted only in this test):**
+(Test imports — common to all three:)
 
 ```js
-// failing test first
 const express = require('express');
 const request = require('supertest');
 const { upload } = require('../middleware/upload');
-
-test('upload middleware accepts a multipart file under field "file"', async () => {
-  const app = express();
-  app.post('/test-upload', upload.single('file'), (req, res) => {
-    res.json({ filename: req.file.originalname, size: req.file.size });
-  });
-
-  const res = await request(app)
-    .post('/test-upload')
-    .field('userid', '80001')
-    .attach('file', Buffer.from('fakebytes'), 'test.jpg');
-
-  expect(res.status).toBe(200);
-  expect(res.body.filename).toBe('test.jpg');
-  expect(res.body.size).toBe(9);
-});
 ```
 
 **Check your work:**
@@ -854,7 +842,39 @@ test('cleanupTempFile is a no-op when the file is missing', () => {
 10. **Always** call `cleanupTempFile(multerFile.path)` — regardless of success or failure or branch.
 11. **Always** `await dbConn.end()` for each opened connection.
 
-**Add a failing test for the document branch:**
+**Write failing tests first (photo path baseline):**
+
+```js
+// failing test first — common imports/mocks for the whole upload test suite
+jest.mock('../services/aws');
+jest.mock('../middleware/upload');
+const aws = require('../services/aws');
+const upload = require('../middleware/upload');
+const { uploadImage } = require('../services/photoapp');
+
+test('uploadImage rejects unknown userid', async () => {
+  const fakeDb = {
+    execute: jest.fn().mockResolvedValue([[]]), // userid lookup empty
+    end: jest.fn().mockResolvedValue(),
+  };
+  aws.getDbConn.mockResolvedValue(fakeDb);
+
+  const fakeFile = { path: '/tmp/abc', originalname: 'x.jpg' };
+
+  await expect(uploadImage(99999, fakeFile)).rejects.toThrow('no such userid');
+  expect(upload.cleanupTempFile).toHaveBeenCalledWith('/tmp/abc');
+});
+
+test('uploadImage round-trips through S3, Rekognition, and INSERT (photo path)', async () => {
+  // setup mocks for: dbConn.execute (user lookup -> [{userid, username}]),
+  // S3 PutObject (resolve), Rekognition DetectLabels (resolve [{Name, Confidence}]),
+  // assets INSERT (resolve { insertId: 1001 }), labels INSERT (resolve).
+  // assert returned { assetid: 1001 } and cleanupTempFile called.
+  // The assets INSERT receives kind='photo' (derived from .jpg extension).
+});
+```
+
+**Then add a failing test for the document branch (Q9):**
 
 ```js
 test('uploadImage stores a document without calling Rekognition (Q9)', async () => {
@@ -890,37 +910,6 @@ test('uploadImage stores a document without calling Rekognition (Q9)', async () 
 });
 ```
 
-**Write failing tests first:**
-
-```js
-// failing test first
-jest.mock('../services/aws');
-jest.mock('../middleware/upload');
-const aws = require('../services/aws');
-const upload = require('../middleware/upload');
-const { uploadImage } = require('../services/photoapp');
-
-test('uploadImage rejects unknown userid', async () => {
-  const fakeDb = {
-    execute: jest.fn().mockResolvedValue([[]]), // userid lookup empty
-    end: jest.fn().mockResolvedValue(),
-  };
-  aws.getDbConn.mockResolvedValue(fakeDb);
-
-  const fakeFile = { path: '/tmp/abc', originalname: 'x.jpg' };
-
-  await expect(uploadImage(99999, fakeFile)).rejects.toThrow('no such userid');
-  expect(upload.cleanupTempFile).toHaveBeenCalledWith('/tmp/abc');
-});
-
-test('uploadImage round-trips through S3, Rekognition, and INSERT', async () => {
-  // setup mocks for: dbConn.execute (user lookup -> [{userid, username}]),
-  // S3 PutObject (resolve), Rekognition DetectLabels (resolve [{Name, Confidence}]),
-  // assets INSERT (resolve { insertId: 1001 }), labels INSERT (resolve).
-  // assert returned { assetid: 1001 } and cleanupTempFile called.
-});
-```
-
 **Check your work:**
 
 - Unit: mocked-AWS upload tests pass.
@@ -935,15 +924,35 @@ test('uploadImage round-trips through S3, Rekognition, and INSERT', async () => 
 - Build a `GetObjectCommand({ Bucket, Key: bucketkey })`.
 - Return an object the route can stream:
   ```js
+  const s3Result = await bucket.send(getCmd); // { Body, ContentType, ... }
   return {
     bucketkey,
     localname,
-    contentType: contentTypeFromExt(localname),
-    s3Result: await bucket.send(getCmd), // { Body, ContentType, ... }
+    // Prefer S3-stored ContentType (set on PutObject in upload), fall back to extension heuristic.
+    contentType: s3Result.ContentType ?? contentTypeFromExt(localname),
+    s3Result,
   };
   ```
 - The route is responsible for `response.setHeader('Content-Type', ...)` and `s3Result.Body.pipe(response)`. The service does not buffer the bytes.
-- Provide a small `contentTypeFromExt(localname)` helper (jpg/jpeg/png/gif/webp → image/<ext>; default `application/octet-stream`).
+- Provide a small `contentTypeFromExt(localname)` helper, **module-private inside `server/services/photoapp.js`** (only used here):
+  ```js
+  function contentTypeFromExt(name) {
+    const ext = path.extname(name).toLowerCase();
+    const map = {
+      '.jpg':  'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png':  'image/png',
+      '.gif':  'image/gif',
+      '.webp': 'image/webp',
+      '.heic': 'image/heic',
+      '.heif': 'image/heif',
+      '.pdf':  'application/pdf',
+      '.txt':  'text/plain',
+    };
+    return map[ext] ?? 'application/octet-stream';
+  }
+  ```
+  PDF must map to `application/pdf` so Andrew's `<embed src=...>` document preview renders inline rather than triggering a download (per `01-ui-workstream.md` Task 6.3 / 7.4).
 
 **Write failing tests first:**
 
@@ -1000,7 +1009,7 @@ const express = require('express');
 const router = express.Router();
 const photoapp = require('../services/photoapp');
 const { upload } = require('../middleware/upload');
-const { successResponse } = require('../schemas');
+const { successResponse, errorResponse } = require('../schemas');
 
 router.get('/ping', async (req, res, next) => {
   try {
@@ -1009,7 +1018,8 @@ router.get('/ping', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ...other routes follow the same pattern...
+// ...other routes follow the same pattern; routes that validate request shape
+// (e.g., POST /api/images, GET /api/search) use errorResponse for inline 400s.
 
 module.exports = router;
 ```
@@ -1140,9 +1150,11 @@ test('POST /api/images maps "no such userid" to 400', async () => {
   expect(res.body).toEqual({ message: 'error', error: 'no such userid' });
 });
 
-test('POST /api/images without file returns 400', async () => {
+test('POST /api/images without file returns 400 envelope', async () => {
   const res = await request(app).post('/api/images').field('userid', '80001');
   expect(res.status).toBe(400);
+  expect(res.body.message).toBe('error');
+  expect(res.body.error).toMatch(/missing file/i);
 });
 ```
 
@@ -1244,10 +1256,12 @@ router.get('/images/:assetid/file', async (req, res, next) => {
 const { errorResponse } = require('../schemas');
 
 function errorMiddleware(err, req, res, next) {
-  if (err && /no such userid/i.test(err.message)) {
+  // Use exact-match strings (not regex) so a future error like
+  // "no such userid found in shard 3" doesn't accidentally map to 400.
+  if (err && err.message === 'no such userid') {
     return res.status(400).json(errorResponse(err.message));
   }
-  if (err && /no such assetid/i.test(err.message)) {
+  if (err && err.message === 'no such assetid') {
     return res.status(404).json(errorResponse(err.message));
   }
   if (err && err.code && err.code.startsWith('LIMIT_')) {
@@ -1260,7 +1274,7 @@ function errorMiddleware(err, req, res, next) {
 module.exports = errorMiddleware;
 ```
 
-**Write failing tests first:**
+**Write failing tests first** (same imports + mock setup as Phase 6 route tests — `jest.mock('../services/photoapp')`, `const request = require('supertest')`, `const photoapp = require('../services/photoapp')`, `const app = require('../app')`):
 
 ```js
 // failing test first
@@ -1342,7 +1356,7 @@ maybeDescribe('live PhotoApp integration', () => {
 
 ## Phase 9: End-To-End Smoke Checklist
 
-Run only after UI and Server Foundation are ready.
+Run only after UI (workstream 01) and API Routes (this workstream, through Phase 8) are both ready. Server Foundation (02) is already complete and is a precondition for both.
 
 **Checklist:**
 
