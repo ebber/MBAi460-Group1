@@ -378,9 +378,17 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 ## Phase 6+7: Routes + Error Middleware (PARALLEL SUBAGENT DISPATCH — Calibration Test #2)
 
-**Why parallel:** `server/routes/photoapp_routes.js` and `server/middleware/error.js` are independent files. **Their tests are coupled** (Phase 6 route tests assert error envelope shapes that come from Phase 7 middleware), but each subagent can implement+test ITS file independently with the OTHER stubbed/mocked. After both land, an integration step merges + verifies.
+**Why parallel:** `server/routes/photoapp_routes.js` and `server/middleware/error.js` are independent files. **Reviewing-agent concern (2026-04-27):** route + error middleware are coupled enough that sequential might be safer. **Mitigation — three-tier test factoring:**
 
-**Hypothesis under test:** parallel subagents work well even with coupled tests, IF the integration step at the end verifies the merge cleanly.
+- **Phase 6 unit tests** (Subagent A): route happy paths + inline-route-validation 400s only. No error-middleware envelope assertions.
+- **Phase 7 unit tests** (Subagent B): error middleware in **isolation** — tiny self-contained Express app inside the test file; do NOT load the real `app.js`.
+- **Integration test** (Task Q.2 Step Q.2.0, main thread): NEW `server/tests/integration_routes_error.test.js` — real `app`, mocked services, verifies end-to-end route → error-middleware flow.
+
+This produces three test surfaces with disjoint dependencies; both subagents pass tests pre-merge; main-thread integration verifies wiring post-merge.
+
+**Hypothesis under test:** parallel subagents work for separate-but-coupled files IF the test layering is properly factored (unit vs. integration). Test #2 measures whether "isolated unit tests + main-thread integration test" cleanly separates parallel work.
+
+**Fallback:** if either subagent reports unexpected coordination friction, fall back to main-thread sequential cleanup. The Step Q.2.0 integration test is the canonical verification regardless of dispatch path.
 
 **Coordination concern:** only Subagent B touches `server/app.js`. Subagent A modifies `routes/photoapp_routes.js` (body replacement only — the `/api` mount in `app.js` is already in place from Server Foundation 02 and stays unchanged). Subagent B appends `app.use(require('./middleware/error'));` at the END of `app.js` (last middleware, AFTER static + SPA fallback per Express convention). No merge conflict surface.
 
@@ -402,8 +410,11 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
   - `GET /search?label=` → validate non-empty, then `successResponse(searchImages(label))`
   - `DELETE /images` → `successResponse(deleteAll())`
 - **Do NOT modify `server/app.js`** — Server Foundation 02 already mounted the placeholder router at `app.use('/api', require('./routes/photoapp_routes'))`. Phase 6's job is to replace the BODY of `routes/photoapp_routes.js` (the placeholder handler) with the real router; the mount line in `app.js` stays unchanged.
-- Tests in `server/tests/photoapp_routes.test.js` — `jest.mock('../services/photoapp')` and `jest.mock('../middleware/upload')` (multer mock); supertest against the exported `app`. Test all 9 routes plus edge cases (invalid userid → 400 envelope, missing file → 400 envelope, etc.).
-- Run `npm test -- photoapp_routes.test.js`. SOME tests will pass (success-path tests). Tests that assert error envelope shapes (e.g., "no such userid" → 400 with envelope) will FAIL until Subagent B's middleware lands. **Do not block on those failures** — note them in the return report as "pending Subagent B integration."
+- Tests in `server/tests/photoapp_routes.test.js` — `jest.mock('../services/photoapp')` and `jest.mock('../middleware/upload')` (multer mock); supertest against the exported `app`. **Test scope (decoupled from Phase 7 — calibration design):**
+  - Happy paths for each route (200 + envelope `{message: 'success', data: ...}`).
+  - Inline-route-validation 400 envelopes (e.g., missing `file` for `POST /api/images`, non-int `userid` parse, missing `?label=`). These come from validation IN the route handler, not from error middleware.
+  - **DO NOT** assert error envelope shapes from service-thrown exceptions (e.g., `Error('no such userid')` → 400) — those are Phase 7's territory and verified in the integration test (Task Q.2 Step Q.2.0).
+- Run `npm test -- photoapp_routes.test.js` and confirm GREEN.
 - Mark Phase 6 task checkboxes `[x]` with date in 03 doc.
 - DO NOT modify Phase 7 files.
 - Return: files written, test counts (passing + pending error-middleware), `app.js` diff, opens.
@@ -419,24 +430,57 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
     - else → 500 with `errorResponse('internal server error')` + `console.error('UNHANDLED ERROR:', err)`.
   - Single export: `module.exports = errorMiddleware;`.
 - Modify `server/app.js`: append `app.use(require('./middleware/error'));` at the END of the file, AFTER static + SPA fallback.
-- Tests in `server/tests/error.test.js` — same imports/mocks pattern as Phase 6 route tests (`jest.mock('../services/photoapp')`, supertest against `app`). Per 03 §Phase 7 — three tests: "no such userid" → 400, "no such assetid" → 404, generic → 500 with sanitized message.
-- Run `npm test -- error.test.js`. Expected: GREEN once Subagent A's routes are in place. (Subagent B can write a stub `server/routes/photoapp_routes.js` placeholder to test in isolation if Subagent A is still running — but final verification is post-merge.)
+- Tests in `server/tests/error.test.js` — **isolation pattern (decoupled from Phase 6 — calibration design)**: build a tiny self-contained Express app inside the test file with contrived throwing routes; mount the error middleware on it; assert behavior. Do NOT load the real `app.js`.
+
+  Example shape:
+  ```js
+  const express = require('express');
+  const request = require('supertest');
+  const errorMw = require('../middleware/error');
+
+  function buildIsolatedApp(routeHandlers) {
+    const app = express();
+    for (const [path, handler] of Object.entries(routeHandlers)) {
+      app.get(path, handler);
+    }
+    app.use(errorMw);
+    return app;
+  }
+
+  test('error mw maps "no such userid" to 400', async () => {
+    const app = buildIsolatedApp({
+      '/throws': (req, res, next) => next(new Error('no such userid')),
+    });
+    const res = await request(app).get('/throws');
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ message: 'error', error: 'no such userid' });
+  });
+  ```
+
+  03's Phase 7 example test (which uses supertest against the real `app`) becomes the integration test in Task Q.2 Step Q.2.0. Phase 7 unit tests are isolation-only.
+- Three error-mapping tests required: `'no such userid'` → 400, `'no such assetid'` → 404, generic Error → 500 with `'internal server error'` message. Optionally a fourth: multer `LIMIT_*` → 400.
+- Run `npm test -- error.test.js` and confirm GREEN. Tests are self-contained; no Phase 6 dependency.
 - Mark Phase 7 task checkboxes `[x]` with date in 03 doc.
 - DO NOT modify Phase 6 files.
 - Return: files written, test count, `app.js` diff, opens.
 
-### Task Q.2: Verify merge
+### Task Q.2: Verify merge + write integration test
 
+- [ ] **Step Q.2.0 (NEW — main thread):** Write `server/tests/integration_routes_error.test.js` — the canonical end-to-end verification of route → error middleware flow. Uses the real `app`, mocks services per-test:
+  - `POST /api/images` with `userid` that triggers `Error('no such userid')` from mocked `photoapp.uploadImage` → 400 envelope `{message: 'error', error: 'no such userid'}`.
+  - `GET /api/images/:assetid/labels` where mocked `photoapp.getImageLabels` throws `Error('no such assetid')` → 404 envelope.
+  - `GET /api/users` where mocked `photoapp.listUsers` throws `Error('SQL connection refused')` → 500 envelope with sanitized `'internal server error'` message.
+  This is what 03's Phase 7 example test was originally — relocated here to live at the proper integration layer.
 - [ ] **Step Q.2.1:** Receive both subagent reports.
-- [ ] **Step Q.2.2:** Inspect `git diff server/app.js` — confirm the two edits are non-overlapping.
-- [ ] **Step Q.2.3:** From `Part03/`, run full `npm test`. Expected: ALL tests green now (Subagent A's pending error tests pass with Subagent B's middleware in place).
+- [ ] **Step Q.2.2:** Inspect `git diff server/app.js` — confirm only Subagent B's edit applied (the `app.use(require('./middleware/error'));` append at end of file).
+- [ ] **Step Q.2.3:** From `Part03/`, run full `npm test`. Expected: ALL suites green — Subagent A's route unit tests, Subagent B's error mw isolation tests, and the new integration test from Step Q.2.0.
 - [ ] **Step Q.2.4:** Optional live smoke: `npm start` in background, `curl http://localhost:8080/api/ping` (real RDS+S3 — requires AWS creds loaded; may fail if env not set up; that's fine, Phase 8 covers live).
 
 ### Task Q.3: Atomic doc update + commit
 
 - [ ] **Step Q.3.1:** Master Tracker: Phases 6 + 7 → ✅ with this commit hash.
 - [ ] **Step Q.3.2:** Verify 03 doc Phase 6 + 7 boxes are `[x]` (subagents did this).
-- [ ] **Step Q.3.3:** Single commit: `Part03 03 Phase 6+7: routes + error middleware (parallel subagent dispatch)`.
+- [ ] **Step Q.3.3:** Single commit: `Part03 03 Phase 6+7+integration: routes + error mw + route↔error-mw integration test (parallel subagent dispatch + main-thread integration)`.
 
 **Subagent calibration log entry:** append to System Plane Notes — wall time, token cost, scope discipline, the test-coupling outcome (did Subagent A's pending tests pass cleanly post-merge? any drift?).
 
@@ -498,11 +542,11 @@ Append to `claude-workspace/scratch/system-plane-notes.md` Subagents section aft
 - Coherence: any naming/import drift between the three files?
 - Verdict: parallel won? broke even? lost?
 
-**Test #2 — Phase 6+7 parallel (2 separate-but-coupled files; tests cross-reference):**
+**Test #2 — Phase 6+7 parallel (2 separate-but-coupled files; tests decoupled via three-tier factoring):**
 - Wall time + tokens
-- Coordination: did the pre-divided `app.js` edits merge cleanly?
-- Test-coupling outcome: Subagent A's pending tests — did they pass clean post-merge?
-- Verdict: separate-but-coupled is parallel-friendly? or risky?
+- Coordination: only Subagent B touched `app.js` (Subagent A's territory is `routes/photoapp_routes.js` body); was the append clean?
+- Test-factoring outcome: did Subagent A's route unit tests pass without depending on error mw? Did Subagent B's isolation tests pass without depending on routes? Did the main-thread integration test (Step Q.2.0) catch wiring issues that the unit tests missed?
+- Verdict: "isolated unit tests + main-thread integration test" is the right factoring for separate-but-coupled parallel work? Or did sequential prove safer?
 
 **Hypotheses to confirm/refute:**
 - H1: parallel wins for independent files (Phase 1+2+4) — confirm or refute.

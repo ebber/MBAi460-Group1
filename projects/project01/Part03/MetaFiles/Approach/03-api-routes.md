@@ -187,7 +187,7 @@ ALTER TABLE assets
 - [ ] Update `utils/validate-db` to add a check that the `kind` column exists with the expected enum.
 - [ ] Update `projects/project01/create-photoapp.sql` so a clean rebuild includes `kind` from the start.
 
-**Note (Part 03 scope):** Both `'photo'` and `'document'` are **active** in Part 03. Per Q9, multer accepts all file types (Phase 4); image uploads land with `kind='photo'` and go through Rekognition; non-image uploads land with `kind='document'` and skip Rekognition (Textract OCR is Future-State). The migration is forward-compatible — Future-State Textract adds OCR-specific columns alongside `kind` without re-touching the kind enum.
+**Note (Part 03 scope):** Both `'photo'` and `'document'` are **active** in Part 03. Per Q9, multer accepts all file types (Phase 4); image uploads land with `kind='photo'` and go through Rekognition; non-image uploads land with `kind='document'`, skip Rekognition, and create no label rows. Textract OCR is Future-State. The migration is forward-compatible — Future-State Textract adds OCR-specific columns alongside `kind` without re-touching the kind enum.
 
 **Migration vs. `utils/rebuild-db` interaction (gotcha):** updating `create-photoapp.sql` to include `kind` from the start AND running the migration on the live DB are both correct — but they must not both happen on the same DB. Running the migration is for the **live** RDS only; running `rebuild-db` from `create-photoapp.sql` (post-update) recreates the column from scratch. Re-running the migration after a `rebuild-db` would fail with "column already exists." Document the migration as one-shot and link to `refactor-log.md`.
 
