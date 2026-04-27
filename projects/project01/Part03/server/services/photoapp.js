@@ -1,6 +1,16 @@
-const { ListObjectsV2Command } = require('@aws-sdk/client-s3');
+const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
+const { ListObjectsV2Command, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { DetectLabelsCommand } = require('@aws-sdk/client-rekognition');
 const aws = require('./aws');
-const { userRowToObject, imageRowToObject, labelRowToObject, searchRowToObject } = require('../schemas');
+const upload = require('../middleware/upload');
+const {
+  userRowToObject,
+  imageRowToObject,
+  labelRowToObject,
+  searchRowToObject,
+  deriveKind,
+} = require('../schemas');
 
 async function getPing() {
   const bucket = aws.getBucket();
@@ -82,4 +92,55 @@ async function searchImages(label) {
   }
 }
 
-module.exports = { getPing, listUsers, listImages, getImageLabels, searchImages };
+async function uploadImage(userid, multerFile) {
+  const dbConn = await aws.getDbConn();
+  try {
+    const [users] = await dbConn.execute(
+      'SELECT userid, username FROM users WHERE userid = ?',
+      [userid]
+    );
+    if (users.length === 0) {
+      throw new Error('no such userid');
+    }
+    const { username } = users[0];
+
+    const localname = multerFile.originalname;
+    const kind = deriveKind(localname);
+    const bucketkey = `${username}/${uuidv4()}-${localname}`;
+    const buffer = fs.readFileSync(multerFile.path);
+
+    await aws.getBucket().send(new PutObjectCommand({
+      Bucket: aws.getBucketName(),
+      Key: bucketkey,
+      Body: buffer,
+    }));
+
+    const [insertResult] = await dbConn.execute(
+      'INSERT INTO assets(userid, localname, bucketkey, kind) VALUES (?, ?, ?, ?)',
+      [userid, localname, bucketkey, kind]
+    );
+    const assetid = insertResult.insertId;
+
+    if (kind === 'photo') {
+      const rekogResult = await aws.getRekognition().send(new DetectLabelsCommand({
+        Image: { S3Object: { Bucket: aws.getBucketName(), Name: bucketkey } },
+        MaxLabels: 100,
+        MinConfidence: 80,
+      }));
+      const labels = rekogResult.Labels || [];
+      for (const lbl of labels) {
+        await dbConn.execute(
+          'INSERT IGNORE INTO labels(assetid, label, confidence) VALUES (?, ?, ROUND(?))',
+          [assetid, lbl.Name, lbl.Confidence]
+        );
+      }
+    }
+
+    return { assetid };
+  } finally {
+    upload.cleanupTempFile(multerFile.path);
+    await dbConn.end();
+  }
+}
+
+module.exports = { getPing, listUsers, listImages, getImageLabels, searchImages, uploadImage };

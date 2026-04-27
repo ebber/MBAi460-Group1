@@ -356,14 +356,15 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 - Modify: `server/services/photoapp.js`
 - Modify: `server/tests/photoapp_service.test.js`
 
-- [ ] **Step 5.1.1:** Write failing tests per 03 Task 5.1 (in this order — photo path baseline first, document branch test second; per the reviewer-flag fix):
+- [x] **Step 5.1.1:** Write failing tests per 03 Task 5.1 (in this order — photo path baseline first, document branch test second; per the reviewer-flag fix):
   - `uploadImage rejects unknown userid`
   - `uploadImage round-trips through S3, Rekognition, and INSERT (photo path)`
   - `uploadImage stores a document without calling Rekognition (Q9)`
-- [ ] **Step 5.1.2:** Run → RED.
-- [ ] **Step 5.1.3:** Implement per 03 §Phase 5.1 — Shared prelude (validate userid → bucketkey → kind → buffer → S3 PutObject → assets INSERT) → branch on kind (photo: Rekognition + labels INSERT; document: skip both) → shared epilogue (cleanupTempFile + dbConn.end in finally).
-- [ ] **Step 5.1.4:** Run → GREEN. **Note:** the photo-path round-trip test in 03 has a "(setup mocks for ...)" placeholder — write the actual mock assertions as you implement (set `aws.getBucket().send` resolved values, `aws.getRekognition().send` returns DetectLabels output, etc.).
-- [ ] Atomic doc update + commit: `Part03 03 Phase 5.1: uploadImage() with photo + document branches`.
+  _2026-04-27 — wrote 3 tests in the prescribed order. Added `jest.mock('../middleware/upload')` and partial `jest.mock('fs')` at file top (the `jest.requireActual('fs')` pattern from Subagent B's earlier finding) so AWS SDK token-providers don't break at module load._
+- [x] **Step 5.1.2:** Run → RED. _2026-04-27 — 3 fail / 12 pass (uploadImage undefined)._
+- [x] **Step 5.1.3:** Implement per 03 §Phase 5.1 — Shared prelude (validate userid → bucketkey → kind → buffer → S3 PutObject → assets INSERT) → branch on kind (photo: Rekognition + labels INSERT; document: skip both) → shared epilogue (cleanupTempFile + dbConn.end in finally). _2026-04-27 — implemented. Bucketkey shape `<username>/<uuid>-<localname>` per 00 contract; kind via `deriveKind`; INSERT IGNORE INTO labels for photo path; ROUND(confidence) for integer column._
+- [x] **Step 5.1.4:** Run → GREEN. **Note:** the photo-path round-trip test in 03 has a "(setup mocks for ...)" placeholder — write the actual mock assertions as you implement (set `aws.getBucket().send` resolved values, `aws.getRekognition().send` returns DetectLabels output, etc.). _2026-04-27 — 15/15 tests green; photo-path test asserts `s3Send` + `rekogSend` called once each, INSERT INTO assets receives `kind='photo'`, bucketkey matches `^p_sarkar/[0-9a-f-]+-01degu\.jpg$`, cleanupTempFile called._
+- [x] Atomic doc update + commit: `Part03 03 Phase 5.1: uploadImage() with photo + document branches`. _2026-04-27 — this commit._
 
 ### Task 5.2: `downloadImage(assetid)` — streams S3 to response
 

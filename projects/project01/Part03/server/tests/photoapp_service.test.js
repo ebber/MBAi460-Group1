@@ -1,6 +1,13 @@
 jest.mock('../services/aws');
+jest.mock('../middleware/upload');
+jest.mock('fs', () => ({
+  ...jest.requireActual('fs'),
+  readFileSync: jest.fn(() => Buffer.from('fake-bytes')),
+}));
+
 const aws = require('../services/aws');
-const { getPing, listUsers, listImages, getImageLabels, searchImages } = require('../services/photoapp');
+const upload = require('../middleware/upload');
+const { getPing, listUsers, listImages, getImageLabels, searchImages, uploadImage } = require('../services/photoapp');
 
 describe('getPing()', () => {
   test('returns counts from S3 and MySQL', async () => {
@@ -160,6 +167,96 @@ describe('getImageLabels()', () => {
     const [labelsSql] = fakeDb.execute.mock.calls[1];
     expect(labelsSql).toMatch(/SELECT label, confidence FROM labels WHERE assetid = \? ORDER BY confidence DESC/);
     expect(fakeDb.end).toHaveBeenCalled();
+  });
+});
+
+describe('uploadImage()', () => {
+  beforeEach(() => {
+    upload.cleanupTempFile.mockClear();
+  });
+
+  test('rejects unknown userid', async () => {
+    const fakeDb = {
+      execute: jest.fn().mockResolvedValue([[]]),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+
+    const fakeFile = { path: '/tmp/abc', originalname: 'x.jpg' };
+
+    await expect(uploadImage(99999, fakeFile)).rejects.toThrow('no such userid');
+    expect(upload.cleanupTempFile).toHaveBeenCalledWith('/tmp/abc');
+    expect(fakeDb.end).toHaveBeenCalled();
+  });
+
+  test('round-trips through S3, Rekognition, and INSERT (photo path)', async () => {
+    const fakeDb = {
+      execute: jest.fn()
+        .mockResolvedValueOnce([[{ userid: 80001, username: 'p_sarkar' }]])    // user lookup
+        .mockResolvedValueOnce([{ insertId: 1001 }])                            // assets INSERT
+        .mockResolvedValueOnce([{ affectedRows: 2 }]),                          // labels INSERT
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+
+    const s3Send = jest.fn().mockResolvedValue({});
+    aws.getBucket.mockReturnValue({ send: s3Send });
+    aws.getBucketName.mockReturnValue('test-bucket');
+
+    const rekogSend = jest.fn().mockResolvedValue({
+      Labels: [
+        { Name: 'Animal', Confidence: 99.5 },
+        { Name: 'Dog', Confidence: 95.2 },
+      ],
+    });
+    aws.getRekognition.mockReturnValue({ send: rekogSend });
+
+    const fakeFile = { path: '/tmp/abc.jpg', originalname: '01degu.jpg' };
+    const result = await uploadImage(80001, fakeFile);
+
+    expect(result).toEqual({ assetid: 1001 });
+    expect(s3Send).toHaveBeenCalledTimes(1);
+    expect(rekogSend).toHaveBeenCalledTimes(1);
+    // assets INSERT receives kind='photo' (derived from .jpg)
+    expect(fakeDb.execute).toHaveBeenCalledWith(
+      expect.stringMatching(/INSERT INTO assets/),
+      expect.arrayContaining([80001, '01degu.jpg', expect.any(String), 'photo'])
+    );
+    // bucketkey shape: <username>/<uuid>-<localname>
+    const assetsCall = fakeDb.execute.mock.calls.find(c => /INSERT INTO assets/.test(c[0]));
+    const bucketkey = assetsCall[1][2];
+    expect(bucketkey).toMatch(/^p_sarkar\/[0-9a-f-]+-01degu\.jpg$/);
+    expect(upload.cleanupTempFile).toHaveBeenCalledWith('/tmp/abc.jpg');
+  });
+
+  test('stores a document without calling Rekognition (Q9)', async () => {
+    const fakeDb = {
+      execute: jest.fn()
+        .mockResolvedValueOnce([[{ userid: 80001, username: 'p_sarkar' }]])    // user lookup
+        .mockResolvedValueOnce([{ insertId: 1042 }])                            // assets INSERT
+        .mockResolvedValue([[]]),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+    aws.getBucket.mockReturnValue({ send: jest.fn().mockResolvedValue({}) });
+    aws.getBucketName.mockReturnValue('test-bucket');
+    const rekogSend = jest.fn();
+    aws.getRekognition.mockReturnValue({ send: rekogSend });
+
+    const fakeFile = { path: '/tmp/abc', originalname: 'lecture-notes.pdf' };
+    const result = await uploadImage(80001, fakeFile);
+
+    expect(result).toEqual({ assetid: 1042 });
+    expect(rekogSend).not.toHaveBeenCalled();
+    expect(fakeDb.execute).toHaveBeenCalledWith(
+      expect.stringMatching(/INSERT INTO assets/),
+      expect.arrayContaining([80001, 'lecture-notes.pdf', expect.any(String), 'document'])
+    );
+    expect(fakeDb.execute).not.toHaveBeenCalledWith(
+      expect.stringMatching(/INSERT IGNORE INTO labels/),
+      expect.anything()
+    );
+    expect(upload.cleanupTempFile).toHaveBeenCalledWith('/tmp/abc');
   });
 });
 
