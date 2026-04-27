@@ -196,7 +196,7 @@ git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/p
 git commit -m "Part03 sub-A Phase 2.4: audit §10 (numbered functional requirements)"
 ```
 
-- [ ] **Step 2.5:** Audit §7–8 + §11–15 — System context + IA + visual design system + tech requirements + NFRs + phased roadmap. Section-by-section rows; cross-refs as before. Then commit (Phase 2 checkpoint #5):
+- [x] **Step 2.5:** Audit §7–8 + §11–15 — System context + IA + visual design system + tech requirements + NFRs + phased roadmap. Section-by-section rows; cross-refs as before. Then commit (Phase 2 checkpoint #5):
 
 ```bash
 git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
