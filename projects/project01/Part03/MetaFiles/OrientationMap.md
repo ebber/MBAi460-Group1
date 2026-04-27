@@ -28,13 +28,13 @@
 
 **Goal:** Close the open integration threads between recently-shipped components (Andrew's MVP / backend / frontend / Class-Project / Lab-Root) before opening the next major arc.
 
-**Status:** 🔄 Sub-A in flight — plan v3 greenlit + Phase 0 + Phase 1 complete 2026-04-27 (`outstanding-integrations-sub-A-plan.md` Master Tracker for execution detail).
+**Status:** 🔄 Sub-A in flight — Phases 0-4 complete (audit done, routing landed, Accelerators populated); Phases 5-8 remain (cross-refs in Future-State docs → naming reconciliation → coordination journal → closeout). See `outstanding-integrations-sub-A-plan.md` Master Tracker for detail.
 
 **Sub-workstreams:**
 
 | # | Sub-workstream | State | Pointer / source | Notes |
 |---|---|---|---|---|
-| A | Andrew's MVP — final handshakes | 🔄 (Phase 1/8) | `Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md` (v3 greenlit 2026-04-27; execution started) | Phase 0 ✅ + Phase 1 ✅ (export-notes filled); Phase 2 (audit) next; ⚠️ PAUSE gate at Phase 4 for triage routing |
+| A | Andrew's MVP — final handshakes | 🔄 (Phase 4/8 ✅ → Phase 5 next) | `Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md` (v3 greenlit 2026-04-27) | Phase 0-4 ✅: 147-row audit complete; 6 NEW Future-State docs created + 2 extended; 9 TODOs added; 3 Accelerators subfolders populated. Phase 5 next: cross-refs in 8 Future-State docs → Accelerators |
 | B | Frontend ↔ Backend ↔ Approach-doc coherence audit | ⏳ | `Part03/frontend/src/api/types.ts` + `Part03/server/schemas.js` + `Part03/MetaFiles/Approach/00-coordination-and-contracts.md` | Cross-check envelope shape, route table, and contracts; surface drift if any |
 | ~~C~~ | ~~Class Project ↔ Lab Root coordination~~ | **MOVED** | — | Relocated to Class Project queue 2026-04-27 per Q3 — see `MBAi460-Group1/MetaFiles/TODO.md` |
 | D | Visualization handoff | ⏳ | `Part03/MetaFiles/TODO.md` (visualization entry, deferred to Erik per 2026-04-27 routing) | Update `Target-State-project01-part03-photoapp-architecture-v1.md` with actual stack |

@@ -209,23 +209,61 @@ Audit sweep proceeds section-by-section through `UI-Design-Requirements.md`. Eac
 
 ---
 
-## Triage queue (🚩 gaps surfacing — Phase 4 input)
+## Triage queue (🚩 gaps — RESOLVED 2026-04-27 per Phase 4 routing)
 
-_(Populated as 🚩 rows are added to the audit table. Phase 4 takes this list to a ⚠️ PAUSE gate for Erik routing confirmation.)_
+The 63 🚩-containing rows in the audit table were grouped into 13 routing themes and confirmed by Erik via the Phase 4 ⚠️ PAUSE gate (`Q-Phase4-1` through `Q-Phase4-5b`). All routings are locked in below; the audit-table rows are not individually annotated to avoid drift — **this section is canonical** for all Phase 4 routing decisions.
 
-| # | Item | Audit row ref | Suggested routing | Rationale |
-|---|---|---|---|---|
-| _(empty — populated during audit)_ | | | | |
+### Theme-grouped routing (locked in)
+
+| Theme | Audit rows | Routing destination | Priority |
+|---|---|---|---|
+| **T1 — Mobile + responsive** | 109, 134 | NEW `Future-State-mobile-workstream.md` + `Accelerators/ArtifactsForMobile/` (5 files) | STANDARD |
+| **T2 — Admin views + roles** | 20, 27, 77, 100 | NEW `Future-State-admin-workstream.md` | STANDARD |
+| **T3 — Library polish** (filter/sort/multi-select/pagination/inline-edit/per-asset-delete) | 23, 25, 35, 38, 57, 58, 60, 62-65, 82-89, 96, 123 (15+ rows) | NEW `Future-State-library-polish-workstream.md` + `Accelerators/ArtifactsForLibraryPolish/asset.jsx` | **HIGH** |
+| **T4 — Form library** (RHF+Zod, password rules, primitives) | 50, 53-R2, 117, 124, 126 | NEW `Future-State-form-library-workstream.md` + `Accelerators/ArtifactsForFormLibrary/screens.jsx` | **HIGH** |
+| **T5 — Sharing + guest mode** | 21, 22 | NEW `Future-State-sharing-workstream.md` | LOW / long-term |
+| **T6 — AI on-demand model** (run-on-demand, manual re-run, client cache, DetectText fallback) | 40, 70, 91, 92, 96, 97 | EXTEND `Future-State-documents-and-textract-workstream.md` (new "AI on-demand model" section) | (within Textract priority) |
+| **T7 — A11y CI + axe + WCAG** | 14, 51-L4, 132 | EXISTING in `Future-State-production-hardening-workstream.md` §2 (already covered) | STANDARD |
+| **T8 — Observability + correlation IDs** | 12, 103, 137 | NEW `Future-State-observability-workstream.md` (split from production-hardening per Q-Phase4-4) | STANDARD |
+| **T9 — i18n + feature flags + telemetry** | 106, 138, 139 | EXISTING in `Future-State-production-hardening-workstream.md` §6, §7 (already covered) | STANDARD |
+| **T10 — Server-state mgmt + API client retry** | 126 partial, 128 | EXISTING in `Future-State-production-hardening-workstream.md` §8.5 (already covered) | STANDARD |
+| **T11 — SLOs + metrics + edge case catalog** | 140, 143, 144 | NEW `Future-State-observability-workstream.md` §6, §7, §8, §9 | STANDARD |
+| **T12 — Security headers + deployment** | 135, 136 | EXISTING in `Future-State-production-hardening-workstream.md` §3, §5 (already covered) | STANDARD |
+| **T13 — Standalone polish TODOs** (9 items) | 54, 79, 102, 105, 111, 113, 115, 119, 120, 121 | TODO entries in `Part03/MetaFiles/TODO.md` Active section | (UI polish backlog) |
+
+### Phase 4.2 routing execution outcomes (commit `933305b`)
+
+- **6 NEW Future-State workstream docs created** (T1–T5 + observability split)
+- **2 existing Future-State docs extended** (Textract for T6; production-hardening §4 replaced with pointer to observability)
+- **9 NEW TODO entries added** to Part 03 queue (T13)
+
+### Phase 4.3 Accelerators outcomes (commit `c5beb76`)
+
+See "Accelerators inventory" section below.
 
 ---
 
-## Accelerators inventory (Phase 4 output)
+## Accelerators inventory (populated 2026-04-27 — Phase 4.3 commit `c5beb76`)
 
-_(Populated post-Phase-4 triage. Lists `Accelerators/ArtifactsFor<X>/` subfolders confirmed by routing + the source files copied into each.)_
-
-| Subfolder | Target Future-State workstream | Files (copied from `raw/src/`) | Created in commit |
+| Subfolder | Target Future-State workstream | Files (copied from `raw/src/` via `cp`, originals preserved) | Total size |
 |---|---|---|---|
-| _(empty — populated during Phase 4)_ | | | |
+| `Accelerators/ArtifactsForMobile/` | `Future-State-mobile-workstream.md` (STANDARD) | mobile-core.jsx (32KB), mobile-screens.jsx (29KB), mobile-shell.jsx (10KB), mobile.css (8KB), ios-frame.jsx (15KB) | ~94 KB |
+| `Accelerators/ArtifactsForLibraryPolish/` | `Future-State-library-polish-workstream.md` (HIGH) | asset.jsx (19KB) | ~19 KB |
+| `Accelerators/ArtifactsForFormLibrary/` | `Future-State-form-library-workstream.md` (HIGH) | screens.jsx (33KB — multi-screen file; next agent splits per-screen) | ~33 KB |
+| **Total** | **3 subfolders / 7 files** | duplication ~146 KB across raw/ + Accelerators/ | (negligible disk impact) |
+
+Each subfolder has its own README documenting: file inventory, target workstream, audit row cross-refs, provenance.
+
+The **6 other src files** in Andrew's drop are NOT accelerator candidates (already migrated or superseded):
+
+| File | Status |
+|---|---|
+| `auth.jsx` (10KB) | Already migrated to `LoginScreen.tsx` + `RegisterScreen.tsx` |
+| `data.jsx` (7.5KB) | Mock data; superseded by `frontend/src/api/photoappApi.ts` |
+| `icons.jsx` (6.5KB) | Already migrated to `Icon.tsx` (Lucide named imports) |
+| `library.jsx` (17KB) | Already migrated to `Library.tsx` + `AssetCard.tsx` + `ListView.tsx` + `EmptyLibrary.tsx` |
+| `shell.jsx` (14KB) | Already migrated to `TopBar.tsx` + `LeftRail.tsx` + `PageHeader.tsx` + `ToastProvider.tsx` + `Modal.tsx` |
+| `tokens.css` (8KB) | Already translated to `tailwind.config.ts` |
 
 ---
 

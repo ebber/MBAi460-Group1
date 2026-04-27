@@ -42,7 +42,7 @@ Sub-A is complete when:
 | 1 | Fill `export-notes.md` with Andrew's export metadata | ✅ 2026-04-27 | (backfilled at Phase 8) | All template fields populated (Source/Date/File Type/Known Issues/Integration Notes + components mapping table); integration-status section added at 🔄 |
 | 2 | Audit `UI-Design-Requirements.md` (per-screen + per-feature triage table) → `Andrew-MVP-Integration.md` | ✅ 2026-04-27 | 5c6004e → 7fc1033 → eaa5b73 → a59f432 → 866840e → (this commit) | 147 audit rows across all 1609 lines + 17 sections; bucket distribution: 17 pure ✅ / 63 partial ✅ / 42 pure ⏳ / 3 ❌ / 20 pure 🚩; 63 rows total carry 🚩 markers (Phase 4 PAUSE-gate triage input). Spot-checks of ✅ claims (cream/coral tokens, Lucide named imports, Modal focus trap, searchImages wiring) all verified |
 | 3 | Set up `Accelerators/` scaffold (README only) | ✅ 2026-04-27 | (this commit) | `Accelerators/` directory + `Accelerators/README.md` documenting the pattern (curated artifacts; ArtifactsFor<WorkstreamName> convention; 1:1 mapping with Future-State docs; distinction from ClaudeDesignDrop/raw; lifecycle + provenance rules). Subfolder population deferred to Phase 4 per F2 |
-| 4 | Triage gaps from Phase 2 audit + populate confirmed `Accelerators/` subfolders (with ⚠️ PAUSE gate for routing confirmation) | ⏳ | — | Each 🚩 gap routed via Erik confirmation; subfolders created for confirmed workstreams; artifacts copied (not moved) from `raw/src/` per F1 fix |
+| 4 | Triage gaps from Phase 2 audit + populate confirmed `Accelerators/` subfolders (with ⚠️ PAUSE gate for routing confirmation) | ✅ 2026-04-27 | 933305b (4.2 routing) → c5beb76 (4.3 Accelerators) → (this commit, 4.4 + 4.5 close-out) | 13 routing themes confirmed via PAUSE gate (Q-Phase4-1..5b); 6 NEW Future-State workstream docs created (mobile/admin/library-polish/form-library/sharing/observability); 2 existing docs extended (Textract for AI on-demand model; production-hardening §4 → pointer to observability split); 9 NEW TODOs added to Part 03 queue; 3 Accelerators subfolders populated (ArtifactsForMobile 5 files / ArtifactsForLibraryPolish 1 / ArtifactsForFormLibrary 1) — 7 files cp'd, originals preserved per F1 |
 | 5 | Cross-references in Future-State workstream docs → `Accelerators/` | ⏳ | — | All applicable Future-State docs have pointer sections |
 | 6 | Naming reconciliation note ("MBAi-460" vs `MBAi460-Group1`) | ⏳ | — | One-paragraph clarification in `00-coordination-and-contracts.md` (extends existing section if present per F10) |
 | 7 | Coordination follow-up journal entry | ⏳ | — | New `2026-04-27-mvp-closeout-andrew-handshake.md` |
@@ -259,7 +259,7 @@ git commit -m "Part03 sub-A Phase 3: Accelerators/ scaffold + README.md (subfold
 
 **Why:** Per Erik's Q-A1: "anything that isn't [in implemented/Future-State/TODO] should be surfaced and triaged." Phase 4 takes 🚩 gap rows from Phase 2 and routes each. Subfolder population in Accelerators happens here (not Phase 3) so we only create folders for workstreams the triage actually confirms (per F2).
 
-- [ ] **Step 4.1:** Enumerate 🚩 gap rows from Phase 2's audit table. Compile into a clean **gap table** in chat: row #, item description, suggested routing (TODO / Future-State / reject), one-line rationale.
+- [x] **Step 4.1:** Enumerate 🚩 gap rows from Phase 2's audit table. Compile into a clean **gap table** in chat: row #, item description, suggested routing (TODO / Future-State / reject), one-line rationale.
 
 ---
 
@@ -280,11 +280,11 @@ git commit -m "Part03 sub-A Phase 3: Accelerators/ scaffold + README.md (subfold
 
 - [x] **Step 4.3:** For each Future-State workstream confirmed in Step 4.2 that has Andrew-source artifacts to accelerate it, create the matching `Accelerators/ArtifactsFor<X>/` subfolder and copy (`cp`) the relevant files from `ClaudeDesignDrop/raw/MBAi-460/src/`. **Use `cp` not `mv`** — originals stay in raw/ per the preservation contract (F1). Add `Accelerators/ArtifactsFor<X>/README.md` per subfolder describing what's there + the target workstream.
 
-- [ ] **Step 4.4:** Update `Andrew-MVP-Integration.md`:
+- [x] **Step 4.4:** Update `Andrew-MVP-Integration.md`:
   - Mark each 🚩 gap row with its routing destination (cross-link to the TODO entry / Future-State doc / out-of-scope rationale)
   - Populate the Accelerators inventory section (cross-ref to the subfolders created in Step 4.3)
 
-- [ ] **Step 4.5:** **Resolve all `<PLACEHOLDER>` markers** in the commit message + staged-files list per the Standing Instructions placeholder-resolution rule (F9). Then atomic commit:
+- [x] **Step 4.5:** **Resolve all `<PLACEHOLDER>` markers** in the commit message + staged-files list per the Standing Instructions placeholder-resolution rule (F9). Then atomic commit:
 
 ```bash
 # Replace <touched files> with the actual paths from Step 4.2 / 4.3 work.
