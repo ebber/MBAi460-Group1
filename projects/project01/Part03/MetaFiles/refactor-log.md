@@ -193,14 +193,16 @@ GET http://localhost:8080/users
 
 The team committed to **Express/Node** as the Part 03 backend (rather than the FastAPI/Python target previously described in the approach docs). Decision made in coordination with the design agent on grounds of "future compatibility" — preserves the Project 02 collaborator baseline and avoids a Python↔Node bridge.
 
-**Decisions recorded (Q1–Q6):**
+**Decisions recorded (Q1–Q6):** the full text of each decision, with rationale and cross-references, lives in `Part03/MetaFiles/DesignDecisions.md`. Brief summary:
 
-- **Q1 — URL scheme:** keep `/api/*` prefix. Cleaner separation; matches the contract's "browser calls only `/api/*` plus static" rule. Existing Express baseline (`/ping`, `/users`, `/image/:id`, …) needs URL refactoring during Server Foundation work.
-- **Q2 — `photoapp.py` reuse:** drop direct Python reuse. Project 03 backend uses Node-native AWS SDK (`@aws-sdk/client-s3`, `@aws-sdk/client-rekognition`) + `mysql2` (extending the existing Express baseline). Part 02 `photoapp.py` becomes a behavioral reference only. Project Queue item `[Project01/Part03] Correctly deprecate Part 02 Python from Part 03 backend` tracks the deprecation decision.
-- **Q3 — Response envelope:** keep `{message, data}` / `{message, error}` envelope across all endpoints. Existing `api_*.js` route responses will be aligned during API Routes work (e.g., `get_ping` currently returns `{message, M, N}` — refactor to `{message, data: {s3_object_count, user_count}}`).
-- **Q4 — Test stack:** Jest + supertest. Mature, conventional Express pairing. Adds `jest`, `supertest` as devDependencies; replaces the placeholder `npm test` script.
-- **Q5 — Local dev mode:** built-only. UI workstream produces `frontend/dist` via `npm run build`; Express serves it via static middleware. No Vite dev-server proxy. UI iteration on components can still use Vite dev server independently with mocked API responses.
-- **Q6 — Visualization:** `Target-State-project01-part03-photoapp-architecture-v1.md` updated to be language/implementation-agnostic (FastAPI/Python labels removed; "PhotoApp Service Module" replaces "imported photoapp.py"). Queued for design-agent review.
+- **Q1** — keep `/api/*` URL prefix.
+- **Q2** — drop `photoapp.py` direct reuse; Node-native AWS SDK + `mysql2`.
+- **Q3** — keep `{message, data}` / `{message, error}` response envelope.
+- **Q4** — test stack = Jest + supertest.
+- **Q5** — local dev mode = built-only (no Vite proxy).
+- **Q6** — Target-State architecture viz is language/implementation-agnostic.
+
+(Source: `Part03/MetaFiles/DesignDecisions.md` — decisions live there; this log records what *changed* in code.)
 
 **Approach docs updated this session:**
 
