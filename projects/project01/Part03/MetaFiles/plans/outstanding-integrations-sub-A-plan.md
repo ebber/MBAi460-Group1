@@ -45,7 +45,7 @@ Sub-A is complete when:
 | 4 | Triage gaps from Phase 2 audit + populate confirmed `Accelerators/` subfolders (with ⚠️ PAUSE gate for routing confirmation) | ✅ 2026-04-27 | 933305b (4.2 routing) → c5beb76 (4.3 Accelerators) → (this commit, 4.4 + 4.5 close-out) | 13 routing themes confirmed via PAUSE gate (Q-Phase4-1..5b); 6 NEW Future-State workstream docs created (mobile/admin/library-polish/form-library/sharing/observability); 2 existing docs extended (Textract for AI on-demand model; production-hardening §4 → pointer to observability split); 9 NEW TODOs added to Part 03 queue; 3 Accelerators subfolders populated (ArtifactsForMobile 5 files / ArtifactsForLibraryPolish 1 / ArtifactsForFormLibrary 1) — 7 files cp'd, originals preserved per F1 |
 | 5 | Cross-references in Future-State workstream docs → `Accelerators/` | ✅ 2026-04-27 | (this commit) | All 8 existing Future-State workstream docs got "Andrew's accelerator artifacts" sections added: 4 reference `Accelerators/ArtifactsForFormLibrary/screens.jsx` (auth, chat, documents-textract, tweaks-panel — `screens.jsx` is multi-screen; cross-workstream sharing); 4 explicitly note "no Accelerator subfolder" with audit-row cross-refs (command-palette, playwright-e2e, production-hardening, shadcn-migration). Each section includes audit row pointers into `Andrew-MVP-Integration.md`. The 6 NEW Future-State docs created in 4.2 already have these refs baked in |
 | 6 | Naming reconciliation note ("MBAi-460" vs `MBAi460-Group1`) | ✅ 2026-04-27 | (this commit) | New "Naming Conventions" section added in `00-coordination-and-contracts.md` (no existing section per Step 6.0 pre-read F10 fix). Documents 3 forms: "MBAi 460" (user-facing), "MBAi-460" (Andrew's drop-folder kebab-case), "MBAi460-Group1" (GitHub repo). Plus path conventions + provenance back to audit row 6 |
-| 7 | Coordination follow-up journal entry | ⏳ | — | New `2026-04-27-mvp-closeout-andrew-handshake.md` |
+| 7 | Coordination follow-up journal entry | ✅ 2026-04-27 | (this commit) | New `MBAi460-Group1/MetaFiles/Journal/2026-04-27-mvp-closeout-andrew-handshake.md` — TL;DR + what-landed-vs-spec table + audit-organization narrative + how-to-engage instructions + specific items requesting Andrew's eyes (asset.jsx + screens.jsx inventory + Mobile Q-MOB-1 + audit gaps) + coordination logistics |
 | 8 | Mark integration complete + close TODO entries + Map row update | ⏳ | — | Integration-status banner flipped to ✅ in 3 places; 3 Part-03 TODO entries closed; Map row Active→Closed |
 
 State legend per `Part03/MetaFiles/OrientationMap.md`.
@@ -360,14 +360,14 @@ git commit -m "Part03 sub-A Phase 6: naming reconciliation note (MBAi 460 / MBAi
 
 **Why:** First-touch communication was 2026-04-26; this is the second-touch to surface MVP closeout + invite Andrew to review what landed. Preserves chronology by being a NEW entry rather than appending to the 2026-04-26 entry.
 
-- [ ] **Step 7.1:** Author entry with sections:
+- [x] **Step 7.1:** Author entry with sections:
   - Summary: UI MVP shipped; pointer to closeout commit + DEMO-QUICKSTART.md
   - What landed vs Andrew's spec (link to `Andrew-MVP-Integration.md`)
   - What's Future-State (pointer to relevant Future-State workstream docs + Accelerators)
   - Invite: review our MVP via `Human-Feature-Test-Suite.md`; surface anything not captured
   - Coordination: how to add to triage queue / suggest changes
 
-- [ ] **Step 7.2:** Atomic commit.
+- [x] **Step 7.2:** Atomic commit.
 
 ```bash
 git add MetaFiles/Journal/2026-04-27-mvp-closeout-andrew-handshake.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
