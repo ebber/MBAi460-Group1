@@ -232,6 +232,38 @@ The team committed to **Express/Node** as the Part 03 backend (rather than the F
 
 ---
 
+## 2026-04-27 — Phase 6+7+integration: routes + error middleware + integration test (parallel subagent dispatch + main-thread integration)
+
+The `/api/*` surface goes live with all 8 routes wired through to the photoapp service module + a centralized error middleware mapping known errors to HTTP status. Calibration Test #2 — see plan §Subagent Calibration Notes — confirmed parallel subagents work for separate-but-coupled files when the test factoring is properly layered (post-reviewing-agent redesign 2026-04-27).
+
+**Files written / modified:**
+
+- `server/routes/photoapp_routes.js` — body replaced (was placeholder from Server Foundation 02). All 8 routes per 03 §Phase 6 (Tasks 6.2–6.9): `GET /ping`, `GET /users`, `GET /images?userid?`, `POST /images` (multipart via multer), `GET /images/:assetid/file` (streamed via `s3Result.Body.pipe(res)`), `GET /images/:assetid/labels`, `GET /search?label=`, `DELETE /images`. Each handler wraps in `try/catch + next(err)` so service exceptions bubble to error middleware. Inline-route-validation returns 400 envelopes for missing/non-int inputs.
+- `server/middleware/error.js` — NEW. `errorMiddleware(err, req, res, next)` (4-arg Express error handler). Exact-match mapping (NOT regex per 03 design): `'no such userid'` → 400; `'no such assetid'` → 404; multer `LIMIT_*` → 400; else 500 + `'internal server error'` (sanitized) + `console.error('UNHANDLED ERROR:', err)`.
+- `server/app.js` — single-line append at line 54: `app.use(require('./middleware/error'));`. After static + SPA fallback, before `module.exports`. No other changes.
+- `server/tests/photoapp_routes.test.js` — NEW. 16 tests (8 happy + 8 inline-validation 400s). Uses real multer + supertest `.attach()` for multipart. Service module mocked via `jest.mock('../services/photoapp')`. **Explicitly out of scope** (per the three-tier factoring): error envelope shapes from service exceptions — those moved to the integration test below.
+- `server/tests/error.test.js` — NEW. 4 tests using **isolation pattern**: tiny self-contained Express app inside the test file via `buildIsolatedApp(routeHandlers)`; mounts only the error middleware. Does NOT load `app.js` or routes. Decoupled from Phase 6.
+- `server/tests/integration_routes_error.test.js` — NEW (Step Q.2.0, main thread). 3 tests verifying end-to-end route → error-mw flow against the REAL `app`: `POST /api/images` "no such userid" → 400; `GET /api/images/:assetid/labels` "no such assetid" → 404; `GET /api/users` generic error → 500 sanitized. Uses `console.error` spy to silence the 500-path log.
+- `server/tests/api_placeholder.test.js` — **DELETED** (obsolete). The placeholder envelope `GET /api → {service: 'photoapp-api', status: 'placeholder'}` was a Phase 02 stand-in to guard the `/api` mount order. With Phase 6 routes live, the 16 new route tests inherently guard the same property — if the static catchall were absorbing `/api/*` requests, all 16 route tests would 404.
+
+**Test surfaces:** 11 suites / 71 tests, all green (was 9/49 before Phase 6+7+integration; net +2 suites, +22 tests after netting out the deleted placeholder test).
+
+**Calibration Test #2 outcome (post-redesign):**
+
+- Wall time: ~132s parallel (longest subagent). Estimated sequential: ~229s. Parallel saved ~97s (~42% reduction).
+- Token usage: ~82k aggregate (~77k subagents + ~5k main thread Q.2.0).
+- Test factoring did its job: zero test-coupling friction during parallel execution. The reviewing-agent's "route+mw coupled enough that sequential may be safer" concern was DISSOLVED by the three-tier factoring — Subagent A's tests had no Phase 7 dependency, Subagent B's tests had no Phase 6 dependency, and the integration test was a clean main-thread post-merge step.
+- Verdict: parallel works for separate-but-coupled files IF unit/integration test layering is properly factored. Confirms hypothesis H2.
+
+**Subagent side-findings:**
+
+- Subagent A: replacing the placeholder body of `routes/photoapp_routes.js` superseded `api_placeholder.test.js`. Correctly flagged + stayed in scope. Main thread reconciled by deletion (the 16 new route tests cover the same mount-order guard).
+- Subagent B: added defensive `typeof err.code === 'string'` check on the multer `LIMIT_*` branch (avoids `.startsWith` crash on non-string `code`). Also added `// eslint-disable-line no-unused-vars` to the unused `next` param (Express needs the 4-arg signature for error handlers).
+
+**Next:** Phase 8 (live integration tests, opt-in via `PHOTOAPP_RUN_LIVE_TESTS=1`); then Phase 9 E2E smoke (gated on Andrew's UI).
+
+---
+
 ## 2026-04-27 — Phase 1+2+4: schemas + aws factory + upload middleware (parallel subagent dispatch)
 
 The Part 03 service-module foundation lands in three concurrent files via parallel subagent dispatch (Calibration Test #1 — see plan §Subagent Calibration Notes).

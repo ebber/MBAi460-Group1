@@ -51,4 +51,6 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
 });
 
+app.use(require('./middleware/error'));
+
 module.exports = app;

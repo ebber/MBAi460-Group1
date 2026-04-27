@@ -71,8 +71,8 @@ Most commands run from `/Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/
 | (1+2+4 PARALLEL — subagent dispatch) | | | | |
 | 3 | `server/services/photoapp.js` read use cases | ✅ 2026-04-27 | (this commit) | 12 tests green covering getPing, listUsers, listImages (4 cases), getImageLabels (3 cases), searchImages (3 cases) |
 | 5 | `server/services/photoapp.js` write use cases | ✅ 2026-04-27 | (this commit) | 10 new tests across uploadImage (3, with photo+document branches), downloadImage (4, with content-type fallback chain), deleteAll (3, DB-first ordering verified). 22/22 photoapp_service tests green |
-| 6 | `server/routes/photoapp_routes.js` | ⏳ | — | photoapp_routes.test.js green |
-| 7 | `server/middleware/error.js` | ⏳ | — | error.test.js green |
+| 6 | `server/routes/photoapp_routes.js` | ✅ 2026-04-27 | (this commit) | 16 tests green (8 happy + 8 inline-validation 400s); routes file body replaced; mount line in app.js unchanged |
+| 7 | `server/middleware/error.js` | ✅ 2026-04-27 | (this commit) | 4 isolation tests green; app.js gains single-line append at end (after static + SPA fallback); 3 integration tests in `integration_routes_error.test.js` (Q.2.0) verify wiring end-to-end |
 | (6+7 PARALLEL — subagent dispatch) | | | | |
 | 8 | live integration tests (opt-in) | ⏳ | — | PHOTOAPP_RUN_LIVE_TESTS=1 → green |
 | 9 | E2E smoke + README route-specific commands (after UI ready) | ⏳ | — | full curl evidence captured; README documents route-specific run/test commands |
@@ -404,7 +404,7 @@ This produces three test surfaces with disjoint dependencies; both subagents pas
 
 ### Task Q.1: Dispatch 2 subagents in parallel
 
-- [ ] **Step Q.1.1:** Single message with two Agent tool invocations.
+- [x] **Step Q.1.1:** Single message with two Agent tool invocations. _2026-04-27 — two general-purpose subagents dispatched in parallel; agentIds aa78bb7a (Phase 6, ~132s, 51k tokens, 17 tool uses), a401db8e (Phase 7, ~97s, 26k tokens, 11 tool uses)._
 
 **Subagent A brief — Phase 6: `server/routes/photoapp_routes.js`** (full text at dispatch):
 
@@ -476,21 +476,21 @@ This produces three test surfaces with disjoint dependencies; both subagents pas
 
 ### Task Q.2: Verify merge + write integration test
 
-- [ ] **Step Q.2.0 (NEW — main thread):** Write `server/tests/integration_routes_error.test.js` — the canonical end-to-end verification of route → error middleware flow. Uses the real `app`, mocks services per-test:
+- [x] **Step Q.2.0 (NEW — main thread):** Write `server/tests/integration_routes_error.test.js` — the canonical end-to-end verification of route → error middleware flow. Uses the real `app`, mocks services per-test:
   - `POST /api/images` with `userid` that triggers `Error('no such userid')` from mocked `photoapp.uploadImage` → 400 envelope `{message: 'error', error: 'no such userid'}`.
   - `GET /api/images/:assetid/labels` where mocked `photoapp.getImageLabels` throws `Error('no such assetid')` → 404 envelope.
   - `GET /api/users` where mocked `photoapp.listUsers` throws `Error('SQL connection refused')` → 500 envelope with sanitized `'internal server error'` message.
-  This is what 03's Phase 7 example test was originally — relocated here to live at the proper integration layer.
-- [ ] **Step Q.2.1:** Receive both subagent reports.
-- [ ] **Step Q.2.2:** Inspect `git diff server/app.js` — confirm only Subagent B's edit applied (the `app.use(require('./middleware/error'));` append at end of file).
-- [ ] **Step Q.2.3:** From `Part03/`, run full `npm test`. Expected: ALL suites green — Subagent A's route unit tests, Subagent B's error mw isolation tests, and the new integration test from Step Q.2.0.
-- [ ] **Step Q.2.4:** Optional live smoke: `npm start` in background, `curl http://localhost:8080/api/ping` (real RDS+S3 — requires AWS creds loaded; may fail if env not set up; that's fine, Phase 8 covers live).
+  This is what 03's Phase 7 example test was originally — relocated here to live at the proper integration layer. _2026-04-27 — written; 3/3 tests green; 500-path uses `console.error` spy to silence noise during test runs._
+- [x] **Step Q.2.1:** Receive both subagent reports. _2026-04-27 — both returned with structured reports + green tests + scope discipline upheld._
+- [x] **Step Q.2.2:** Inspect `git diff server/app.js` — confirm only Subagent B's edit applied (the `app.use(require('./middleware/error'));` append at end of file). _2026-04-27 — verified at line 54 (after static + SPA fallback at lines 47–52, before `module.exports = app;` at line 56)._
+- [x] **Step Q.2.3:** From `Part03/`, run full `npm test`. Expected: ALL suites green — Subagent A's route unit tests, Subagent B's error mw isolation tests, and the new integration test from Step Q.2.0. _2026-04-27 — 11 suites / 71 tests green. Includes deletion of `server/tests/api_placeholder.test.js` (obsolete; Phase 6 routes superseded the placeholder body, and the 16 route tests inherently guard the `/api` mount order)._
+- [x] **Step Q.2.4:** Optional live smoke: `npm start` in background, `curl http://localhost:8080/api/ping` (real RDS+S3 — requires AWS creds loaded; may fail if env not set up; that's fine, Phase 8 covers live). _2026-04-27 — skipped here; Phase 8 owns live smoke._
 
 ### Task Q.3: Atomic doc update + commit
 
-- [ ] **Step Q.3.1:** Master Tracker: Phases 6 + 7 → ✅ with this commit hash.
-- [ ] **Step Q.3.2:** Verify 03 doc Phase 6 + 7 boxes are `[x]` (subagents did this).
-- [ ] **Step Q.3.3:** Single commit: `Part03 03 Phase 6+7+integration: routes + error mw + route↔error-mw integration test (parallel subagent dispatch + main-thread integration)`.
+- [x] **Step Q.3.1:** Master Tracker: Phases 6 + 7 → ✅ with this commit hash. _2026-04-27 — done._
+- [x] **Step Q.3.2:** Verify 03 doc Phase 6 + 7 boxes are `[x]` (subagents did this). _2026-04-27 — N/A: 03 has no task-level checkboxes for Phase 6/7 (only Pre-Phase 1 had them); subagents were instructed to skip 03 doc updates per scope discipline._
+- [x] **Step Q.3.3:** Single commit: `Part03 03 Phase 6+7+integration: routes + error mw + route↔error-mw integration test (parallel subagent dispatch + main-thread integration)`. _2026-04-27 — this commit._
 
 **Subagent calibration log entry:** append to System Plane Notes — wall time, token cost, scope discipline, the test-coupling outcome (did Subagent A's pending tests pass cleanly post-merge? any drift?).
 
@@ -553,11 +553,17 @@ Append to `claude-workspace/scratch/system-plane-notes.md` Subagents section aft
 - **Side-finding (Subagent B):** `jest.mock('fs')` (full auto-mock) broke `@aws-sdk/token-providers` because it destructures `fs.promises.writeFile` at module load time. Fix: partial mock with `jest.requireActual('fs')` + override only `readFileSync`. Captured for future jest+fs+aws-sdk-v3 patterns.
 - **Verdict:** Parallel WON — 3 independent files with disjoint test surfaces is a clean parallelism opportunity. Confirms H1 (parallel wins for independent files).
 
-**Test #2 — Phase 6+7 parallel (2 separate-but-coupled files; tests decoupled via three-tier factoring):**
-- Wall time + tokens
-- Coordination: only Subagent B touched `app.js` (Subagent A's territory is `routes/photoapp_routes.js` body); was the append clean?
-- Test-factoring outcome: did Subagent A's route unit tests pass without depending on error mw? Did Subagent B's isolation tests pass without depending on routes? Did the main-thread integration test (Step Q.2.0) catch wiring issues that the unit tests missed?
-- Verdict: "isolated unit tests + main-thread integration test" is the right factoring for separate-but-coupled parallel work? Or did sequential prove safer?
+**Test #2 — Phase 6+7 parallel (2 separate-but-coupled files; tests decoupled via three-tier factoring) — RESULT 2026-04-27:**
+- **Wall time:** ~132s (longest of 2 parallel; Subagent A was longest because it implemented 8 routes + 16 tests). Estimated sequential: ~229s. **Parallel saved ~97s wall (~42% reduction).**
+- **Total token usage across 2 subagents:** ~77k (51k routes + 26k error mw). Plus ~5k main-thread for the Q.2.0 integration test. Aggregate ~82k.
+- **Coordination:** ✅ only Subagent B touched `app.js` (single-line append at line 54, between SPA fallback at line 50–52 and `module.exports` at line 56). Subagent A's territory was strictly `routes/photoapp_routes.js` body. No merge conflict surface.
+- **Test-factoring outcome:** ✅ all three layers behaved as designed.
+  - Subagent A's 16 route unit tests passed without depending on error mw (test scope correctly limited to happy paths + inline-route-validation 400s).
+  - Subagent B's 4 isolation tests passed without depending on routes (used self-contained tiny Express app inside the test file).
+  - Main-thread Q.2.0 integration test (3 cases) verified wiring against real `app.js` post-merge — all 3 green on first run.
+- **Side-finding (Subagent A):** replacing the placeholder body of `routes/photoapp_routes.js` superseded the existing `server/tests/api_placeholder.test.js`. Subagent A correctly stayed in scope and surfaced this as an open; main thread deleted the obsolete test (the 16 new route tests now inherently guard the `/api` mount order — if the static catchall were absorbing `/api/*` requests, all 16 would 404). Captured in commit message + refactor-log.
+- **Side-finding (Subagent B):** added defensive `typeof err.code === 'string'` check on the multer `LIMIT_*` branch (so a non-string `code` doesn't crash on `.startsWith`). Also added `// eslint-disable-line no-unused-vars` to the unused `next` parameter (Express needs the 4-arg signature to recognize error handlers). Both are small enhancements over the plan spec; defensible.
+- **Verdict:** Parallel WON for this shape (separate-but-coupled files with three-tier test factoring). Reviewing-agent's coupling concern was DISSOLVED by the redesign — the parallel subagents had no coupling to each other; the integration concern moved to a main-thread step with its own focused test file. Confirms hypothesis H2 (parallel + integration step works for coupled-test scenarios IF the test layering is properly factored).
 
 **Hypotheses to confirm/refute:**
 - H1: parallel wins for independent files (Phase 1+2+4) — confirm or refute.
