@@ -40,7 +40,7 @@ Sub-B is complete when:
 | 2 | Drift Finding #1 fix (00-coord stale example) | ✅ 2026-04-27 | (this commit) | Stale "Success response:" preamble + JSON block (was lines 259-273) removed; canonical block's preamble relabeled from "Example response with `kind`:" to "Success response:". §GET /api/images now shows ONE canonical response example including `kind`. Verified via re-read |
 | 3 | `deleteAllImages` type tightening (confirmed include per Q-Phase3 2026-04-27) | ✅ 2026-04-27 | (this commit) | `photoappApi.ts` lines 54+56 narrowed `Promise<{deleted:boolean}>` → `Promise<{deleted:true}>` (return-type annotation + inline `unwrap` generic). Build ✅ 1770 modules / 861ms (no module count change). Vitest ✅ 17 files / 74 tests pass (no regressions). Type aligns with contract literal |
 | 4 | Re-audit + validation | ✅ 2026-04-27 | (this commit) | Audit doc Status banner 🔄 → ✅ COMPLETE; bucket distribution updated to pre + post-remediation tables (post: 22 ✅ / 0 🚩 / 1 ⏳); audit row 4 (Asset shape) flipped 🚩 → ✅ with cross-ref to `108d9c7`; Adjacent Observation E flipped to ✅ RESOLVED with cross-ref to `71034f4`; closeout summary populated. Tests verified: backend Jest 77/77 + frontend Vitest 74/74 |
-| 5 | Closeout (Map + plan tracker + summary) | ⏳ | — | Map sub-B row state → ✅ Closed; workstream Status updated; plan tracker rows all ✅ |
+| 5 | Closeout (Map + plan tracker + summary) | ✅ 2026-04-27 (this commit) | (this commit) | Map sub-B row → ✅ COMPLETE with audit-summary notes; workstream Status updated to "sub-A + sub-B both ✅; sub-D + sub-E remain"; plan Master Tracker rows all ✅ except Phase 6 (gated on Erik signal); Acceptance Evidence section populated |
 | 6 | Push (with cred-sweep delta-check assessment + decision) | ⏳ | — | Step 6.0 assesses cred-sweep current capability + estimates LoE to add delta-check mode; Erik picks update-util-now vs queue-and-grep; Step 6.1 pre-push hygiene runs both full state scan + delta check |
 
 State legend per `Part03/MetaFiles/OrientationMap.md`.
@@ -205,20 +205,20 @@ git commit -m "Part03 sub-B Phase 4: re-audit ✅ — zero 🚩 rows; audit doc 
 - Modify: `Part03/MetaFiles/OrientationMap.md` (sub-B row state; workstream Status).
 - Modify: `Part03/MetaFiles/plans/outstanding-integrations-sub-B-plan.md` (Master Tracker rows all ✅; Acceptance Evidence section filled).
 
-- [ ] **Step 5.1:** Update `OrientationMap.md`:
+- [x] **Step 5.1:** Update `OrientationMap.md`:
   - Sub-B row state: ⏳ → ✅ COMPLETE 2026-04-27
   - Workstream `Status:` line update — "sub-A + sub-B both ✅ COMPLETE; sub-D + sub-E remain"
 
-- [ ] **Step 5.2:** Update plan Master Tracker — Phase 5 row → ✅; populate any remaining placeholder commit refs in earlier rows.
+- [x] **Step 5.2:** Update plan Master Tracker — Phase 5 row → ✅; populate any remaining placeholder commit refs in earlier rows.
 
-- [ ] **Step 5.3:** Fill the Acceptance Evidence section at the end of this plan with sub-B's stats:
+- [x] **Step 5.3:** Fill the Acceptance Evidence section at the end of this plan with sub-B's stats:
   - Audit row count: 23 + 5 adjacent observations
   - Drift resolved: 1 / 1 (Drift Finding #1)
   - Phase 3 type tightening: fill from actual Phase 3 execution results (commit ref + tests-stayed-green confirmation)
   - Sub-B closeout commit ref
   - Total commits in sub-B chain
 
-- [ ] **Step 5.4:** Final atomic commit.
+- [x] **Step 5.4:** Final atomic commit.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
@@ -269,14 +269,12 @@ The reviewer's framing was that the inline grep is brittle / placeholder-feeling
 
 ---
 
-## Acceptance Evidence (filled at Phase 5 closeout)
+## Acceptance Evidence (sub-B Phase 5 closeout — 2026-04-27)
 
-_(Captured at sub-B Phase 5 close.)_
-
-- Audit row count: __ contract items + __ adjacent observations
-- Drift findings (canonical): 1 / 1 resolved (Drift Finding #1 — 00-coord stale example block)
-- Phase 3 type tightening: __
-- Bucket distribution post-fix: ✅ __ / ⏳ __ / 🚩 __
-- Sub-B chain commits: __
-- Sub-B closeout commit: __
-- Tests at closeout: backend __/__ + frontend __/__
+- **Audit row count:** 23 contract items + 5 adjacent observations
+- **Drift findings (canonical):** 1 / 1 resolved (Drift Finding #1 — 00-coord stale example block, fixed at `108d9c7`)
+- **Phase 3 type tightening:** ✅ Resolved at `71034f4` (deleteAllImages narrowed `Promise<{deleted:boolean}>` → `Promise<{deleted:true}>`); tests stayed green (build clean + Vitest 17 files / 74 tests)
+- **Bucket distribution post-fix:** ✅ Aligned 22 / 23 · ⏳ Documented gap 1 / 23 (PingData intentional) · 🚩 Drift 0 / 23
+- **Sub-B chain commits:** 8 — `45d2d4f` audit + `43feb20` plan v1 + `1ce58b8` plan v2 + `fdce498` plan v3 + `108d9c7` Phase 2 fix + `71034f4` Phase 3 tighten + `fb67b57` Phase 4 re-audit + this commit Phase 5 closeout
+- **Sub-B closeout commit:** (this commit)
+- **Tests at closeout:** backend Jest 77/77 (2 skipped live integration) + frontend Vitest 17 files / 74 tests pass — zero regressions from doc/type changes

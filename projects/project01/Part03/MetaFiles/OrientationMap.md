@@ -28,14 +28,14 @@
 
 **Goal:** Close the open integration threads between recently-shipped components (Andrew's MVP / backend / frontend / Class-Project / Lab-Root) before opening the next major arc.
 
-**Status:** 🔄 Workstream in flight — sub-A ✅ COMPLETE 2026-04-27 (all 8 phases of `outstanding-integrations-sub-A-plan.md`); sub-B / sub-D / sub-E remain. Pick next sub-workstream to engage when ready.
+**Status:** 🔄 Workstream in flight — sub-A + sub-B both ✅ COMPLETE 2026-04-27; sub-D + sub-E remain. Pick next sub-workstream to engage when ready.
 
 **Sub-workstreams:**
 
 | # | Sub-workstream | State | Pointer / source | Notes |
 |---|---|---|---|---|
 | A | Andrew's MVP — final handshakes | ✅ COMPLETE 2026-04-27 | `Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md` Master Tracker (all phases ✅); `Andrew-MVP-Integration.md` audit table; `Accelerators/ArtifactsFor*/` subfolders | All 8 phases done across ~14 commits this session. 147-row audit covering all 1609 lines; 6 NEW Future-State workstream docs + 2 EXTEND; 9 TODOs; 3 Accelerators subfolders / 7 files curated; naming-conventions section in `00-coordination-and-contracts.md`; coordination journal entry at `MetaFiles/Journal/2026-04-27-mvp-closeout-andrew-handshake.md` |
-| B | Frontend ↔ Backend ↔ Approach-doc coherence audit | ⏳ | `Part03/frontend/src/api/types.ts` + `Part03/server/schemas.js` + `Part03/MetaFiles/Approach/00-coordination-and-contracts.md` | Cross-check envelope shape, route table, and contracts; surface drift if any |
+| B | Frontend ↔ Backend ↔ Approach-doc coherence audit | ✅ COMPLETE 2026-04-27 | `Part03/MetaFiles/contract-audit-FE-BE-doc.md` (audit) + `Part03/MetaFiles/plans/outstanding-integrations-sub-B-plan.md` (plan tracker) | 23-item audit covering 5 files (extended scope per Q-B-6); 1 drift surfaced + resolved (00-coord stale example block); 1 type-precision adjacent observation tightened (deleteAllImages); post-remediation: 22 ✅ / 0 🚩 / 1 ⏳ (PingData intentional). Tests stay green at 77+74. |
 | ~~C~~ | ~~Class Project ↔ Lab Root coordination~~ | **MOVED** | — | Relocated to Class Project queue 2026-04-27 per Q3 — see `MBAi460-Group1/MetaFiles/TODO.md` |
 | D | Visualization handoff | ⏳ | `Part03/MetaFiles/TODO.md` (visualization entry, deferred to Erik per 2026-04-27 routing) | Update `Target-State-project01-part03-photoapp-architecture-v1.md` with actual stack |
 | E | Future-State workstream prioritization | ⏳ | `Part03/MetaFiles/Approach/Future-State-*.md` (8 workstreams) | Decision point — which (if any) activates next; sequencing. *Note: this sub-workstream might warrant promotion to its own top-level workstream — see refinement notes.* |
