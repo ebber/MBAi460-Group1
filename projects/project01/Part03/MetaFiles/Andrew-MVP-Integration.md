@@ -125,6 +125,33 @@ Audit sweep proceeds section-by-section through `UI-Design-Requirements.md`. Eac
 | 77 | §9.12–9.13 Admin (Users + Assets) | Staff-only table with asset counts; cursor pagination 100/page; allowlist gating; CSV export; cross-user asset filters server-side | ⏳ | (no Future-State doc — same as audit row 20) | |
 | 78 | §9.14 Help / keyboard shortcuts | `?` modal overlay with sections (Global / Library / Asset / Chat); dismissable Esc + click-outside; screen-reader accessible | partial: ✅ /help route page / 🚩 ? modal overlay | `frontend/src/pages/HelpPage.tsx` exists as a static help page; modal overlay version triggered by `?`: 🚩 Phase 4 triage (Future-State command palette likely covers `?` as a shortcut) |
 | 79 | §9.15 404 / error / offline | 404 page (wordmark + asset-themed copy + link home); ErrorBoundary with correlation ID + retry; offline banner + cache-only browse | partial: ✅ 404 / 🚩 ErrorBoundary + offline | `frontend/src/pages/NotFoundPage.tsx` shipped with route list + home link. ErrorBoundary + offline detection: 🚩 Phase 4 triage |
+| 80 | §10.1 FR-AUTH-1..9 (token from POST /auth, Authentication header, redirect-to-login w/ ?next=, 401 → clear token + banner, Sign-out → POST /logout, session-duration 1–1440, account registration with client-side validation, "Remember username" via storage, captcha after N failures) | ⏳ | `Future-State-auth-and-account-management-workstream.md` | Q10 explicitly descopes auth from MVP. Each FR specifies behaviors that apply when real auth lands. |
+| 81 | §10.2 FR-ASSET-1 (POST /assets upload) | ✅ | `POST /api/images` (multipart) | (matches row 37) |
+| 82 | §10.2 FR-ASSET-2 (GET /assets paged + sorted + filtered) | partial: ✅ list / 🚩 paging+sort+filter | `GET /api/images` returns full list; pagination/sort/filter: 🚩 (matches rows 35, 57, 58) |
+| 83 | §10.2 FR-ASSET-3 (asset detail at /asset/:id from GET /assets/:id) | partial: ✅ route / 🚩 per-id endpoint | `AssetDetailPage.tsx` route shipped; resolves via list-filter today (matches row 36) |
+| 84 | §10.2 FR-ASSET-4 (inline rename via PATCH /assets/:id) | 🚩 | n/a in MVP | Phase 4 triage candidate (matches row 23 fragment) |
+| 85 | §10.2 FR-ASSET-5 (per-asset delete with confirmation) | 🚩 | n/a in MVP (only delete-all) | Phase 4 triage candidate (matches row 38) |
+| 86 | §10.2 FR-ASSET-6 (download via GET /assets/:id/download streamed for >5MB) | partial: ✅ download / 🚩 streaming for large files | `GET /api/images/:id/file` works; streaming behavior depends on Express defaults (matches row 39) |
+| 87 | §10.2 FR-ASSET-7 (multi-select + batch actions) | 🚩 | n/a in MVP | Phase 4 triage candidate (matches rows 25, 57, 60) |
+| 88 | §10.2 FR-ASSET-8 (client-side search across cached assets' name/labels/OCR) | partial: ✅ server-side label search / 🚩 client-side cache + name/OCR search | `searchImages` is server-side only; client-cache + name + OCR search 🚩 |
+| 89 | §10.2 FR-ASSET-9 (server-side search when cache window exceeded) | partial: ✅ basic /api/search | `searchImages` exists; cache-window logic 🚩 (overlaps FR-ASSET-8) |
+| 90 | §10.2 FR-ASSET-10 (folders / tags) | ⏳ MAY | (no Future-State doc; consider adding to a Future-State Library workstream) | Deferred past v1 |
+| 91 | §10.3 FR-AI-1 (auto-classify on upload via content-type + optional Rekognition DetectText) | partial: ✅ content-type / 🚩 DetectText fallback | `deriveKind()` uses content-type only (matches row 70) |
+| 92 | §10.3 FR-AI-2 (Rekognition labels via POST /assets/:id/labels + display) | partial: ✅ labels exist / 🚩 model differs | We auto-run on upload, expose via GET; Andrew specs POST on-demand (matches row 40) |
+| 93 | §10.3 FR-AI-3 (Textract OCR via POST /assets/:id/ocr + display) | ⏳ | `Future-State-documents-and-textract-workstream.md` | |
+| 94 | §10.3 FR-AI-4 (Textract mode picker — DetectDocumentText vs AnalyzeDocument) | ⏳ | `Future-State-documents-and-textract-workstream.md` | (matches row 67) |
+| 95 | §10.3 FR-AI-5 (bounding-box ↔ text-block highlighting) | ⏳ | `Future-State-documents-and-textract-workstream.md` | (matches row 66) |
+| 96 | §10.3 FR-AI-6 (manual re-run analysis) | 🚩 | n/a in MVP | Phase 4 triage candidate (overlaps FR-AI-2 model gap, row 40) |
+| 97 | §10.3 FR-AI-7 (client-side cache for labels + OCR within session) | 🚩 | n/a in MVP | Phase 4 triage candidate |
+| 98 | §10.3 FR-AI-8 (translation of OCR output) | ⏳ MAY | `Future-State-documents-and-textract-workstream.md` (deferred) | |
+| 99 | §10.4 FR-CHAT-1..8 (list participants, POST /chat/message, SSE stream at /chat/stream, message states Sending→Sent→Delivered→Failed, auto-reconnect with backoff, "Deregister from chat", DM to one participant, file attachments) | ⏳ | `Future-State-chat-workstream.md` | |
+| 100 | §10.5 FR-ADMIN-1..4 (staff-only routes via /me's roles field, /admin/users with pagination, CSV export, /admin/assets cross-user view) | ⏳ | (no Future-State doc — same as audit row 20; Phase 4 triage candidate) | |
+| 101 | §10.6 FR-PROFILE-1..4 (GET /me data, password change via POST /me/password, display-name change via PATCH /me, avatar upload) | ⏳ | `Future-State-auth-and-account-management-workstream.md` (FR-PROFILE-4 avatar may warrant separate handling) | |
+| 102 | §10.7 FR-SYS-1 (health-check backend on first load via GET /ping → /offline render if down) | partial: ✅ getPing + connection state / 🚩 /offline render | `App.tsx` uses `getPing()` on mount and stores `connection: 'connected' \| 'disconnected' \| 'loading'`; explicit `/offline` route does not exist (matches row 79 offline) |
+| 103 | §10.7 FR-SYS-2 (correlation ID in every request via X-Correlation-Id ULID + display on error) | 🚩 | n/a in MVP | Phase 4 triage candidate (overlaps row 12 — recoverable errors) |
+| 104 | §10.7 FR-SYS-3 (migrate off base64 JSON uploads to presigned URLs by end of Phase 3) | ⏳ | `Future-State-production-hardening-workstream.md` | (matches row 31) |
+| 105 | §10.7 FR-SYS-4 (dark mode, default = system preference) | 🚩 | n/a in MVP | Phase 4 triage candidate (light-only shipped) |
+| 106 | §10.7 FR-SYS-5 (telemetry hook with opt-in consent banner) | ⏳ MAY | `Future-State-production-hardening-workstream.md` (or new) | |
 
 ---
 

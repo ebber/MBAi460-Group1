@@ -189,7 +189,7 @@ git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/p
 git commit -m "Part03 sub-A Phase 2.3: audit §9 (screen-by-screen specs)"
 ```
 
-- [ ] **Step 2.4:** Audit §10 — Numbered functional requirements (the other meat). Each FR → one audit row. Cross-ref to implementing file or assignment. Then commit (Phase 2 checkpoint #4):
+- [x] **Step 2.4:** Audit §10 — Numbered functional requirements (the other meat). Each FR → one audit row. Cross-ref to implementing file or assignment. Then commit (Phase 2 checkpoint #4):
 
 ```bash
 git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
