@@ -63,7 +63,7 @@ Most commands run from `/Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/
 
 | Phase | Goal | State | Commit | Evidence |
 |---|---|---|---|---|
-| 0 | Pre-execution prep + dep install | ⚠️ 2026-04-26 | a50ef8c | install-log entry written; 5/5 suites still green; smoke `/health` + `/api` confirmed; **pre-approval — reverify on resumption (see Phase 0 note below)** |
+| 0 | Pre-execution prep + dep install | ✅ 2026-04-26 / reverified 2026-04-27 | a50ef8c | install-log entry written; 5/5 suites + 8/8 tests green; `/health` + `/api` smoke confirmed; **reverification 2026-04-27: 3 packages at pinned versions, tests green, smoke green** |
 | Pre-1 | Schema migration (kind column) | ⏳ | — | validate-db green; SELECT kind shows photo |
 | 1 | `server/schemas.js` (envelope + converters + deriveKind) | ⏳ | — | jest schemas.test.js green |
 | 2 | `server/services/aws.js` (smooth helper.js) | ⏳ | — | jest aws.test.js green |
@@ -93,6 +93,15 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 > - Re-read `MetaFiles/install-log.md` 2026-04-26 entry for context (the audit-finding rationale especially).
 >
 > The work is not wasted — but the approval gate was bypassed, so the verification gate must compensate. Plan tracker will flip Phase 0 from ⚠️ → ✅ once these reverification steps complete during resumption.
+>
+> **✅ Reverification completed 2026-04-27** (post-approval, plan greenlit by reviewing agent):
+>
+> - `npm ls multer ini uuid` → `multer@2.1.1`, `ini@6.0.0`, `uuid@9.0.1`; matches `package.json` pins (`^2.1.1`, `^6.0.0`, `^9.0.1`).
+> - `npm test` → 5 suites / 8 tests, all green.
+> - `/health` → `{"status":"running"}`; `/api` → placeholder envelope `{"message":"success","data":{"service":"photoapp-api","status":"placeholder"}}`.
+> - `MetaFiles/install-log.md` 2026-04-26 entry context confirmed (uuid <14 advisory unreachable in our usage; v14 is ESM-only and would break Jest CommonJS transform).
+>
+> Phase 0 ⚠️ → ✅ at this commit.
 
 ### Task 0.1: Verify existing tests still pass
 
@@ -102,7 +111,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 - [x] **Step 0.1.2:** Run `npm start` in background, then `curl -s http://localhost:8080/health` (expect `{"status":"running"}`), `curl -s http://localhost:8080/api` (expect placeholder envelope), kill the server. Confirms baseline still works post-doc-revisions. _2026-04-26 — `/health` returned `{"status":"running"}`; `/api` returned `{"message":"success","data":{"service":"photoapp-api","status":"placeholder"}}`._
 - [x] **Step 0.1.3:** Run `git status` — confirm working tree clean. _2026-04-26 — Clean (2 ahead of origin/main from plan commit + earlier work)._
 
-**Atomic doc update:** mark Task 0.1 ⚠️ in this plan tracker — pre-approval execution per EOR-5 reframing (see Phase 0 blockquote above). (No 03 boxes apply — pre-03.) _Done 2026-04-26; plan tracker rolled into Task 0.2 commit a50ef8c. Phase 0 awaits reverification on resumption per Master Tracker ⚠️ state._
+**Atomic doc update:** mark Task 0.1 ✅ in this plan tracker (was ⚠️ pre-approval per EOR-5; reverified 2026-04-27 — see Phase 0 blockquote above). (No 03 boxes apply — pre-03.) _Done 2026-04-26 (commit a50ef8c); reverification confirmed 2026-04-27._
 
 **Commit:** none (read-only verification).
 
