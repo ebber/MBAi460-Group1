@@ -69,7 +69,13 @@ function isActive(pathname: string, item: NavItem): boolean {
   return pathname.startsWith(`${prefix}/`);
 }
 
-export function LeftRail() {
+export type ConnectionState = 'loading' | 'connected' | 'disconnected';
+
+interface LeftRailProps {
+  connection?: ConnectionState;
+}
+
+export function LeftRail({ connection }: LeftRailProps = {}) {
   const location = useLocation();
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
 
@@ -135,6 +141,51 @@ export function LeftRail() {
           </ul>
         </div>
       ))}
+      {connection !== undefined && (
+        <div
+          data-testid="rail-status"
+          data-state={connection}
+          className={[
+            'mt-auto flex items-center gap-2 rounded-sm px-2 py-2',
+            collapsed ? 'justify-center' : '',
+            connection === 'connected'
+              ? 'text-success'
+              : connection === 'disconnected'
+                ? 'text-error'
+                : 'text-ink-3',
+          ].join(' ')}
+          title={
+            collapsed
+              ? connection === 'connected'
+                ? 'Connected'
+                : connection === 'disconnected'
+                  ? 'Disconnected'
+                  : 'Checking…'
+              : undefined
+          }
+        >
+          <span
+            aria-hidden="true"
+            className={[
+              'inline-block w-2 h-2 rounded-full',
+              connection === 'connected'
+                ? 'bg-success'
+                : connection === 'disconnected'
+                  ? 'bg-error'
+                  : 'bg-ink-3',
+            ].join(' ')}
+          />
+          {!collapsed && (
+            <span className="text-xs">
+              {connection === 'connected'
+                ? 'Connected'
+                : connection === 'disconnected'
+                  ? 'Disconnected'
+                  : 'Checking…'}
+            </span>
+          )}
+        </div>
+      )}
     </aside>
   );
 }

@@ -1,33 +1,59 @@
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { TopBar } from '@/components/TopBar';
+import { LeftRail } from '@/components/LeftRail';
+import { ToastProvider } from '@/components/ToastProvider';
+import { LoginScreen } from '@/components/LoginScreen';
+import { RegisterScreen } from '@/components/RegisterScreen';
+import { LibraryPage } from '@/pages/LibraryPage';
+import { UploadPage } from '@/pages/UploadPage';
+import { AssetDetailPage } from '@/pages/AssetDetailPage';
+import { ProfilePage } from '@/pages/ProfilePage';
+import { HelpPage } from '@/pages/HelpPage';
+import { NotFoundPage } from '@/pages/NotFoundPage';
+import { getPing } from '@/api/photoappApi';
 
-function PlaceholderPage({ name }: { name: string }) {
-  return (
-    <div className="p-8">
-      <h1 className="text-xl font-serif">{name}</h1>
-    </div>
-  );
-}
+export type ConnectionState = 'loading' | 'connected' | 'disconnected';
 
 function App() {
+  const [connection, setConnection] = useState<ConnectionState>('loading');
+
+  useEffect(() => {
+    let cancelled = false;
+    getPing()
+      .then(() => {
+        if (!cancelled) setConnection('connected');
+      })
+      .catch(() => {
+        if (!cancelled) setConnection('disconnected');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-paper text-ink">
-      <header className="px-6 py-4 border-b border-line">
-        <h1 className="text-lg font-serif">MBAi 460 — PhotoApp</h1>
-      </header>
-      <main>
-        <Routes>
-          <Route path="/" element={<Navigate to="/library" replace />} />
-          <Route path="/library" element={<PlaceholderPage name="Library" />} />
-          <Route path="/upload" element={<PlaceholderPage name="Upload" />} />
-          <Route path="/asset/:id" element={<PlaceholderPage name="Asset Detail" />} />
-          <Route path="/login" element={<PlaceholderPage name="Login" />} />
-          <Route path="/register" element={<PlaceholderPage name="Register" />} />
-          <Route path="/profile" element={<PlaceholderPage name="Profile" />} />
-          <Route path="/help" element={<PlaceholderPage name="Help" />} />
-          <Route path="*" element={<PlaceholderPage name="404 — Not Found" />} />
-        </Routes>
-      </main>
-    </div>
+    <ToastProvider>
+      <div className="min-h-screen bg-paper text-ink flex flex-col">
+        <TopBar />
+        <div className="flex flex-1 min-h-0">
+          <LeftRail connection={connection} />
+          <main className="flex-1 overflow-auto">
+            <Routes>
+              <Route path="/" element={<Navigate to="/library" replace />} />
+              <Route path="/library" element={<LibraryPage />} />
+              <Route path="/upload" element={<UploadPage />} />
+              <Route path="/asset/:id" element={<AssetDetailPage />} />
+              <Route path="/login" element={<LoginScreen />} />
+              <Route path="/register" element={<RegisterScreen />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/help" element={<HelpPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </main>
+        </div>
+      </div>
+    </ToastProvider>
   );
 }
 
