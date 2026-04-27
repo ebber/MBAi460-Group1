@@ -159,3 +159,19 @@ Used by future agents (and any human reviewer) to understand the dependency chai
 - **Files modified:**
   - `package.json` — added `test: vitest run` and `test:watch: vitest` scripts.
 - **Verification:** `npm test` from `Part03/frontend/` — 1 test file / 2 tests passed in 345ms. (Minor noise: "Both esbuild and oxc options were set" — Vitest 4 + @vitejs/plugin-react interaction; cosmetic.)
+
+---
+
+## 2026-04-27 — Phase 1.5 install: react-router-dom 6 (Part03/frontend)
+
+- **Source:** `01-ui-workstream-plan.md` Phase 1 Task 1.5 — react-router-dom + Q10 non-blocking routing scaffold.
+- **Working directory:** `MBAi460-Group1/projects/project01/Part03/frontend/`
+- **Command:** `npm install react-router-dom@^6`
+- **Exit code:** `0`
+- **Packages installed (direct deps):** `react-router-dom@^6.30.3`.
+- **Vulnerabilities:** unchanged (2 moderate from Phase 1.1; production audit still 0).
+- **Files modified/created:**
+  - `src/main.tsx` — wraps `<App />` with `<BrowserRouter>`.
+  - `src/App.tsx` — `<Routes>` with stub routes for the Q10 surface: `/` redirects to `/library`; `/library`, `/upload`, `/asset/:id`, `/login`, `/register`, `/profile`, `/help`, `*` (404) all render. NO auth guards. Default route is `/library`.
+  - `src/__tests__/App.test.tsx` — 5 routing tests (wordmark on every route, default redirect, /login public, /upload public, 404 fallback).
+- **Verification:** `npm test` — 2 files / 7 tests passed (2 Zustand + 5 routing). `npm run build` clean (`vite v5.4.21`; `dist/assets/index-CQa54pmN.js` 162.73 kB / 53.05 kB gzipped — bundle grew ~20 kB for react-router-dom).
