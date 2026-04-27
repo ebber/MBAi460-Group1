@@ -232,6 +232,24 @@ The team committed to **Express/Node** as the Part 03 backend (rather than the F
 
 ---
 
+## 2026-04-27 — Reviewer fix #1: S3 stream error handling in `GET /api/images/:assetid/file`
+
+Reviewer pass on the Part 03 backend flagged that the file route streams `s3Result.Body.pipe(res)` without attaching an `on('error', ...)` listener. If S3 emits an error mid-flight (network drop, S3 connection reset, malformed object), Node treats it as an unhandled `EventEmitter` error and crashes the process — bypassing the centralized error middleware entirely. The 03 approach doc's Risks section (line 1428) had already called out this exact failure mode and the mitigation: "*attach `s3Result.Body.on('error', next)` to forward stream errors into the error middleware.*" Subagent A's Phase 6 implementation didn't include the listener; reviewer caught it.
+
+**Fix:** in `server/routes/photoapp_routes.js`, attach `s3Result.Body.on('error', next);` BEFORE `s3Result.Body.pipe(res);` so the listener is in place when pipe begins consuming. The listener forwards stream errors to the centralized error middleware (which sanitizes to a 500 envelope per Phase 7).
+
+**Test:** new integration test in `server/tests/integration_routes_error.test.js`:
+
+- Mocks `photoapp.downloadImage` to return an `s3Result.Body` with a spy `on()` and a no-op `pipe()` that immediately ends the response.
+- Asserts the route called `Body.on('error', expect.any(Function))`.
+- Asserts the listener was attached BEFORE pipe was called (using `mock.invocationCallOrder`).
+
+**Why this test shape and not a full mid-flight error simulation:** I tried a real `Readable` stream that destroys-after-_read to trigger a real 'error' event through the middleware. It worked at the listener level but ran into Express response-stream mechanics (`pipe()` flushes the `image/jpeg` Content-Type before the error fires; `res.json()` later can't change Content-Type once headers flush, so supertest interprets the 500 envelope as binary). The simpler spy-based test directly verifies the contract under change — the listener is attached. Downstream behavior (listener fires → `next(err)` → error mw → 500 envelope) is exercised by the other integration tests in the same file via service-thrown errors. Together they cover the path.
+
+4/4 integration tests green; 12 suites / 73 tests overall green; 2 still skipped (live opt-in).
+
+---
+
 ## 2026-04-27 — Reviewer fix #2: `deleteAll()` resets `assets` AUTO_INCREMENT to 1001
 
 Reviewer pass on the Part 03 backend flagged that `deleteAll()` clears rows but doesn't reset MySQL's auto-increment counter. Effect: after a delete, the next upload picks up at the highest-ever assetid + 1, not at the table's seed value of 1001. Mismatch with `create-photoapp.sql`'s `ALTER TABLE assets AUTO_INCREMENT = 1001;` initial state.

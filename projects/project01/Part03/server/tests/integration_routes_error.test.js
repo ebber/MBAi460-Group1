@@ -11,6 +11,7 @@
 
 jest.mock('../services/photoapp');
 
+const { Readable } = require('stream');
 const request = require('supertest');
 const photoapp = require('../services/photoapp');
 const app = require('../app');
@@ -44,6 +45,36 @@ describe('integration: route → error middleware', () => {
 
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ message: 'error', error: 'no such assetid' });
+  });
+
+  test('GET /api/images/:assetid/file: route attaches error listener on S3 stream body (forwards via next)', async () => {
+    // Direct contract assertion: the route MUST call Body.on('error', next)
+    // before piping. Triggering an actual stream error mid-flight runs into
+    // pipe's Content-Type-already-set mechanics (response stream can't
+    // cleanly switch to JSON once headers flush). The behavior under test
+    // is the listener attachment; the downstream error-mw → 500 envelope
+    // path is exercised by the other integration tests in this file.
+    const fakeBody = {
+      on: jest.fn().mockReturnThis(),
+      // End the response immediately so supertest doesn't hang waiting
+      // for the stream to close.
+      pipe: jest.fn((dest) => { dest.end(); return dest; }),
+    };
+
+    photoapp.downloadImage.mockResolvedValue({
+      bucketkey: 'p_sarkar/uuid-anything.jpg',
+      localname: 'anything.jpg',
+      contentType: 'image/jpeg',
+      s3Result: { Body: fakeBody },
+    });
+
+    await request(app).get('/api/images/1001/file');
+
+    // The route attached an 'error' listener with a function (the route's `next`).
+    expect(fakeBody.on).toHaveBeenCalledWith('error', expect.any(Function));
+    // And piped after attaching — i.e., listener was registered before consume.
+    expect(fakeBody.on.mock.invocationCallOrder[0])
+      .toBeLessThan(fakeBody.pipe.mock.invocationCallOrder[0]);
   });
 
   test('GET /api/users: generic service error → 500 envelope (sanitized)', async () => {

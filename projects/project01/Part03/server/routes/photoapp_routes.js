@@ -77,6 +77,9 @@ router.get('/images/:assetid/file', async (req, res, next) => {
     }
     const { contentType, s3Result } = await photoapp.downloadImage(assetid);
     res.setHeader('Content-Type', contentType);
+    // Forward stream errors into the centralized error middleware. Attach
+    // before .pipe so the listener is in place when pipe starts consuming.
+    s3Result.Body.on('error', next);
     s3Result.Body.pipe(res);
   } catch (err) { next(err); }
 });
