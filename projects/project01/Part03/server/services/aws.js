@@ -78,7 +78,10 @@ function getBucket() {
     region: photoappConfig.s3.region_name,
     maxAttempts: 3,
     defaultsMode: 'standard',
-    credentials: fromIni({ profile: config.photoapp_s3_profile }),
+    credentials: fromIni({
+      profile: config.photoapp_s3_profile,
+      filepath: config.photoapp_config_filename,
+    }),
   });
 }
 
@@ -106,7 +109,10 @@ function getRekognition() {
     region: photoappConfig.s3.region_name,
     maxAttempts: 3,
     defaultsMode: 'standard',
-    credentials: fromIni({ profile: config.photoapp_s3_profile }),
+    credentials: fromIni({
+      profile: config.photoapp_s3_profile,
+      filepath: config.photoapp_config_filename,
+    }),
   });
 }
 

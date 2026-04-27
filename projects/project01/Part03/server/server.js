@@ -15,9 +15,8 @@ const port = config.web_service_port;
 
 app.listen(port, () => {
   console.log(`**Web service running, listening on port ${port}...`);
-  // Preserved from baseline: point AWS SDK at the photoapp-config.ini so
-  // the photoapp-credentials profile resolves. (The AWS service module
-  // — workstream 03 — will likely move credential resolution into a
-  // factory rather than via process.env.)
-  process.env.AWS_SHARED_CREDENTIALS_FILE = config.photoapp_config_filename;
+  // AWS credentials are loaded explicitly via `fromIni({ filepath, profile })`
+  // inside server/services/aws.js, so no env-var side-effect is needed.
+  // (The legacy AWS_SHARED_CREDENTIALS_FILE assignment was removed
+  // 2026-04-27 during Phase 8 — see refactor-log.)
 });

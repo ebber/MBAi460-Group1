@@ -74,7 +74,7 @@ Most commands run from `/Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/
 | 6 | `server/routes/photoapp_routes.js` | ✅ 2026-04-27 | (this commit) | 16 tests green (8 happy + 8 inline-validation 400s); routes file body replaced; mount line in app.js unchanged |
 | 7 | `server/middleware/error.js` | ✅ 2026-04-27 | (this commit) | 4 isolation tests green; app.js gains single-line append at end (after static + SPA fallback); 3 integration tests in `integration_routes_error.test.js` (Q.2.0) verify wiring end-to-end |
 | (6+7 PARALLEL — subagent dispatch) | | | | |
-| 8 | live integration tests (opt-in) | ⏳ | — | PHOTOAPP_RUN_LIVE_TESTS=1 → green |
+| 8 | live integration tests (opt-in) | ✅ 2026-04-27 | (this commit) | 2/2 live tests green against real AWS+RDS (`/api/ping` + `/api/users`); skipped by default. **Architecture fix bundled:** `fromIni` now passes `filepath` explicitly, removing the env-var hack from `server.js`. Both mocked (71 tests) and live (2 tests) work post-fix. |
 | 9 | E2E smoke + README route-specific commands (after UI ready) | ⏳ | — | full curl evidence captured; README documents route-specific run/test commands |
 
 State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked · ⚠️ Executed pre-approval (reverification required at resumption)
@@ -505,11 +505,11 @@ This produces three test surfaces with disjoint dependencies; both subagents pas
 **Files:**
 - Create: `server/tests/live_photoapp_integration.test.js`
 
-- [ ] **Step 8.1.1:** Implement per 03 — `RUN_LIVE = process.env.PHOTOAPP_RUN_LIVE_TESTS === '1'`; `maybeDescribe = RUN_LIVE ? describe : describe.skip`.
-- [ ] **Step 8.1.2:** Initial test set: `GET /api/ping` returns success envelope, `GET /api/users` returns at least the 3 seeded users. Defer upload/labels/search/download/delete (mutating) until baseline confirms read-side health.
-- [ ] **Step 8.1.3:** Run `npm test` → confirm live tests SKIPPED (default).
-- [ ] **Step 8.1.4:** Run `PHOTOAPP_RUN_LIVE_TESTS=1 npm test -- live_photoapp_integration.test.js`. Expected: GREEN against real RDS + S3. Capture output.
-- [ ] **Step 8.1.5:** Atomic doc update + commit: `Part03 03 Phase 8: opt-in live integration tests`.
+- [x] **Step 8.1.1:** Implement per 03 — `RUN_LIVE = process.env.PHOTOAPP_RUN_LIVE_TESTS === '1'`; `maybeDescribe = RUN_LIVE ? describe : describe.skip`. _2026-04-27 — done._
+- [x] **Step 8.1.2:** Initial test set: `GET /api/ping` returns success envelope, `GET /api/users` returns at least the 3 seeded users. Defer upload/labels/search/download/delete (mutating) until baseline confirms read-side health. _2026-04-27 — 2 read-side tests; mutating tests deferred per plan._
+- [x] **Step 8.1.3:** Run `npm test` → confirm live tests SKIPPED (default). _2026-04-27 — confirmed: 11 suites passed, 1 skipped (live_photoapp_integration); 71 passed, 2 skipped._
+- [x] **Step 8.1.4:** Run `PHOTOAPP_RUN_LIVE_TESTS=1 npm test -- live_photoapp_integration.test.js`. Expected: GREEN against real RDS + S3. Capture output. _2026-04-27 — first run failed with `CredentialsProviderError: Could not resolve credentials using profile: [s3readwrite]`; root cause was `fromIni` defaulting to `~/.aws/credentials` while the credentials live in `photoapp-config.ini`. **Architecture fix:** added `filepath: config.photoapp_config_filename` to both `fromIni` calls in `server/services/aws.js`; removed the now-redundant `AWS_SHARED_CREDENTIALS_FILE` env-var hack from `server.js`. Re-ran: 2/2 tests green against real AWS+RDS._
+- [x] **Step 8.1.5:** Atomic doc update + commit: `Part03 03 Phase 8: opt-in live integration tests`. _2026-04-27 — this commit._
 
 ---
 

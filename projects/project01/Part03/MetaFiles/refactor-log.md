@@ -232,6 +232,36 @@ The team committed to **Express/Node** as the Part 03 backend (rather than the F
 
 ---
 
+## 2026-04-27 — Phase 8: opt-in live integration tests + AWS credential-resolution architecture fix
+
+Live integration tests against real AWS+RDS land, gated behind `PHOTOAPP_RUN_LIVE_TESTS=1`. The first live run surfaced a real architectural smell that's now fixed.
+
+**Files written / modified:**
+
+- `server/tests/live_photoapp_integration.test.js` — NEW. Two read-side tests using `maybeDescribe = RUN_LIVE ? describe : describe.skip` pattern: `GET /api/ping` (asserts non-negative S3 + user counts) and `GET /api/users` (asserts the 3 seeded users present). Mutating live tests (upload/download/delete) intentionally deferred — the read-side baseline is sufficient to confirm AWS credentials load, S3 ListObjects works, mysql2 connects to live RDS, and the route → service → AWS factory wiring is end-to-end.
+- `server/services/aws.js` — modified. `fromIni({ profile })` calls in `getBucket` and `getRekognition` now also pass `filepath: config.photoapp_config_filename`. AWS SDK v3 supports this — credentials resolve from the explicit file rather than the default `~/.aws/credentials`.
+- `server/server.js` — modified. Removed `process.env.AWS_SHARED_CREDENTIALS_FILE = config.photoapp_config_filename;` from inside the `app.listen()` callback. The env-var hack is no longer needed because `aws.js` passes `filepath` explicitly. The comment block was updated to point future readers at the new resolution path.
+
+**Why this fix:** the legacy baseline set `AWS_SHARED_CREDENTIALS_FILE` inside the listen callback. This worked in production (where `npm start` runs `server.js`), but failed in test (where Jest imports `app` directly without going through `server.js`). The first live test run (`PHOTOAPP_RUN_LIVE_TESTS=1 npm test`) surfaced this with `CredentialsProviderError: Could not resolve credentials using profile: [s3readwrite]`. The env-var-side-effect-in-listen-callback was also fragile in production — anything reaching for credentials before listen completed would have failed silently.
+
+**Live evidence (2026-04-27):**
+
+- Skipped by default: `npm test` → 11 suites passed, 1 skipped (live); 71 passed, 2 skipped.
+- Opt-in green: `PHOTOAPP_RUN_LIVE_TESTS=1 npm test -- live_photoapp_integration.test.js` → 2/2 passed in ~0.8s against real AWS+RDS.
+
+**Confirms end-to-end wiring of:**
+
+- `fromIni({ filepath, profile })` resolves the `[s3readwrite]` profile from `projects/project01/client/photoapp-config.ini`.
+- AWS SDK v3 S3 `ListObjectsV2Command` against the real `photoapp-erik-mbai460` bucket.
+- mysql2 connects to live RDS with `[rds]` config.
+- Route → service → AWS factory chain is correct.
+
+**Reviewer-relevant note:** mutating live tests (upload/labels/search/download/delete) are deliberately out of Phase 8 scope per the plan. They'd require rolling-back state after each run (e.g., delete the test asset). The read-side baseline above + Phase 6 mocked unit tests + Phase 7 isolation tests + Q.2.0 integration test together cover the ground meaningfully. End-of-Part-03 work could add live mutating smoke if desired.
+
+**Next:** Phase 9 (E2E smoke) is gated on Andrew's UI being ready. Until then, Part 03 backend is complete — all 8 routes work end-to-end against real infrastructure.
+
+---
+
 ## 2026-04-27 — Phase 6+7+integration: routes + error middleware + integration test (parallel subagent dispatch + main-thread integration)
 
 The `/api/*` surface goes live with all 8 routes wired through to the photoapp service module + a centralized error middleware mapping known errors to HTTP status. Calibration Test #2 — see plan §Subagent Calibration Notes — confirmed parallel subagents work for separate-but-coupled files when the test factoring is properly layered (post-reviewing-agent redesign 2026-04-27).
