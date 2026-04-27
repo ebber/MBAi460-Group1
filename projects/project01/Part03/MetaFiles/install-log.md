@@ -136,3 +136,26 @@ Used by future agents (and any human reviewer) to understand the dependency chai
   - `postcss.config.js` — tailwindcss + autoprefixer.
   - `src/styles/globals.css` — `@tailwind base/components/utilities` + body resets via `@apply` + focus-visible ring per tokens.css.
 - **Verification:** `npm run build` — `vite v5.4.21`; 31 modules transformed; new `dist/assets/index-B5RnLL3r.css` 5.67 kB / 1.76 kB gzipped. Compiled CSS contains the actual hex values (`#F0EEE6` paper, `#1E1E1C` ink, `#CC785C` accent), Source Serif 4 font stack, accent-soft `#cc785c1a` for selection, focus-visible outline at 2px solid accent.
+
+---
+
+## 2026-04-27 — Phase 1.4 install: Zustand + Vitest + RTL + jsdom (Part03/frontend)
+
+- **Source:** `01-ui-workstream-plan.md` Phase 1 Task 1.4 — Zustand store + frontend test infrastructure.
+- **Working directory:** `MBAi460-Group1/projects/project01/Part03/frontend/`
+- **Commands:**
+  - `npm install zustand`
+  - `npm install -D vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom`
+- **Exit code:** `0` (both)
+- **Packages installed:**
+  - Direct dep: `zustand@^5.0.12`
+  - DevDeps: `vitest@^4.1.5`, `@testing-library/react@^16.3.2`, `@testing-library/jest-dom@^6.9.1`, `@testing-library/user-event@^14.6.1`, `jsdom@^29.1.0`
+- **Vulnerabilities:** unchanged (2 moderate from Phase 1.1; production audit still 0).
+- **Files created:**
+  - `vitest.config.ts` — globals + jsdom env + setupFiles + `@/` alias matching `tsconfig.app.json`.
+  - `src/test/setup.ts` — `import '@testing-library/jest-dom/vitest'`.
+  - `src/stores/ui.ts` — Zustand store: `sidebarCollapsed` + `mockAuth: { isMockAuthed, givenname?, familyname? }` + `toggleSidebar` + `setMockAuth`.
+  - `src/stores/__tests__/ui.test.ts` — 2 tests (toggleSidebar, setMockAuth).
+- **Files modified:**
+  - `package.json` — added `test: vitest run` and `test:watch: vitest` scripts.
+- **Verification:** `npm test` from `Part03/frontend/` — 1 test file / 2 tests passed in 345ms. (Minor noise: "Both esbuild and oxc options were set" — Vitest 4 + @vitejs/plugin-react interaction; cosmetic.)
