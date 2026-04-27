@@ -85,7 +85,23 @@ The Frontend MVP (Andrew, 2026-04-26, in `ClaudeDesignDrop/raw/MBAi-460/`) ships
 
 Design tokens live in `src/tokens.css` and are translated into a `tailwind.config.ts` theme (Q7). `src/data.jsx` exposes `window.MOCK` for demo runs; the production frontend imports test fixtures from `__tests__/fixtures/` rather than referencing the global.
 
-These are the **ground-truth visual contract**. The production implementation re-stacks the styling layer (Tailwind + shadcn) but should preserve the component boundaries and keyboard/accessibility behaviors.
+These are the **ground-truth visual contract**. The production implementation re-stacks the styling layer (Tailwind + custom primitives — shadcn descoped 2026-04-27 per R1) but should preserve the component boundaries and keyboard/accessibility behaviors.
+
+## Naming Conventions
+
+Three forms of "MBAi" appear across this project. They all refer to the same lab; choose by context:
+
+| Form | Where it appears | Why |
+|---|---|---|
+| **`MBAi 460`** (with space) | User-facing copy: TopBar wordmark, login screen subhead, `<title>` tag, anywhere a human reads it. Also Andrew's brand placeholder throughout `UI-Design-Requirements.md`. | Reads as a course name; matches the brand placeholder. |
+| **`MBAi-460`** (hyphenated) | Andrew's original drop-folder name (`ClaudeDesignDrop/raw/MBAi-460/`); occasional cross-references in his spec when a kebab-case identifier is wanted. | Filesystem-safe variant of the brand. Not used in our shipped MVP code. |
+| **`MBAi460-Group1`** | The GitHub repo name (`git@github-personal:ebber/MBAi460-Group1.git`); paths like `MBAi460-Group1/projects/project01/Part03/...` in commit messages and docs. | No spaces (URL-safe), no hyphens between MBAi and 460 (matches the repo identifier convention). |
+
+When linking files in docs, prefer **repo-relative paths from the `MBAi460-Group1` root** (e.g., `projects/project01/Part03/server/app.js`). Inside Part 03 docs, paths starting with `Part03/...` are also acceptable as a shortcut.
+
+When writing user-facing UI copy, always use **`MBAi 460`** (with space) — this is the brand placeholder that ships in the wordmark + page title.
+
+(Provenance: clarified 2026-04-27 during Outstanding Integrations sub-A Phase 6, in response to row 6 of `Andrew-MVP-Integration.md` flagging the naming drift.)
 
 ## Shared Architecture Rules
 
