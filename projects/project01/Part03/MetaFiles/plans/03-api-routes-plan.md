@@ -310,11 +310,11 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 ### Task 3.2: `listUsers()`
 
-- [ ] **Step 3.2.1:** Write failing test per 03 Task 3.2.
-- [ ] **Step 3.2.2:** Run test → RED.
-- [ ] **Step 3.2.3:** Implement per 03 — `SELECT userid, username, givenname, familyname FROM users ORDER BY userid ASC`; map through `userRowToObject`; `dbConn.end()` in finally.
-- [ ] **Step 3.2.4:** Run test → GREEN.
-- [ ] Atomic doc update + commit: `Part03 03 Phase 3.2: listUsers()`.
+- [x] **Step 3.2.1:** Write failing test per 03 Task 3.2. _2026-04-27 — written; added regex assertion on the SELECT statement._
+- [x] **Step 3.2.2:** Run test → RED. _2026-04-27 — RED confirmed (`listUsers is not a function`)._
+- [x] **Step 3.2.3:** Implement per 03 — `SELECT userid, username, givenname, familyname FROM users ORDER BY userid ASC`; map through `userRowToObject`; `dbConn.end()` in finally. _2026-04-27 — implemented._
+- [x] **Step 3.2.4:** Run test → GREEN. _2026-04-27 — 2/2 tests green._
+- [x] Atomic doc update + commit: `Part03 03 Phase 3.2: listUsers()`. _2026-04-27 — this commit._
 
 ### Task 3.3: `listImages(userid?)` (with kind, mixed-kind round-trip)
 

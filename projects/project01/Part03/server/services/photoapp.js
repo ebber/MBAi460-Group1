@@ -1,5 +1,6 @@
 const { ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const aws = require('./aws');
+const { userRowToObject } = require('../schemas');
 
 async function getPing() {
   const bucket = aws.getBucket();
@@ -19,4 +20,16 @@ async function getPing() {
   }
 }
 
-module.exports = { getPing };
+async function listUsers() {
+  const dbConn = await aws.getDbConn();
+  try {
+    const [rows] = await dbConn.execute(
+      'SELECT userid, username, givenname, familyname FROM users ORDER BY userid ASC'
+    );
+    return rows.map(userRowToObject);
+  } finally {
+    await dbConn.end();
+  }
+}
+
+module.exports = { getPing, listUsers };
