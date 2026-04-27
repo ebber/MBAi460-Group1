@@ -1,7 +1,25 @@
 const fs = require('fs');
+const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const { ListObjectsV2Command, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { ListObjectsV2Command, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { DetectLabelsCommand } = require('@aws-sdk/client-rekognition');
+
+const CONTENT_TYPE_BY_EXT = {
+  '.jpg':  'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png':  'image/png',
+  '.gif':  'image/gif',
+  '.webp': 'image/webp',
+  '.heic': 'image/heic',
+  '.heif': 'image/heif',
+  '.pdf':  'application/pdf',
+  '.txt':  'text/plain',
+};
+
+function contentTypeFromExt(name) {
+  const ext = path.extname(name).toLowerCase();
+  return CONTENT_TYPE_BY_EXT[ext] ?? 'application/octet-stream';
+}
 const aws = require('./aws');
 const upload = require('../middleware/upload');
 const {
@@ -143,4 +161,32 @@ async function uploadImage(userid, multerFile) {
   }
 }
 
-module.exports = { getPing, listUsers, listImages, getImageLabels, searchImages, uploadImage };
+async function downloadImage(assetid) {
+  const dbConn = await aws.getDbConn();
+  try {
+    const [rows] = await dbConn.execute(
+      'SELECT assetid, userid, localname, bucketkey FROM assets WHERE assetid = ?',
+      [assetid]
+    );
+    if (rows.length === 0) {
+      throw new Error('no such assetid');
+    }
+    const { localname, bucketkey } = rows[0];
+
+    const s3Result = await aws.getBucket().send(new GetObjectCommand({
+      Bucket: aws.getBucketName(),
+      Key: bucketkey,
+    }));
+
+    return {
+      bucketkey,
+      localname,
+      contentType: s3Result.ContentType ?? contentTypeFromExt(localname),
+      s3Result,
+    };
+  } finally {
+    await dbConn.end();
+  }
+}
+
+module.exports = { getPing, listUsers, listImages, getImageLabels, searchImages, uploadImage, downloadImage };

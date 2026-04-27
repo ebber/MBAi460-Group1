@@ -7,7 +7,7 @@ jest.mock('fs', () => ({
 
 const aws = require('../services/aws');
 const upload = require('../middleware/upload');
-const { getPing, listUsers, listImages, getImageLabels, searchImages, uploadImage } = require('../services/photoapp');
+const { getPing, listUsers, listImages, getImageLabels, searchImages, uploadImage, downloadImage } = require('../services/photoapp');
 
 describe('getPing()', () => {
   test('returns counts from S3 and MySQL', async () => {
@@ -257,6 +257,78 @@ describe('uploadImage()', () => {
       expect.anything()
     );
     expect(upload.cleanupTempFile).toHaveBeenCalledWith('/tmp/abc');
+  });
+});
+
+describe('downloadImage()', () => {
+  test('unknown assetid throws "no such assetid"', async () => {
+    const fakeDb = {
+      execute: jest.fn().mockResolvedValueOnce([[]]),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+
+    await expect(downloadImage(99999)).rejects.toThrow('no such assetid');
+    expect(fakeDb.end).toHaveBeenCalled();
+  });
+
+  test('known assetid returns streamable shape with S3 ContentType when present', async () => {
+    const fakeDb = {
+      execute: jest.fn().mockResolvedValueOnce([[
+        { assetid: 1001, userid: 80001, localname: '01degu.jpg', bucketkey: 'p_sarkar/uuid-01degu.jpg' },
+      ]]),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+    const fakeBody = { pipe: jest.fn() };
+    const s3Result = { Body: fakeBody, ContentType: 'image/jpeg' };
+    const s3Send = jest.fn().mockResolvedValue(s3Result);
+    aws.getBucket.mockReturnValue({ send: s3Send });
+    aws.getBucketName.mockReturnValue('test-bucket');
+
+    const result = await downloadImage(1001);
+
+    expect(result).toEqual({
+      bucketkey: 'p_sarkar/uuid-01degu.jpg',
+      localname: '01degu.jpg',
+      contentType: 'image/jpeg',
+      s3Result,
+    });
+    expect(fakeDb.end).toHaveBeenCalled();
+  });
+
+  test('content-type falls back to extension map when S3 has no ContentType', async () => {
+    const fakeDb = {
+      execute: jest.fn().mockResolvedValueOnce([[
+        { assetid: 1042, userid: 80001, localname: 'lecture.pdf', bucketkey: 'p_sarkar/uuid-lecture.pdf' },
+      ]]),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+    const s3Result = { Body: { pipe: jest.fn() } }; // no ContentType
+    aws.getBucket.mockReturnValue({ send: jest.fn().mockResolvedValue(s3Result) });
+    aws.getBucketName.mockReturnValue('test-bucket');
+
+    const result = await downloadImage(1042);
+
+    expect(result.contentType).toBe('application/pdf');
+    expect(result.localname).toBe('lecture.pdf');
+  });
+
+  test('content-type falls back to application/octet-stream for unknown extensions', async () => {
+    const fakeDb = {
+      execute: jest.fn().mockResolvedValueOnce([[
+        { assetid: 1099, userid: 80001, localname: 'data.bin', bucketkey: 'p_sarkar/uuid-data.bin' },
+      ]]),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+    aws.getBucket.mockReturnValue({ send: jest.fn().mockResolvedValue({ Body: { pipe: jest.fn() } }) });
+    aws.getBucketName.mockReturnValue('test-bucket');
+
+    const result = await downloadImage(1099);
+
+    expect(result.contentType).toBe('application/octet-stream');
   });
 });
 

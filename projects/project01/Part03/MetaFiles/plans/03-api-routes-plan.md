@@ -368,11 +368,11 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 ### Task 5.2: `downloadImage(assetid)` — streams S3 to response
 
-- [ ] **Step 5.2.1:** Write failing tests per 03 Task 5.2 (unknown assetid throws; known returns the streamable shape).
-- [ ] **Step 5.2.2:** Run → RED.
-- [ ] **Step 5.2.3:** Implement per 03 — DB lookup → `GetObjectCommand` → return `{ bucketkey, localname, contentType: s3Result.ContentType ?? contentTypeFromExt(localname), s3Result }`. Module-private `contentTypeFromExt` helper inside `services/photoapp.js` (full ext map per 03 Task 5.2 — includes `.pdf → application/pdf`).
-- [ ] **Step 5.2.4:** Run → GREEN.
-- [ ] Atomic doc update + commit: `Part03 03 Phase 5.2: downloadImage() with content-type fallback chain`.
+- [x] **Step 5.2.1:** Write failing tests per 03 Task 5.2 (unknown assetid throws; known returns the streamable shape). _2026-04-27 — wrote 4 tests: unknown throws, known returns streamable shape with S3 ContentType, fallback to ext map (PDF), fallback to octet-stream for unknown ext._
+- [x] **Step 5.2.2:** Run → RED. _2026-04-27 — 4 fail / 15 pass (downloadImage undefined)._
+- [x] **Step 5.2.3:** Implement per 03 — DB lookup → `GetObjectCommand` → return `{ bucketkey, localname, contentType: s3Result.ContentType ?? contentTypeFromExt(localname), s3Result }`. Module-private `contentTypeFromExt` helper inside `services/photoapp.js` (full ext map per 03 Task 5.2 — includes `.pdf → application/pdf`). _2026-04-27 — implemented; module-private `CONTENT_TYPE_BY_EXT` constant + `contentTypeFromExt()` function; not exported._
+- [x] **Step 5.2.4:** Run → GREEN. _2026-04-27 — 19/19 tests green._
+- [x] Atomic doc update + commit: `Part03 03 Phase 5.2: downloadImage() with content-type fallback chain`. _2026-04-27 — this commit._
 
 ### Task 5.3: `deleteAll()` — DB-first ordering
 
