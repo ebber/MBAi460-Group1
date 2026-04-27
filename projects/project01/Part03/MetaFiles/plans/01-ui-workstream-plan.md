@@ -92,7 +92,7 @@ Add a TODO entry in `Part03/MetaFiles/TODO.md` at MVP closeout: update `visualiz
 |---|---|---|---|---|
 | 0 | Pre-execution prep | ✅ 2026-04-27 | (read-only — no commit) | backend 73/75 + tree clean + tokens.css internalized |
 | 1 | Vite + TS strict + Tailwind + Zustand + Router (shadcn descoped) | ✅ 2026-04-27 | 6daf112 → 30675cd → 05eadf0 → (this commit) | `npm run build` clean; vitest 7/7 green (2 Zustand + 5 routing); Tailwind theme wired with Andrew's tokens; Q10 non-blocking routes scaffolded |
-| 2 | Icon shim (Lucide named-imports) | ⏳ | — | Icon.test.tsx green |
+| 2 | Icon shim (Lucide named-imports) | ✅ 2026-04-27 | 6f878dc | 18 named-import icons; 3/3 Icon tests green; vitest total 10/10 |
 | 3 | Shell components (Toast, Modal, TopBar, LeftRail, PageHeader) | ⏳ | — | 5 component test files green |
 | (3 PARALLEL — Calibration Test #3, 3 subagents) | | | | |
 | 4 | photoappApi.ts (typed fetch wrapper) | ⏳ | — | photoappApi.test.ts green |

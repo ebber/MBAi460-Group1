@@ -162,6 +162,18 @@ Used by future agents (and any human reviewer) to understand the dependency chai
 
 ---
 
+## 2026-04-27 — Phase 2.1 install: lucide-react (Part03/frontend)
+
+- **Source:** `01-ui-workstream-plan.md` Phase 2 Task 2.1 — Icon shim, named imports per N-4.
+- **Working directory:** `MBAi460-Group1/projects/project01/Part03/frontend/`
+- **Command:** `npm install lucide-react`
+- **Exit code:** `0`
+- **Packages installed:** `lucide-react`.
+- **Vulnerabilities:** unchanged (2 moderate from Phase 1.1; production audit still 0).
+- **Verification:** `npm test` — 3 files / 10 tests passed in 598ms (2 Zustand + 5 routing + 3 Icon).
+
+---
+
 ## 2026-04-27 — Phase 1.5 install: react-router-dom 6 (Part03/frontend)
 
 - **Source:** `01-ui-workstream-plan.md` Phase 1 Task 1.5 — react-router-dom + Q10 non-blocking routing scaffold.
