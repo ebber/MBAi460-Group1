@@ -59,6 +59,27 @@ Does not own:
 - Claude Design conversion.
 - Static asset build process except where needed for server integration.
 
+### UI Primitive Set
+
+The Frontend MVP (Andrew, 2026-04-26, in `ClaudeDesignDrop/raw/MBAi-460/`) ships a working primitive set the UI Workstream carries forward — re-stacking the styling layer per Q7 (TS strict + Tailwind + shadcn/ui + Zustand) while preserving the component boundaries and behaviors:
+
+| Primitive | Andrew's source | Carry-forward |
+|---|---|---|
+| Toast (`ToastProvider` / `useToast`) | `src/shell.jsx` | shadcn `Toaster` + `useToast` hook; same tone variants, auto-dismiss, bottom-right stack |
+| Modal | `src/shell.jsx` | shadcn `Dialog` (ESC-to-close, focus return, click-outside) |
+| TopBar | `src/shell.jsx` | TS rewrite; wordmark + ⌘K trigger + tweaks toggle + notifications + avatar (shadcn `DropdownMenu`) |
+| LeftRail | `src/shell.jsx` | TS rewrite; Workspace / You / Admin (conditional) / Help groups; route-active highlighting |
+| PageHeader | `src/shell.jsx` | TS rewrite; title + subtitle + breadcrumbs + actions slot |
+| CommandPalette | `src/screens.jsx` | shadcn `Command` (⌘K open, fuzzy search, full keyboard nav) |
+| TweaksPanel | `src/screens.jsx` | TS rewrite; theme / accent / density / mock-data seed (design-time helper) |
+| Library (grid + list) | `src/library.jsx` | TS rewrite; Tailwind grid; filter, sort, view toggle, batch select, empty state |
+| AssetCard / ListView | `src/library.jsx` | TS rewrite; photo + document handling with OCR-excerpt rendering |
+| LoginScreen / RegisterScreen | `src/auth.jsx` | TS rewrite as **non-blocking visual scaffolds** (Q10); shadcn `Input`; password-rules checklist |
+
+Design tokens live in `src/tokens.css` and are translated into a `tailwind.config.ts` theme (Q7). `src/data.jsx` exposes `window.MOCK` for demo runs; the production frontend imports test fixtures from `__tests__/fixtures/` rather than referencing the global.
+
+These are the **ground-truth visual contract**. The production implementation re-stacks the styling layer (Tailwind + shadcn) but should preserve the component boundaries and keyboard/accessibility behaviors.
+
 ## Shared Architecture Rules
 
 - Browser calls only HTTP endpoints under `/api/*` plus static website routes.
@@ -68,6 +89,7 @@ Does not own:
 - The Express server reads `photoapp-config.ini` server-side (via the `ini` package) for AWS profile + RDS connection details.
 - The server uses Node-native AWS SDK (`@aws-sdk/client-s3`, `@aws-sdk/client-rekognition`) for S3 + Rekognition and `mysql2` for RDS access. Part 2 `photoapp.py` is **not** imported at runtime — it is preserved as a behavioral reference only.
 - Multipart browser uploads are handled by Express middleware (multer). The initial implementation buffers uploads to a temp directory or in memory; future stream-through directly to S3 is tracked as a TODO.
+- The frontend uses the design-token system in `src/tokens.css` (cream paper background `#F0EEE6`, single coral accent `#CC785C`, light+dark modes, 4px-grid spacing scale, typography scale, motion tokens), translated into `tailwind.config.ts` per Q7. Component primitives come from shadcn/ui (Q7) styled with Tailwind classes that consume the theme.
 
 ## Directory Contract
 
@@ -228,6 +250,24 @@ Implementation note:
 
 - `mysql2` rows map directly to the documented field set; preserve original column casing in the SQL and shape via a converter helper.
 - `bucketkey` shape: `username/uuid-localname` (Part 2 convention).
+- Each asset row includes `kind: "photo" | "document"` (per Q8). Server-derived from the file extension at upload time (`.jpg|.jpeg|.png|.heic` → `"photo"`, `.pdf` → `"document"`); stored as a column on the `assets` table; not client-supplied. Workstream 03 adds the column + derivation logic. UI uses `kind` to render photo cards (with Rekognition labels) vs. document cards (with Textract OCR excerpts — Future-State).
+
+Example response with `kind`:
+
+```json
+{
+  "message": "success",
+  "data": [
+    {
+      "assetid": 1001,
+      "userid": 80001,
+      "localname": "01degu.jpg",
+      "bucketkey": "p_sarkar/uuid-01degu.jpg",
+      "kind": "photo"
+    }
+  ]
+}
+```
 
 UI behavior:
 
@@ -570,3 +610,5 @@ Copied baseline locations (Project 2 → Part 03, 2026-04-25):
 - `projects/project01/Part03/MetaFiles/Reference/project02-client-photoapp.py`
 
 Refactor decisions and cleanup notes belong in `projects/project01/Part03/MetaFiles/refactor-log.md`.
+
+On 2026-04-26 (later same day), Andrew Tapple's "Frontend MVP" commit (`1f3c067`) landed via merge commit `e76d4d9`. The Claude Design export + the 1609-line `UI-Design-Requirements.md` spec independently arrived at Express + React + AWS SDK v3 + MySQL2, validating the Q1–Q6 decisions. Components live at `ClaudeDesignDrop/raw/MBAi-460/src/` as the visual contract; the spec is preserved at `ClaudeDesignDrop/raw/MBAi-460/uploads/UI-Design-Requirements.md` as authoritative product/UI requirements. The Part-03-relevant subset is distilled into `01-ui-workstream.md`; broader vision is split into four focused Future-State approach docs (auth + account management, documents + Textract, chat, production hardening) — index at `Future-State-roadmap.md`. Q7 (frontend stack: TS strict + Tailwind + shadcn + Zustand + Vitest+RTL + Playwright; defer TanStack Query + axe-core CI gate), Q8 (asset `kind` server-derived from extension), Q9 (Textract deferred), and Q10 (Login/Register non-blocking) resolved 2026-04-26 — see `DesignDecisions.md`.

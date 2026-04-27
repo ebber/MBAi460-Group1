@@ -160,6 +160,42 @@ The existing `server/app.js` baseline mounts handlers without an `/api/*` prefix
 
 ---
 
+## Pre-Phase 1: Schema migration for `kind` column (per Q8)
+
+Per `DesignDecisions.md` Q8 (resolved 2026-04-26: asset `kind` is server-derived from filename extension), the `photoapp.assets` table needs a new column. Forward-only migration; existing rows default to `'photo'`.
+
+**Files:**
+
+- New: `projects/project01/migrations/2026-04-26-add-assets-kind.sql`
+- Modify: `projects/project01/create-photoapp.sql` (clean rebuilds include the column from the start)
+- Modify: `MBAi460-Group1/utils/_validate_db.py` (add a check for the `kind` column)
+
+**SQL:**
+
+```sql
+USE photoapp;
+
+ALTER TABLE assets
+  ADD COLUMN kind ENUM('photo','document') NOT NULL DEFAULT 'photo'
+  AFTER bucketkey;
+```
+
+**Steps:**
+
+- [ ] Write migration SQL.
+- [ ] Run via `utils/run-sql projects/project01/migrations/2026-04-26-add-assets-kind.sql`.
+- [ ] Update `utils/validate-db` to add a check that the `kind` column exists with the expected enum.
+- [ ] Update `projects/project01/create-photoapp.sql` so a clean rebuild includes `kind` from the start.
+
+**Note (Part 03 scope):** the enum value `'document'` is reserved for the Future-State Documents + Textract workstream. In Part 03 the multer file filter (Phase 4) rejects non-photo MIME types, so no `'document'` rows will exist yet — the migration is forward-compatible.
+
+**Check your work:**
+
+- Integration: `utils/validate-db` passes.
+- Smoke: `SELECT kind FROM assets LIMIT 5;` returns `'photo'` for all existing rows.
+
+---
+
 ## Phase 1: Schemas And Envelope Helpers
 
 ### Task 1.1: Define response envelope helpers
@@ -252,19 +288,21 @@ test('userRowToObject normalizes a mysql2 user row', () => {
   });
 });
 
-test('imageRowToObject normalizes a mysql2 asset row', () => {
+test('imageRowToObject normalizes a mysql2 asset row including kind (Q8)', () => {
   expect(
     imageRowToObject({
       assetid: 1001,
       userid: 80001,
       localname: '01degu.jpg',
       bucketkey: 'p_sarkar/uuid-01degu.jpg',
+      kind: 'photo',
     })
   ).toEqual({
     assetid: 1001,
     userid: 80001,
     localname: '01degu.jpg',
     bucketkey: 'p_sarkar/uuid-01degu.jpg',
+    kind: 'photo',
   });
 });
 
@@ -292,6 +330,60 @@ test('searchRowToObject normalizes a (assetid, label, confidence) row', () => {
 - Unit: converter tests pass.
 - Integration: service tests can now import these helpers.
 - Smoke: not applicable yet.
+
+### Task 1.3: Add `deriveKind(filename)` helper (per Q8)
+
+**Files:**
+
+- Modify: `server/schemas.js`
+- Modify: `server/tests/schemas.test.js`
+
+**Why:** the `kind` column is server-derived from the file extension at upload (Q8). Centralize the mapping in one place so both the upload service and any future migration tools agree.
+
+**Write failing tests first:**
+
+```js
+// failing test first
+const { deriveKind } = require('../schemas');
+
+test('deriveKind returns photo for image extensions', () => {
+  expect(deriveKind('a.jpg')).toBe('photo');
+  expect(deriveKind('b.JPEG')).toBe('photo');
+  expect(deriveKind('c.png')).toBe('photo');
+  expect(deriveKind('d.heic')).toBe('photo');
+});
+
+test('deriveKind returns document for pdf', () => {
+  expect(deriveKind('e.pdf')).toBe('document');
+});
+
+test('deriveKind defaults to photo for unknown extensions', () => {
+  // Part 03's multer file filter rejects non-image MIMEs, so unknown extensions
+  // shouldn't reach this helper at runtime; default to 'photo' to keep the
+  // column NOT NULL.
+  expect(deriveKind('weird.xyz')).toBe('photo');
+});
+```
+
+**Implementation:**
+
+```js
+const path = require('path');
+
+function deriveKind(filename) {
+  const ext = path.extname(filename).toLowerCase();
+  if (['.jpg', '.jpeg', '.png', '.heic'].includes(ext)) return 'photo';
+  if (ext === '.pdf') return 'document';
+  return 'photo';
+}
+
+module.exports = { deriveKind, /* ... */ };
+```
+
+**Check your work:**
+
+- Unit: 3 deriveKind tests pass.
+- Integration: imported by Phase 5's `uploadImage`.
 
 ---
 
@@ -592,12 +684,37 @@ const os = require('os');
 
 const TEMP_DIR = path.join(os.tmpdir(), 'photoapp-uploads');
 
+// Part 03 is photo-only (Q9); Future-State Documents workstream extends to PDFs.
+const ALLOWED_PHOTO_MIMES = new Set([
+  'image/jpeg', 'image/png', 'image/heic', 'image/heif',
+]);
+
 const upload = multer({
   dest: TEMP_DIR,
   limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_PHOTO_MIMES.has(file.mimetype)) return cb(null, true);
+    cb(new Error(`Unsupported file type: ${file.mimetype}. Part 03 accepts JPEG, PNG, HEIC.`));
+  },
 });
 
-module.exports = { upload, TEMP_DIR };
+module.exports = { upload, TEMP_DIR, ALLOWED_PHOTO_MIMES };
+```
+
+Add a test that the filter rejects non-photo MIMEs:
+
+```js
+test('upload middleware rejects non-photo MIMEs (Q9 — Part 03 photo-only)', async () => {
+  const app = express();
+  app.post('/test-upload', upload.single('file'), (req, res) => res.sendStatus(200));
+  app.use((err, req, res, next) => res.status(400).json({ error: err.message }));
+
+  const res = await request(app)
+    .post('/test-upload')
+    .attach('file', Buffer.from('fake'), { filename: 'doc.pdf', contentType: 'application/pdf' });
+  expect(res.status).toBe(400);
+  expect(res.body.error).toMatch(/Unsupported file type/);
+});
 ```
 
 **Write failing test first (supertest, with a stub route mounted only in this test):**
@@ -686,14 +803,15 @@ test('cleanupTempFile is a no-op when the file is missing', () => {
 
 1. Validate `userid` exists: `SELECT userid, username FROM users WHERE userid = ?`. If missing → throw `Error('no such userid')`.
 2. Build `bucketkey = <username>/<uuid>-<localname>` (per `00`; deviates from existing baseline which used `uuid + ext`). Username comes from the user lookup row; `localname` is `multerFile.originalname`.
-3. Read `multerFile.path` from disk into a Buffer (or stream — Buffer is fine for assignment scope).
-4. `PutObjectCommand` to S3 with `Bucket`, `Key=bucketkey`, `Body=buffer`, optionally `ContentType` from extension.
-5. `DetectLabelsCommand` against the just-uploaded S3 object (`Image: { S3Object: { Bucket, Name: bucketkey } }`, `MaxLabels: 100`, `MinConfidence: 80`).
-6. INSERT row into `assets(userid, localname, bucketkey)`; capture `result.insertId` as `assetid`.
-7. For each detected label: `INSERT IGNORE INTO labels(assetid, label, confidence) VALUES (?, ?, ROUND(?))`.
-8. Return `{ assetid }`.
-9. **Always** call `cleanupTempFile(multerFile.path)` in `finally`, regardless of success or failure.
-10. **Always** `await dbConn.end()` in `finally` for each opened connection.
+3. Compute `kind = deriveKind(multerFile.originalname)` (per Q8; helper from `schemas.js` Task 1.3).
+4. Read `multerFile.path` from disk into a Buffer (or stream — Buffer is fine for assignment scope).
+5. `PutObjectCommand` to S3 with `Bucket`, `Key=bucketkey`, `Body=buffer`, optionally `ContentType` from extension.
+6. `DetectLabelsCommand` against the just-uploaded S3 object (`Image: { S3Object: { Bucket, Name: bucketkey } }`, `MaxLabels: 100`, `MinConfidence: 80`).
+7. INSERT row into `assets(userid, localname, bucketkey, kind)`; capture `result.insertId` as `assetid`.
+8. For each detected label: `INSERT IGNORE INTO labels(assetid, label, confidence) VALUES (?, ?, ROUND(?))`.
+9. Return `{ assetid }`.
+10. **Always** call `cleanupTempFile(multerFile.path)` in `finally`, regardless of success or failure.
+11. **Always** `await dbConn.end()` in `finally` for each opened connection.
 
 **Write failing tests first:**
 

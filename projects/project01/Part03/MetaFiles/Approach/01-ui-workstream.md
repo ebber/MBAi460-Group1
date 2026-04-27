@@ -1,497 +1,606 @@
 # UI Workstream Approach
 
-> **For agentic workers:** This workstream should be implemented with test-first behavior where practical. Before adding UI behavior, write or update a test that describes the expected rendered state, event, or API call. If visual conversion is exploratory, isolate that exploration, then lock behavior with tests before integrating.
+> **For agentic workers:** This workstream now has a concrete visual contract — Andrew Tapple's Claude Design export at `ClaudeDesignDrop/raw/MBAi-460/`. Read it before implementing. The 1609-line `UI-Design-Requirements.md` is the product spec; the JSX components in `src/` are the working visual reference. This workstream's job is to migrate those components into a properly built React/Vite app under `Part03/frontend/` that is wired to the live `/api/*` endpoints.
+
+> **Dev mode (Q5):** Built-only. UI iteration on isolated components may use Vite dev server with mocked API responses, but full-stack testing always uses `npm run build` → `frontend/dist/` → Express static middleware on port 8080. No Vite-dev-server proxy.
+
+> **Stack (Q7, resolved 2026-04-26):** React + Vite + **TypeScript strict** + **Tailwind CSS** + **shadcn/ui** + **Zustand** + **Vitest + React Testing Library** + **Playwright**. Andrew's `tokens.css` translates into a Tailwind theme config; Andrew's `.jsx` components migrate to `.tsx` with explicit types and shadcn-primitive substitutions.
+
+> **Auth in v1 (Q10, resolved 2026-04-26):** **non-blocking visual scaffolds.** Login/Register exist for visual demo only; no auth guards on any route; default route is `/library`. Users demo the entire app without visiting `/login`. Real auth ships in `Future-State-auth-and-account-management-workstream.md`.
 
 ## Goal
 
-Convert the Claude Design output into a maintainable React/Vite frontend that renders the PhotoApp UI and communicates with the Express backend through `/api/*` calls.
+Convert Andrew's Claude Design export into a maintainable React/Vite frontend that renders the PhotoApp UI and communicates with the Express backend through `/api/*` calls. Preserve the visual fidelity and component boundaries Andrew specified; add the wiring + tests + production polish needed for Canvas submission.
 
-> **Dev mode (decided 2026-04-26, Q5):** Built-only. UI iteration on isolated components may use Vite dev server with mocked API responses, but full-stack testing always uses `npm run build` → `frontend/dist` → Express static middleware on port 8080. No Vite dev-server proxy.
+## Scope (Part 03 — assignment window)
 
-## Scope
+**In scope:**
 
-This workstream owns the browser-facing application only:
+- Bootstrap a React/Vite/TypeScript-strict app under `Part03/frontend/` with the active Q7 stack.
+- Translate Andrew's `tokens.css` (cream/coral/serif design system) into a `tailwind.config.ts` theme so utility classes resolve to the same tokens.
+- Initialize shadcn/ui (Radix-based primitives) and adopt them for Toast / Dialog / DropdownMenu / Command / Popover / Tabs.
+- Migrate Andrew's components from `ClaudeDesignDrop/raw/MBAi-460/src/*.jsx` → `Part03/frontend/src/components/*.tsx` (TS-strict types, Tailwind classes, shadcn primitives where applicable).
+- Wire components to a typed `photoappApi.ts` client that calls `/api/*` (per Q1).
+- Implement Library, Asset Detail (photo), Upload (photo path; no Textract per Q9), and Profile screens.
+- Add Login/Register screens **as non-blocking visual scaffolds** (Q10): default route `/library`; no auth guards.
+- Zustand store for global UI state (sidebar collapsed, theme selection, command-palette open, mock-auth flag).
+- Test stack: Vitest + React Testing Library for components; Playwright for E2E happy paths (mock-login → library → upload → asset-detail → search → delete).
+- Accessibility: meet the spec's WCAG 2.1 AA baseline for the in-scope screens via manual review (automated axe-core CI gate is deferred — see Q7).
+- Vite build → `frontend/dist/` is what Express serves.
 
-- Create a safe drop zone for Claude Design export files.
-- Bring the Claude Design output into the repository.
-- Convert static HTML/CSS/JS into React/Vite structure.
-- Build reusable UI components for the PhotoApp workflows.
-- Wire components to the frontend API client.
-- Add tests and smoke checks so the UI can be validated independently from the backend where possible.
+**Deferred to Future-State** (each preserved in its own focused approach doc — see `Future-State-roadmap.md`):
+
+- **Real auth + Settings + Admin** → `Future-State-auth-and-account-management-workstream.md` (depends on Project 03 `authsvc` Lambdas).
+- **Documents + Textract OCR** → `Future-State-documents-and-textract-workstream.md` (depends on new AWS Textract service + IAM + schema).
+- **Webhook chat** → `Future-State-chat-workstream.md` (depends on Project 03 chat infrastructure + SSE shim).
+- **Performance budgets, observability, security headers, multi-env deployment, feature flags, i18n** → `Future-State-production-hardening-workstream.md` (cross-cutting; lands incrementally).
 
 This workstream does **not** own:
 
-- Express server setup.
-- Backend route implementation.
-- AWS SDK / `mysql2` service-module behavior.
-- Docker server runtime.
-- AWS/RDS/S3/Rekognition orchestration.
-
-Those belong to the Server Foundation and API Routes workstreams. Part 2 `photoapp.py` is **not** imported at runtime by Part 03 — preserved as a behavioral reference only.
-
-## Dependencies
-
-This workstream can begin with mock data before the backend is complete.
-
-It depends on the coordination/API contract doc for endpoint names and response shapes. Until real endpoints exist, the UI should call a frontend API module that can be mocked in tests.
-
-Expected API contract:
-
-- `GET /api/ping`
-- `GET /api/users`
-- `GET /api/images`
-- `GET /api/images?userid={userid}`
-- `POST /api/images`
-- `GET /api/images/{assetid}/file`
-- `GET /api/images/{assetid}/labels`
-- `GET /api/search?label={label}`
-- `DELETE /api/images`
-
-## Target Files
-
-Create or modify:
-
-- `projects/project01/Part03/frontend/`
-- `projects/project01/Part03/frontend/src/main.jsx`
-- `projects/project01/Part03/frontend/src/App.jsx`
-- `projects/project01/Part03/frontend/src/api/photoappApi.js`
-- `projects/project01/Part03/frontend/src/components/UserSelector.jsx`
-- `projects/project01/Part03/frontend/src/components/UploadPanel.jsx`
-- `projects/project01/Part03/frontend/src/components/ImageGallery.jsx`
-- `projects/project01/Part03/frontend/src/components/LabelSearch.jsx`
-- `projects/project01/Part03/frontend/src/components/StatusPanel.jsx`
-- `projects/project01/Part03/frontend/src/styles/`
-- `projects/project01/Part03/frontend/tests/` or colocated component tests
-
-Create a design drop zone:
-
-- `projects/project01/Part03/ClaudeDesignDrop/`
-
-Optional staging folders:
-
-- `projects/project01/Part03/ClaudeDesignDrop/raw/`
-- `projects/project01/Part03/ClaudeDesignDrop/notes/`
-- `projects/project01/Part03/ClaudeDesignDrop/assets/`
+- Express server setup (workstream 02 — done).
+- `/api/*` route implementation (workstream 03).
+- AWS SDK / `mysql2` service-module behavior (workstream 03).
+- Textract integration (Future-State).
 
 ## Workstream Rules
 
+(Carried forward from the pre-Andrew-MVP version of this doc; still in force.)
+
 - Do not put AWS credentials, database config, or `photoapp-config.ini` in frontend code.
-- Do not call `photoapp.py` from frontend code.
-- Frontend talks only to `/api/*`.
-- Preserve visual intent from Claude Design, but prefer React component boundaries over copying static HTML verbatim.
-- If conversion becomes difficult, create a project TODO and preserve the raw design files rather than blocking the whole workstream.
-- Keep the public UI simple enough for the assignment demo: all API functions must be demonstrable.
+- Do not call Part 2 `photoapp.py` from frontend code.
+- Frontend talks only to `/api/*` (per Q1).
+- Preserve visual intent from Andrew's MVP — but prefer React component boundaries (and shadcn primitive substitutions per Q7) over copying static HTML/JSX verbatim.
+- If a migration becomes difficult mid-Phase, create a `Part03/MetaFiles/TODO.md` item and preserve the raw design files rather than blocking the whole workstream.
+- Keep the public UI simple enough for the assignment demo: all in-scope API functions must be demonstrable via the migrated UI.
+- Login/Register screens stay non-blocking (Q10) — never gate access to other routes.
+
+## Dependencies
+
+Read first:
+
+- `00-coordination-and-contracts.md` (API contract, UI primitive set)
+- `02-server-foundation.md` (Express skeleton; `/api` mount point)
+- `03-api-routes.md` (the routes the UI will consume)
+- `DesignDecisions.md` (Q1–Q6 + any new Q7+)
+- `ClaudeDesignDrop/raw/MBAi-460/uploads/UI-Design-Requirements.md` (Andrew's spec — read at minimum §1, §3 (product principles), §6 (system context), §9 (per-screen specs for in-scope screens), §11 (visual design system))
+- `ClaudeDesignDrop/raw/MBAi-460/src/tokens.css` (design tokens)
+- `ClaudeDesignDrop/raw/MBAi-460/src/*.jsx` (working components — read shell.jsx + library.jsx + auth.jsx for the in-scope screens)
+
+## Target Files
+
+```text
+projects/project01/Part03/
+  frontend/
+    package.json
+    vite.config.ts              # Vite + React plugin (TS)
+    tailwind.config.ts          # theme = translated Andrew's tokens.css
+    postcss.config.js           # tailwind + autoprefixer
+    tsconfig.json               # "strict": true
+    components.json             # shadcn/ui config
+    index.html
+    src/
+      main.tsx                  # React root; <Toaster/> wrap; <BrowserRouter>
+      App.tsx                   # Top-level: TopBar + LeftRail + <Routes>; default → /library
+      styles/
+        globals.css             # @tailwind base / components / utilities + token-aware resets
+      api/
+        photoappApi.ts          # typed fetch wrapper; envelope-aware
+        types.ts                # Asset, User, Label, ApiEnvelope<T>
+      components/
+        ui/                     # shadcn/ui primitives (toast, dialog, dropdown-menu, command, popover, tabs, button, input)
+        TopBar.tsx              # from shell.jsx → TS + Tailwind + shadcn DropdownMenu
+        LeftRail.tsx
+        PageHeader.tsx
+        CommandPalette.tsx      # built on shadcn Command primitive
+        Library.tsx
+        AssetCard.tsx, ListView.tsx
+        UploadScreen.tsx        # photo path only; Textract is Future-State (Q9)
+        ProfileScreen.tsx
+        LoginScreen.tsx, RegisterScreen.tsx  # visual scaffolds, non-blocking (Q10)
+        EmptyLibrary.tsx
+        Icon.tsx                # lucide-react wrapper
+      pages/
+        AssetDetail.tsx         # split from library context
+      stores/
+        ui.ts                   # Zustand: sidebar, theme, cmdK open, mockAuth flag
+      utils/
+        format.ts               # fmtBytes, fmtDate, fmtDateRel
+      __tests__/
+        photoappApi.test.ts
+        Library.test.tsx
+        AssetCard.test.tsx
+        UploadScreen.test.tsx
+        fixtures/               # ports of Andrew's data.jsx for component tests
+    e2e/                        # Playwright happy-path E2E
+      mock-login-to-delete.spec.ts
+    dist/                       # Vite build output; served by Express
+```
+
+## Design Decisions (workstream-local)
+
+- **Frontend stack (per Q7, 2026-04-26):** React + Vite + TypeScript strict + Tailwind CSS + shadcn/ui + Zustand + Vitest+RTL + Playwright. Andrew's `tokens.css` becomes `tailwind.config.ts` theme; Andrew's `.jsx` components migrate to `.tsx` with explicit types and shadcn-primitive substitutions.
+- **Auth in v1 (per Q10, 2026-04-26):** **non-blocking.** Login/Register exist as visual scaffolds; no auth guards; default route is `/library`. The Login form's "Sign in" button optionally toggles a `mockAuth` flag in the Zustand store for visual differentiation only (e.g., topbar avatar). Real `POST /api/auth` deferred to `Future-State-auth-and-account-management-workstream.md`.
+- **Mock data:** Andrew's `data.jsx` (`window.MOCK`) ports into `__tests__/fixtures/` as ES-module imports. Component tests import fixtures directly. Runtime always fetches from `/api/*` (no `window.MOCK` reference in production code).
+- **Routing:** React Router 6 (per Q7's stack alignment with spec §13.1). Routes in scope: `/`, `/login`, `/register`, `/library`, `/asset/:id`, `/upload`, `/profile`, `/help`, `/404`. Auth-gated routes (`/admin/*`, `/profile/settings`, `/chat`) are Future-State; not in Part 03.
+- **State management:** Zustand for global UI state (sidebar collapsed, theme, command-palette open, mock-auth). Local component state stays in `useState`. Server state hand-rolled via `useEffect + apiFetch` (TanStack Query is deferred per Q7).
+- **shadcn primitives swap-in:** Andrew's custom `Modal` → shadcn `Dialog`; `ToastProvider` → shadcn `Toaster`; `Dropdown` → shadcn `DropdownMenu`; `CommandPalette` → shadcn `Command`. Visual fidelity preserved via Tailwind classes that consume the translated theme.
+- **No PWA / no offline route in v1.** Spec mentions `/offline` — defer to Production Hardening.
 
 ---
 
-## Phase 1: Create Claude Design Drop Zone
+## Phase 1: App Bootstrap (TypeScript + Tailwind + shadcn + Zustand + React Router)
 
-### Task 1.1: Make directory for Claude Design output
-
-**Status:** DONE 2026-04-25 - drop zone created at `projects/project01/Part03/ClaudeDesignDrop/`.
+### Task 1.1: Create Vite + TypeScript app under `Part03/frontend/`
 
 **Files:**
 
-- Create: `projects/project01/Part03/ClaudeDesignDrop/README.md`
-- Create: `projects/project01/Part03/ClaudeDesignDrop/raw/`
-- Create: `projects/project01/Part03/ClaudeDesignDrop/assets/`
-- Create: `projects/project01/Part03/ClaudeDesignDrop/notes/`
+- Create: `frontend/package.json`
+- Create: `frontend/vite.config.ts`
+- Create: `frontend/tsconfig.json` (strict mode)
+- Create: `frontend/index.html`
+- Create: `frontend/src/main.tsx`
+- Create: `frontend/src/App.tsx` (placeholder shell)
 
 **Steps:**
 
-- [x] Create the drop-zone folders.
-- [x] Add a README explaining what collaborators should place there.
-- [x] State that raw Claude Design files are source material, not the final app structure.
-- [x] State that secrets/config must not be added.
+- [ ] From `Part03/frontend/`: `npm create vite@latest . -- --template react-ts` (uses TS template).
+- [ ] Open `tsconfig.json`, confirm `"strict": true`. Tighten further: `"noUncheckedIndexedAccess": true`, `"exactOptionalPropertyTypes": true`.
+- [ ] `npm install` (logged in `install-log.md`).
+- [ ] Add `react-router-dom` for routing: `npm install react-router-dom`.
+- [ ] Wire `BrowserRouter` in `main.tsx`; default route in `App.tsx` redirects to `/library`.
+- [ ] **Failing test first:** `frontend/src/__tests__/App.test.tsx` — renders, finds "MBAi 460" wordmark.
+- [ ] Implement minimal `App.tsx` with the wordmark; pass test.
+- [ ] `npm run build` → confirm `frontend/dist/index.html` exists.
 
-Suggested README content:
+**Check your work:**
 
-```markdown
-# Claude Design Drop Zone
+- Unit: App-shell test passes under Vitest.
+- Integration: `npm run build` produces `dist/index.html`.
+- Smoke: `cd .. && npm start` (Express) and `curl http://localhost:8080/` returns the built `dist/index.html`.
 
-Place exported Claude Design files here before React integration.
+### Task 1.2: Add Tailwind CSS + translate Andrew's tokens.css to theme
 
-Expected contents:
+**Files:**
 
-- `raw/` - original exported HTML/CSS/JS files
-- `assets/` - images, icons, fonts, or static visual assets
-- `notes/` - screenshots, export notes, design prompts, or integration observations
+- Create: `frontend/tailwind.config.ts`
+- Create: `frontend/postcss.config.js`
+- Create: `frontend/src/styles/globals.css`
+- Modify: `frontend/src/main.tsx` (`import './styles/globals.css'`)
 
-Rules:
+**Steps:**
 
-- Do not place AWS credentials, database config, or `photoapp-config.ini` here.
-- Preserve the original export as much as possible.
-- Integration work should happen in `../frontend/`, not directly in this raw drop zone.
+- [ ] Install: `npm install -D tailwindcss postcss autoprefixer` and run `npx tailwindcss init -p`.
+- [ ] In `tailwind.config.ts`, set `content: ['./index.html', './src/**/*.{ts,tsx}']`.
+- [ ] **Translate Andrew's `tokens.css` into the Tailwind theme.** Read `ClaudeDesignDrop/raw/MBAi-460/src/tokens.css`; mirror the token names into the theme's `extend` block:
+  - `colors.paper`, `colors.paper-2`, … → cream scale.
+  - `colors.ink`, `colors.ink-2`, … → text scale.
+  - `colors.accent`, `colors.accent-2`, `colors.accent-fg`, `colors.accent-soft`, `colors.accent-ring`.
+  - `colors.success`, `colors.warn`, `colors.error`, `colors.info`.
+  - `fontFamily.sans = ['Inter', …]`, `fontFamily.serif = ['Source Serif 4', …]`, `fontFamily.mono`.
+  - `fontSize.xs`/`sm`/`base`/`md`/`lg`/`xl`/`2xl`/`3xl` per Andrew's scale.
+  - `spacing` (4px grid: 1, 2, 3, 4, 5, 6, 8, 10, 12, 16).
+  - `borderRadius.xs/sm/md/lg/xl/full`.
+  - `boxShadow.1/2/3`.
+  - `transitionDuration.fast/base/slow` and `transitionTimingFunction.ease`.
+  - `keyframes` + `animation` for `fade` and `shim` (skeleton shimmer).
+- [ ] In `globals.css`, add `@tailwind base; @tailwind components; @tailwind utilities;`. Add the dark-mode selector strategy: `:root[data-theme="dark"] { … }` overrides remain valid (Tailwind's `dark:` variant uses the same token names from theme).
+- [ ] **Failing test:** assert a sample component renders with the expected computed background color (cream paper) when no theme override is active.
+- [ ] Implement; run tests → green.
+
+**Check your work:**
+
+- Unit: token-application test passes (e.g., `<div className="bg-paper">` resolves to `#F0EEE6`).
+- Integration: a sample button using `bg-accent text-accent-fg` renders coral with white text.
+
+### Task 1.3: Initialize shadcn/ui
+
+**Files:**
+
+- Create: `frontend/components.json` (shadcn config)
+- Create: stub primitives under `frontend/src/components/ui/`
+
+**Steps:**
+
+- [ ] Run `npx shadcn-ui@latest init` from `frontend/`. Choose: TypeScript, Tailwind, components dir `src/components/ui`, utils path `src/lib/utils.ts`, CSS variables yes (token-friendly).
+- [ ] Install initial primitives that map to Andrew's components: `npx shadcn-ui add button toast dialog dropdown-menu command popover tabs input`.
+- [ ] Verify each primitive renders with expected styling (Tailwind classes resolve to token values).
+
+**Check your work:**
+
+- Unit: `<Button>` from shadcn renders with `bg-primary` (mapped to `accent` token).
+- Integration: `<Toaster />` mounted in `main.tsx` displays a toast on demand.
+
+### Task 1.4: Add Zustand store
+
+**Files:**
+
+- Create: `frontend/src/stores/ui.ts`
+
+**Implementation sketch (TypeScript):**
+
+```ts
+import { create } from 'zustand';
+
+type Theme = 'light' | 'dark';
+
+interface UIState {
+  sidebarCollapsed: boolean;
+  theme: Theme;
+  cmdKOpen: boolean;
+  mockAuth: { isMockAuthed: boolean; givenname?: string; familyname?: string };
+  toggleSidebar: () => void;
+  setTheme: (t: Theme) => void;
+  setCmdKOpen: (o: boolean) => void;
+  setMockAuth: (a: UIState['mockAuth']) => void;
+}
+
+export const useUIStore = create<UIState>((set) => ({
+  sidebarCollapsed: false,
+  theme: 'light',
+  cmdKOpen: false,
+  mockAuth: { isMockAuthed: false },
+  toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+  setTheme: (t) => set({ theme: t }),
+  setCmdKOpen: (o) => set({ cmdKOpen: o }),
+  setMockAuth: (a) => set({ mockAuth: a }),
+}));
+```
+
+**Steps:**
+
+- [ ] Install: `npm install zustand`.
+- [ ] Implement `ui.ts` per sketch.
+- [ ] **Failing test:** call `useUIStore.getState().toggleSidebar()`; assert `sidebarCollapsed` flipped.
+- [ ] Run test → green.
+
+### Task 1.5: Add Playwright
+
+**Files:**
+
+- Create: `frontend/playwright.config.ts`
+- Create: `frontend/e2e/.gitignore` (ignore Playwright output)
+
+**Steps:**
+
+- [ ] `npm install -D @playwright/test`.
+- [ ] `npx playwright install chromium` (browser binary).
+- [ ] Add `npm run e2e` script invoking `playwright test`.
+- [ ] Stub e2e file `e2e/mock-login-to-delete.spec.ts` with one passing assertion (homepage renders).
+
+**Check your work:**
+
+- Smoke: `npm run e2e` runs the stub and passes.
+
+---
+
+## Phase 2: Migrate Design Tokens (already in Phase 1.2) + Add Icon shim
+
+### Task 2.1: Add Icon shim
+
+(Phase 1.2 already translated the design tokens to the Tailwind theme; this phase is just the icon shim.)
+
+Andrew's components use `<Icon name="..." size={N}/>` everywhere. Spec recommends Lucide.
+
+**Files:**
+
+- Create: `frontend/src/components/Icon.tsx`
+- Install: `npm install lucide-react` (logged in install-log)
+
+**Implementation:**
+
+```tsx
+import * as LucideIcons from 'lucide-react';
+
+const map: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  search: LucideIcons.Search,
+  upload: LucideIcons.Upload,
+  // ...complete the map for every name Andrew's components reference
+};
+
+export function Icon({ name, size = 16, className }: { name: string; size?: number; className?: string }) {
+  const C = map[name] ?? LucideIcons.Search;
+  return <C size={size} className={className} />;
+}
 ```
 
 **Check your work:**
 
-- Unit: not applicable.
-- Integration: DONE - folder exists with `raw/`, `assets/`, `notes/`, README, and export-notes template.
-- Smoke: READY - collaborator can understand where to drop files without asking for repo context.
+- Unit: `<Icon name="search"/>` renders without console errors.
+- Integration: rendering `TopBar` (after Phase 3 migration) shows real icons in the wordmark slot, search bar, etc.
 
 ---
 
-## Phase 2: Export Claude Design Output
+## Phase 3: Migrate Shell Components
 
-### Task 2.1: Receive and preserve raw design export
+### Task 3.1: ToastProvider + Modal
 
 **Files:**
 
-- Modify: `projects/project01/Part03/ClaudeDesignDrop/raw/*`
-- Modify: `projects/project01/Part03/ClaudeDesignDrop/assets/*`
-- Create if useful: `projects/project01/Part03/ClaudeDesignDrop/notes/export-notes.md`
+- Create: `frontend/src/components/ToastProvider.jsx` (port from `shell.jsx` lines 4–33)
+- Create: `frontend/src/components/Modal.jsx` (port from `shell.jsx` lines 35–68)
 
 **Steps:**
 
-- [ ] Ask collaborator to export or commit the Claude Design HTML/CSS/JS.
-- [ ] Preserve the raw files before editing.
-- [ ] Add notes describing the export source and any known dependencies.
-- [ ] Identify whether design output is plain static HTML/CSS/JS, React-ish JSX, Tailwind, CDN-based, or framework-specific.
+- [ ] Failing test: render with one toast, assert it appears.
+- [ ] Failing test: open Modal, press Escape, assert it closes.
+- [ ] Migrate code from Andrew's `shell.jsx`. Replace global `React.createContext` access with module imports.
+- [ ] Run tests → pass.
 
-Suggested `export-notes.md` content:
+### Task 3.2: TopBar + LeftRail + PageHeader
 
-```markdown
-# Claude Design Export Notes
+**Files:**
 
-## Source
+- Create: `frontend/src/components/TopBar.jsx` (port from `shell.jsx` lines 70–165)
+- Create: `frontend/src/components/LeftRail.jsx` (port from `shell.jsx` lines 167–245)
+- Create: `frontend/src/components/PageHeader.jsx` (port from `shell.jsx` lines 247–270)
 
-Exported from Claude Design by: <name>
-Date: <date>
+**Steps:**
 
-## File Type
+- [ ] Failing tests for each: render, assert key text, click handler called.
+- [ ] Port code; replace `Object.assign(window, ...)` global exposure with proper exports.
+- [ ] Migrate `fmtBytes` / `fmtDate` / `fmtDateRel` from `shell.jsx` lines 273–281 into `frontend/src/utils/format.js`.
+- [ ] Run tests → pass.
 
-- [ ] Plain HTML/CSS/JS
-- [ ] React/JSX
-- [ ] Tailwind classes
-- [ ] External CDN dependencies
-- [ ] Other
+---
 
-## Known Issues
+## Phase 4: Migrate `photoappApi.js`
 
-- List missing assets, broken paths, or design assumptions here.
+### Task 4.1: Typed fetch wrapper
 
-## Integration Notes
+**Files:**
 
-- Components likely needed:
-  - User selector
-  - Upload panel
-  - Image gallery
-  - Label/search panel
-  - Status/error panel
+- Create: `frontend/src/api/photoappApi.js`
+- Create: `frontend/src/api/__tests__/photoappApi.test.js`
+
+**Required functions** (per `00-coordination-and-contracts.md`):
+
+```js
+export async function getPing();              // GET /api/ping
+export async function getUsers();             // GET /api/users
+export async function getImages(userid);      // GET /api/images?userid=...
+export async function uploadImage(userid, file);  // POST /api/images (multipart)
+export function getImageFileUrl(assetid);     // returns string for <img src>
+export async function getImageLabels(assetid); // GET /api/images/:id/labels
+export async function searchImages(label);    // GET /api/search?label=...
+export async function deleteAllImages();      // DELETE /api/images
+```
+
+**Envelope handling:** every function unwraps `{message, data}` on success; on `{message: "error", error}` (or non-2xx) throws `Error(error)`.
+
+**Test-first examples:**
+
+```js
+test('getUsers calls /api/users and returns parsed data array', async () => {
+  global.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ message: 'success', data: [{ userid: 80001 }] }),
+  });
+  const result = await getUsers();
+  expect(fetch).toHaveBeenCalledWith('/api/users');
+  expect(result).toEqual([{ userid: 80001 }]);
+});
+
+test('uploadImage sends userid + file as FormData', async () => {
+  const file = new File(['x'], 'test.jpg', { type: 'image/jpeg' });
+  global.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ message: 'success', data: { assetid: 1001 } }),
+  });
+  await uploadImage(80001, file);
+  expect(fetch).toHaveBeenCalledWith('/api/images', expect.objectContaining({
+    method: 'POST',
+    body: expect.any(FormData),
+  }));
+});
+
+test('error envelope throws', async () => {
+  global.fetch = vi.fn().mockResolvedValue({
+    ok: false, status: 400,
+    json: async () => ({ message: 'error', error: 'no such userid' }),
+  });
+  await expect(uploadImage(99999, new File([], 'x.jpg'))).rejects.toThrow('no such userid');
+});
 ```
 
 **Check your work:**
 
-- Unit: not applicable.
-- Integration: open raw HTML locally if possible and confirm assets load.
-- Smoke: take one screenshot of the raw design rendering or note why it cannot render yet.
+- Unit: all test cases above pass.
+- Integration: deferred to live wire-up (Phase 7).
 
 ---
 
-## Phase 3: Bootstrap React/Vite Frontend
+## Phase 5: Migrate Library, AssetCard, ListView
 
-### Task 3.1: Create React/Vite app skeleton
+### Task 5.1: Migrate `Library.jsx`
 
 **Files:**
 
-- Create: `projects/project01/Part03/frontend/package.json`
-- Create: `projects/project01/Part03/frontend/index.html`
-- Create: `projects/project01/Part03/frontend/src/main.jsx`
-- Create: `projects/project01/Part03/frontend/src/App.jsx`
+- Create: `frontend/src/components/Library.jsx` (port from `library.jsx` lines 1–113, plus `SegmentedControl`, `Dropdown`, `Grid`, `EmptyLibrary` sub-components)
+- Create: `frontend/src/components/AssetCard.jsx` (port from `library.jsx` lines 182–258)
+- Create: `frontend/src/components/ListView.jsx` (port from `library.jsx` lines 260–299)
+
+**Test-first:**
+
+```jsx
+test('Library renders empty state when emptyState prop is true', () => {
+  render(<Library assets={[]} emptyState={true} onOpenUpload={vi.fn()}/>);
+  expect(screen.getByText(/No assets yet/i)).toBeInTheDocument();
+});
+
+test('Library filters assets by type', async () => {
+  const assets = [
+    { id: 1, name: 'a.jpg', kind: 'photo', /* ... */ },
+    { id: 2, name: 'b.pdf', kind: 'document', /* ... */ },
+  ];
+  render(<Library assets={assets} onOpenAsset={vi.fn()} onOpenUpload={vi.fn()} density="comfy"/>);
+  await userEvent.click(screen.getByRole('button', { name: /Photos/i }));
+  expect(screen.getByText('a.jpg')).toBeInTheDocument();
+  expect(screen.queryByText('b.pdf')).not.toBeInTheDocument();
+});
+```
+
+**Steps:**
+
+- [ ] Port code. Replace `window.LeftRail` / `Library` global exports with proper module exports.
+- [ ] Replace `localStorage.getItem("lib_view")` access with a small hook so it can be mocked in tests.
+- [ ] Replace `MOCK` references with props.
+
+---
+
+## Phase 6: Migrate Login + Register (non-blocking scaffolds, Q10) + Upload
+
+### Task 6.1: LoginScreen + RegisterScreen — non-blocking visual scaffolds
+
+**Files:**
+
+- Create: `frontend/src/components/LoginScreen.tsx` (port from `auth.jsx` lines 4–115)
+- Create: `frontend/src/components/RegisterScreen.tsx` (port from `auth.jsx` lines 117–181)
+
+**Per Q10 (resolved 2026-04-26):** Login + Register are **non-blocking visual scaffolds**. They do NOT gate access to other routes. Specifically:
+
+- App's default route is `/library` (NOT `/login`). Anyone hitting `/` is redirected to `/library` directly.
+- No `<RequireAuth>` wrapper, no auth-guard middleware, no protected-route HOC. Every route in the app is publicly accessible.
+- Login form's "Sign in" button does NOT call `POST /api/auth`. It optionally toggles `mockAuth.isMockAuthed = true` in the Zustand store for visual differentiation only (e.g., topbar avatar shows the entered name vs. anonymous initials).
+- Register form's "Create account" button does NOT call `POST /api/users`. Same treatment as Login — sets `mockAuth` for visual demo purposes only.
+- "Forgot?" modal stays as a placeholder pointing at staff contact (per spec §9.3).
+- Login/Register screens migrate visual fidelity from Andrew's `auth.jsx` (TS-strict, Tailwind classes via translated theme, shadcn `Input` for fields).
 
 **Test-first expectation:**
 
-Before adding meaningful components, add a simple render test that proves the app shell renders.
+```tsx
+// Login is reachable directly
+test('LoginScreen renders without an auth gate', () => {
+  render(<MemoryRouter initialEntries={['/login']}><App /></MemoryRouter>);
+  expect(screen.getByText(/Sign in/i)).toBeInTheDocument();
+});
 
-Suggested test:
+// Other routes are reachable WITHOUT logging in
+test('Library is accessible without mock auth', () => {
+  render(<MemoryRouter initialEntries={['/library']}><App /></MemoryRouter>);
+  expect(screen.getByText(/Library/i)).toBeInTheDocument();  // no redirect
+});
 
-```jsx
-import { render, screen } from '@testing-library/react';
-import App from '../src/App';
-
-test('renders PhotoApp application shell', () => {
-  render(<App />);
-  expect(screen.getByText(/PhotoApp/i)).toBeInTheDocument();
+// Default route redirects to /library
+test('default route renders Library, not Login', () => {
+  render(<MemoryRouter initialEntries={['/']}><App /></MemoryRouter>);
+  expect(screen.getByText(/Library/i)).toBeInTheDocument();
 });
 ```
 
 **Steps:**
 
-- [ ] Add frontend dependencies.
-- [ ] Add minimal app shell.
-- [ ] Write failing app-shell test.
-- [ ] Run test and verify failure.
-- [ ] Implement minimal shell.
-- [ ] Run test and verify pass.
-- [ ] Run `npm run build`.
+- [ ] Migrate `LoginScreen.tsx` from `auth.jsx`. Replace inline styles → Tailwind classes; replace HTML inputs → shadcn `<Input>`.
+- [ ] Wire submit handler: `useUIStore().setMockAuth({ isMockAuthed: true, givenname: u, familyname: '' })` and navigate to `/library`. **No fetch.**
+- [ ] Migrate `RegisterScreen.tsx` similarly.
+- [ ] Verify the failing tests above all pass.
+- [ ] Verify Express-served static (`npm run build && cd .. && npm start`) shows `/library` directly when visiting `http://localhost:8080/`.
 
-**Check your work:**
+**What lands in the Auth Future-State workstream (NOT here):** real `POST /api/auth` + `POST /api/users` calls; `<RequireAuth>` wrapper; default-route flip to `/login` for unauthenticated visitors; token storage + Bearer header injection; 401 → redirect-to-login flow. See `Future-State-auth-and-account-management-workstream.md`.
 
-- Unit: app shell test passes.
-- Integration: `npm run build` creates `frontend/dist`.
-- Smoke: open Vite dev server and confirm the placeholder app renders.
-
----
-
-## Phase 4: Create Frontend API Client
-
-### Task 4.1: Add frontend API wrapper
+### Task 6.2: UploadScreen (Rekognition path only — no Textract in v1)
 
 **Files:**
 
-- Create: `projects/project01/Part03/frontend/src/api/photoappApi.js`
-- Create: `projects/project01/Part03/frontend/src/api/photoappApi.test.js`
+- Create: `frontend/src/components/UploadScreen.tsx` (port from `screens.jsx` lines 6–119)
 
-**Purpose:**
+**v1 simplifications (per Q9 — Textract deferred):**
 
-Centralize all `fetch()` calls so React components do not hardcode endpoint behavior everywhere.
-
-Expected functions:
-
-- `getPing()`
-- `getUsers()`
-- `getImages(userid)`
-- `uploadImage(userid, file)`
-- `getImageFileUrl(assetid)`
-- `getImageLabels(assetid)`
-- `searchImages(label)`
-- `deleteImages()`
-
-**Test-first examples:**
-
-```js
-test('getUsers calls /api/users and returns parsed JSON', async () => {
-  global.fetch = vi.fn().mockResolvedValue({
-    ok: true,
-    json: async () => ({ message: 'success', data: [] }),
-  });
-
-  const result = await getUsers();
-
-  expect(fetch).toHaveBeenCalledWith('/api/users');
-  expect(result).toEqual({ message: 'success', data: [] });
-});
-```
-
-```js
-test('uploadImage sends userid and file as FormData', async () => {
-  global.fetch = vi.fn().mockResolvedValue({
-    ok: true,
-    json: async () => ({ message: 'success', assetid: 1001 }),
-  });
-
-  const file = new File(['fake'], 'test.jpg', { type: 'image/jpeg' });
-  await uploadImage(80001, file);
-
-  expect(fetch).toHaveBeenCalledWith(
-    '/api/images',
-    expect.objectContaining({
-      method: 'POST',
-      body: expect.any(FormData),
-    })
-  );
-});
-```
-
-**Check your work:**
-
-- Unit: API client tests pass with mocked `fetch`.
-- Integration: once backend exists, call `/api/ping` from the browser console through `photoappApi.getPing()`.
-- Smoke: frontend displays a friendly error if backend is unavailable.
+- Remove the `ocrMode` radio (Textract is Future-State).
+- The `classify` radio retains "auto" / "photo" / "document" but `document` shows "Coming soon (Textract)" disabled state with a tooltip linking to the Future-State Documents workstream.
+- Real upload calls `photoappApi.uploadImage(userid, file)`; UI optimistically appends to the queue + updates progress on response.
 
 ---
 
-## Phase 5: Convert Claude Design Into React Structure
+## Phase 7: Wire to Live Backend
 
-### Task 5.1: Map design sections to React components
+### Task 7.1: App startup + `/api/ping` health probe
+
+App loads → calls `getPing()` → renders connected/disconnected indicator (see `LeftRail` "Status" item).
+
+### Task 7.2: Library loads from `/api/images`
+
+Replace `MOCK.ASSETS` with a `useEffect` + `getImages()` call. Render skeleton while loading; render error state on failure.
+
+### Task 7.3: Upload calls `/api/images` (multipart)
+
+End-to-end: select user, select file, click Upload → multipart POST → success → refresh library.
+
+### Task 7.4: Asset detail (photo) — labels + file preview
+
+New route `/asset/:id`. Calls `getImageLabels(id)` for the labels list; uses `getImageFileUrl(id)` as the preview `<img src>`.
+
+### Task 7.5: Search by label
+
+`⌘K` opens the CommandPalette; typing calls `searchImages(label)` debounced at 150ms (per spec §9.8).
+
+### Task 7.6: Delete all images
+
+Confirmation modal with type-the-name; on confirm, calls `deleteAllImages()`.
+
+---
+
+## Phase 8: Acceptance + Demo Quickstart
+
+### Task 8.1: Frontend acceptance checklist
+
+Borrowed from Andrew's spec §9 acceptance criteria, scoped to in-scope screens. **Auth-related criteria adjusted for Q10 (non-blocking scaffolds): Login does not gate access; default route is `/library`.**
+
+- [ ] **L1.** Visiting `/` redirects to `/library` directly (no Login interception).
+- [ ] **L2.** `/login` and `/register` are reachable for visual demo; their submit buttons toggle the Zustand `mockAuth` flag (no fetch).
+- [ ] **L3.** All in-scope routes render without an auth gate (`/library`, `/asset/:id`, `/upload`, `/profile`, `/help`).
+- [ ] **LIB1.** Library first-paints with ≤50 assets in <2s on a wired connection.
+- [ ] **LIB2.** Grid view: 2 cols <480px, 3 cols 480–768, 4 cols 768–1024, 5 cols ≥1024.
+- [ ] **LIB3.** Cards show ≤3 labels with "+N" pill for overflow.
+- [ ] **U1.** Upload accepts a JPG, returns an assetid, refreshes the library.
+- [ ] **U2.** Upload error is surfaced via toast (not silent).
+- [ ] **A1.** Asset detail shows labels in confidence-DESC order.
+- [ ] **A3.** File preview loads via `/api/images/:id/file` (no base64).
+- [ ] **S1.** ⌘K opens command palette in <100ms.
+- [ ] **S3.** CommandPalette is keyboard-only operable.
+- [ ] **A11Y1.** Manual a11y review passes for the in-scope screens (focus-visible, keyboard-only nav, screen-reader landmarks). **Automated axe-core CI gate is deferred** per Q7 — lands with `Future-State-production-hardening-workstream.md`.
+- [ ] `npm test` (Vitest) green; `npm run build` clean; TypeScript strict compiles with zero errors.
+- [ ] `npm run e2e` (Playwright) happy-path passes.
+- [ ] `npm run build` output served by Express renders identically to `npm run dev`.
+
+### Task 8.2: Demo Quickstart guide for video teammate
 
 **Files:**
 
-- Create/modify components under `frontend/src/components/`
-- Modify: `frontend/src/App.jsx`
-- Modify: frontend styles under `frontend/src/styles/`
+- Create: `Part03/DEMO-QUICKSTART.md`
 
-Likely components:
+Contents (sketch — fill during execution):
 
-- `StatusPanel.jsx`
-- `UserSelector.jsx`
-- `UploadPanel.jsx`
-- `ImageGallery.jsx`
-- `ImageCard.jsx`
-- `LabelSearch.jsx`
-- `LabelsPanel.jsx`
-- `DangerZone.jsx`
-
-**Steps:**
-
-- [ ] Read raw Claude Design files.
-- [ ] Identify stable visual sections.
-- [ ] Move static markup into React components.
-- [ ] Keep visual class names/styles where reasonable.
-- [ ] Replace hardcoded demo data with props.
-- [ ] Preserve design assets under `frontend/src/assets/` or `frontend/public/` as appropriate.
-
-**If difficult:**
-
-Create a project TODO instead of blocking:
-
-```markdown
-- [ ] Refactor Claude Design static markup into smaller React components. Current fallback is a mostly-static React port with behavior wired at the page level.
-```
-
-**Test-first examples:**
-
-For `UserSelector`:
-
-```jsx
-test('renders users and calls onSelect when a user is chosen', async () => {
-  const users = [
-    { userid: 80001, username: 'p_sarkar', givenname: 'Pooja', familyname: 'Sarkar' },
-  ];
-  const onSelect = vi.fn();
-
-  render(<UserSelector users={users} selectedUserId="" onSelect={onSelect} />);
-
-  await userEvent.selectOptions(screen.getByLabelText(/user/i), '80001');
-
-  expect(onSelect).toHaveBeenCalledWith(80001);
-});
-```
-
-For `UploadPanel`:
-
-```jsx
-test('disables upload until user and file are selected', () => {
-  render(<UploadPanel selectedUserId="" onUpload={vi.fn()} />);
-  expect(screen.getByRole('button', { name: /upload/i })).toBeDisabled();
-});
-```
-
-**Check your work:**
-
-- Unit: each component has at least one behavior/render test.
-- Integration: `App.jsx` can render all major sections with mock data.
-- Smoke: design visually resembles Claude Design output in the browser.
+1. Prereqs: Docker up; `npm install` from `Part03/`; `npm install` from `Part03/frontend/`.
+2. Build frontend: `cd frontend && npm run build`.
+3. Start backend: `cd .. && npm start` (Express on 8080).
+4. Open browser at `http://localhost:8080/` — see Library.
+5. Demo path: upload `01degu.jpg` → see in gallery → click → see Rekognition labels → search "Animal" → delete-all → confirm empty state.
+6. Talking points (per spec): asset-first vocabulary, single coral accent, cream paper background, ⌘K command palette, keyboard-first navigation.
 
 ---
-
-## Phase 6: Wire UI Workflows
-
-### Task 6.1: App startup and health state
-
-**Behavior:**
-
-On page load, the app should:
-
-- Call `getPing()`.
-- Load users.
-- Load current images.
-- Show loading and error states clearly.
-
-**Files:**
-
-- Modify: `frontend/src/App.jsx`
-- Modify: `frontend/src/api/photoappApi.js`
-- Add/update tests.
-
-**Check your work:**
-
-- Unit: app shows loading, success, and error states with mocked API responses.
-- Integration: with backend running, page loads users/images from real API.
-- Smoke: reload browser and confirm app recovers cleanly.
-
-### Task 6.2: Upload workflow
-
-**Behavior:**
-
-User selects a user and image file, clicks upload, then sees the new image appear.
-
-**Check your work:**
-
-- Unit: upload button calls `uploadImage(userid, file)`.
-- Integration: against backend, upload returns an `assetid` and refreshes image list.
-- Smoke: upload one known class image and confirm it appears in gallery.
-
-### Task 6.3: Labels and search workflow
-
-**Behavior:**
-
-User can view labels for an image and search images by label text.
-
-**Check your work:**
-
-- Unit: label search calls `searchImages(label)`.
-- Unit: empty search input disables or avoids unnecessary search.
-- Integration: search known label after upload.
-- Smoke: upload image, inspect labels, search for a visible label.
-
-### Task 6.4: Download/preview workflow
-
-**Behavior:**
-
-User can download or preview an image through backend route.
-
-**Check your work:**
-
-- Unit: image card uses `/api/images/{assetid}/file` as preview/download source.
-- Integration: browser can display or download the returned file.
-- Smoke: upload image, refresh page, preview/download still works.
-
-### Task 6.5: Delete/reset workflow
-
-**Behavior:**
-
-User can delete all images through the UI after confirmation.
-
-**Check your work:**
-
-- Unit: confirmation flow prevents accidental delete.
-- Unit: confirmed delete calls `deleteImages()`.
-- Integration: backend clears images and UI refreshes to empty state.
-- Smoke: upload two images, delete all, confirm gallery is empty.
-
----
-
-## Phase 7: UI Acceptance Checklist
-
-Before handing off the UI workstream:
-
-- [ ] `npm test` passes.
-- [ ] `npm run build` passes.
-- [ ] App renders with backend unavailable and shows a useful error.
-- [ ] App renders with backend available and loads users/images.
-- [ ] Upload workflow works.
-- [ ] Label workflow works.
-- [ ] Search workflow works.
-- [ ] Download/preview workflow works.
-- [ ] Delete/reset workflow works.
-- [ ] No frontend file contains AWS keys, DB credentials, or `photoapp-config.ini` values.
-- [ ] Visual result is close enough to Claude Design to use in the project video.
-- [ ] Any skipped conversion details are captured as explicit TODOs.
 
 ## Suggested Commit Points
 
-- After creating Claude Design drop zone.
-- After frontend skeleton and first passing test.
-- After API client tests pass.
-- After static design is converted into React components.
-- After each major workflow: upload, labels/search, download, delete.
-- After final UI smoke test.
+- After Phase 1 (Vite app bootstrap + first test green)
+- After Phase 2 (tokens migrated + icon shim)
+- After Phase 3 (shell components migrated)
+- After Phase 4 (photoappApi.js with all envelope handling tests green)
+- After Phase 5 (library renders mock data)
+- After Phase 6 (auth scaffold + upload screen)
+- After each Phase 7 sub-task (live backend wiring is fragile; small commits help)
+- After Phase 8 (acceptance + demo quickstart)
 
-## Open Questions
+## Risks and Mitigations
 
-- Are Claude Design files plain HTML/CSS/JS, or generated from a framework?
-- Does the design include external CDN assets that should be vendored locally?
-- Should the UI prioritize gallery thumbnails, table/list layout, or both?
-- Should image previews use direct backend file routes or explicit download buttons only?
-- Do we need a "demo mode" with mock data for development before backend routes exist?
+- **Risk:** Andrew's components use global `window.MOCK` and global `React.createContext` — these break in a properly modular React/Vite app.
+  - **Mitigation:** every migrated component gets a small refactor — replace `window.MOCK` with props, replace global React access with module imports.
+- **Risk:** `uuid` was removed from deps (production polish 2026-04-26). The Asset upload flow needs uuid for filename generation per `00`'s `bucketkey` shape, but that's *server-side* — the frontend just sends file bytes; the server generates the bucketkey.
+  - **Mitigation:** confirm in Phase 7 wire-up that the server (not frontend) generates the uuid portion of `bucketkey`.
+- **Risk:** Spec's "Phase 2 base64 JSON" and "Phase 3 presigned URL" upload models — for Part 03 we use multipart (Q3-related decision) which is neither.
+  - **Mitigation:** multipart works fine in the spec's spirit (browser-friendly); note in `DesignDecisions.md` Q3 follow-up if needed.
+- **Risk:** Andrew's components are visually production-quality but use inline styles + global React + plain JSX. Migrating to TS+Tailwind+shadcn per Q7 is real upfront work.
+  - **Mitigation:** the migration cost is paid in Phase 1 (toolchain + theme translation) + per-component re-styling during Phases 3–6. Each component migration is independent (testable in isolation), so the cost is amortized across the workstream rather than landing as a single big-bang refactor. Andrew's components serve as the *visual contract* — fidelity is preserved; the stack underneath changes.
 
-## Footnote: UI Reference Provenance
+## Footnote: Frontend baseline provenance
 
-On 2026-04-25, the team copied Project 2 UI reference material into Part 3:
-
-- `projects/project01/Part03/MetaFiles/Reference/project02-streamlit-gui.py`
-- `projects/project01/Part03/MetaFiles/Reference/project02-client-photoapp.py`
-
-These files are references only. They do not change the UI workstream checklist. The useful workflow sections are Status, Users, Browse Images, Upload Image, Search by Label, and Admin; the final UI should still follow the React/Vite structure and `/api/*` browser contract described above.
+Andrew's Frontend MVP (commit `1f3c067`, merged via `e76d4d9`, 2026-04-26) is the **visual contract** for this workstream. The 1609-line `UI-Design-Requirements.md` is the **product spec**. This `01-ui-workstream.md` distills the Part-03-relevant subset into a TDD-disciplined checklist; the broader vision (Textract, auth, chat, hardening) is preserved across four focused Future-State workstream docs — index at `Future-State-roadmap.md`.
