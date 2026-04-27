@@ -1729,7 +1729,7 @@ git commit -m "Part03 01 Phase 8.1: acceptance checklist green (L1–L3, LIB1–
 
 - Create: `Part03/DEMO-QUICKSTART.md`
 
-- [ ] **Step 8.2.1:** Author `Part03/DEMO-QUICKSTART.md` with the following sections:
+- [x] **Step 8.2.1:** Author `Part03/DEMO-QUICKSTART.md` with the following sections:
 
 ```markdown
 # Part 03 Demo Quickstart
@@ -1781,7 +1781,7 @@ The default route redirects to `/library`.
 - **Upload fails for >50 MB file:** expected — multer's 50 MB limit; show the friendly toast + retry with a smaller file.
 ```
 
-- [ ] **Step 8.2.2:** Atomic doc update + commit.
+- [x] **Step 8.2.2:** Atomic doc update + commit.
 
 ```bash
 git add projects/project01/Part03/DEMO-QUICKSTART.md projects/project01/Part03/MetaFiles/plans/01-ui-workstream-plan.md
