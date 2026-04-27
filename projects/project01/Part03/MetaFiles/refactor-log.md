@@ -232,6 +232,36 @@ The team committed to **Express/Node** as the Part 03 backend (rather than the F
 
 ---
 
+## 2026-04-27 — Phase 1+2+4: schemas + aws factory + upload middleware (parallel subagent dispatch)
+
+The Part 03 service-module foundation lands in three concurrent files via parallel subagent dispatch (Calibration Test #1 — see plan §Subagent Calibration Notes).
+
+**Files created:**
+
+- `server/schemas.js` (~2 KB) — envelope helpers (`successResponse`, `errorResponse`); row-to-object converters (`userRowToObject`, `imageRowToObject` with `kind` per Q8, `labelRowToObject`, `searchRowToObject`); `deriveKind(filename)` mapping image extensions → `'photo'`, everything else → `'document'`.
+- `server/services/aws.js` (~3.5 KB) — module-private `readPhotoAppConfig()`; four factories: `getDbConn()` (async, explicit-await per 03 Task 2.2; `multipleStatements: false`), `getBucket()`, `getBucketName()`, `getRekognition()`.
+- `server/middleware/upload.js` (~1.3 KB) — multer with `dest=os.tmpdir()/photoapp-uploads`, 50 MB limit, **no MIME filter** (Q9 — Part 03 accepts all file types); `cleanupTempFile(absPath)` no-throws on missing file.
+
+**Test surfaces (all TDD red→green):**
+
+- `server/tests/schemas.test.js` — 10 tests.
+- `server/tests/aws.test.js` — 4 tests.
+- `server/tests/upload.test.js` — 5 tests.
+- Total: 8 suites / 27 tests green (was 5/8 from Server Foundation 02).
+
+**Side-finding (Subagent B): `jest.mock('fs')` + `@aws-sdk/token-providers` interaction.** The full auto-mock for fs broke at module-load time because `@aws-sdk/token-providers` destructures `fs.promises.writeFile`. Resolution: partial mock with `jest.requireActual('fs')` + override only `readFileSync`. Captured for future jest+fs mock patterns when AWS SDK v3 is in the require graph.
+
+**Calibration Test #1 outcome:**
+
+- Wall time: ~109s (parallel; longest subagent). Estimated sequential: ~234s (sum). Parallel saved ~125s (~53% reduction).
+- Token usage: ~81k across 3 subagents.
+- Scope discipline: all three stayed inside their 2-file remits; no docs touched.
+- Verdict: parallel works for independent files with disjoint test surfaces. Confirms hypothesis H1.
+
+**Next:** Phase 3 (PhotoApp service module read use cases) — main thread, sequential, same-file work.
+
+---
+
 ## 2026-04-27 — Pre-Phase 1: Schema migration for `kind` column (live RDS migrated)
 
 The `photoapp.assets` table gained a `kind ENUM('photo','document') NOT NULL DEFAULT 'photo'` column on live RDS, per `DesignDecisions.md` Q8. Forward-only ALTER; one-shot.

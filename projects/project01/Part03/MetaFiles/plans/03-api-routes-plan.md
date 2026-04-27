@@ -65,9 +65,9 @@ Most commands run from `/Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/
 |---|---|---|---|---|
 | 0 | Pre-execution prep + dep install | ✅ 2026-04-26 / reverified 2026-04-27 | a50ef8c | install-log entry written; 5/5 suites + 8/8 tests green; `/health` + `/api` smoke confirmed; **reverification 2026-04-27: 3 packages at pinned versions, tests green, smoke green** |
 | Pre-1 | Schema migration (kind column) | ✅ 2026-04-27 | (this commit) | migration ran clean on live RDS; validate-db kind check PASSES; SELECT kind GROUP BY returned 1 group (all 10 existing rows defaulted to `'photo'`) |
-| 1 | `server/schemas.js` (envelope + converters + deriveKind) | ⏳ | — | jest schemas.test.js green |
-| 2 | `server/services/aws.js` (smooth helper.js) | ⏳ | — | jest aws.test.js green |
-| 4 | `server/middleware/upload.js` + cleanupTempFile | ⏳ | — | jest upload.test.js green |
+| 1 | `server/schemas.js` (envelope + converters + deriveKind) | ✅ 2026-04-27 | (this commit) | 10 tests green; 7 exports per Q8 (envelope + 4 row converters + deriveKind) |
+| 2 | `server/services/aws.js` (smooth helper.js) | ✅ 2026-04-27 | (this commit) | 4 tests green; 4 factories + module-private readPhotoAppConfig; explicit-await on getDbConn |
+| 4 | `server/middleware/upload.js` + cleanupTempFile | ✅ 2026-04-27 | (this commit) | 5 tests green; multer with no MIME filter (Q9), 50 MB limit, cleanupTempFile defensive on missing |
 | (1+2+4 PARALLEL — subagent dispatch) | | | | |
 | 3 | `server/services/photoapp.js` read use cases | ⏳ | — | photoapp_service.test.js read tests green |
 | 5 | `server/services/photoapp.js` write use cases | ⏳ | — | photoapp_service.test.js write tests green |
@@ -223,7 +223,7 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 ### Task P.1: Dispatch 3 subagents in parallel
 
-- [ ] **Step P.1.1:** Single message with three Agent tool invocations (parallel runtime fan-out).
+- [x] **Step P.1.1:** Single message with three Agent tool invocations (parallel runtime fan-out). _2026-04-27 — three general-purpose subagents dispatched in parallel; agentIds a6d4163d (Phase 1), acd4ca60 (Phase 2), a5bf6451 (Phase 4)._
 
 **Subagent 1 brief — Phase 1: `server/schemas.js`** (full text written at dispatch time, summarized here):
 
@@ -273,15 +273,15 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 ### Task P.2: Verify all three subagents merged cleanly
 
-- [ ] **Step P.2.1:** Receive all 3 subagent reports.
-- [ ] **Step P.2.2:** From `Part03/`, run full `npm test`. Expected: 5 (existing) + 3 new suites; all green. Total test count climbs by ~10–15.
-- [ ] **Step P.2.3:** `git status` to confirm only the expected files changed.
+- [x] **Step P.2.1:** Receive all 3 subagent reports. _2026-04-27 — all three returned with structured reports + test-green confirmation._
+- [x] **Step P.2.2:** From `Part03/`, run full `npm test`. Expected: 5 (existing) + 3 new suites; all green. Total test count climbs by ~10–15. _2026-04-27 — 8 suites / 27 tests, all green. Delta: +3 suites, +19 tests (10 schemas + 4 aws + 5 upload)._
+- [x] **Step P.2.3:** `git status` to confirm only the expected files changed. _2026-04-27 — only the 6 expected files in working tree (3 source + 3 test); no stray edits._
 
 ### Task P.3: Atomic doc update + commit
 
-- [ ] **Step P.3.1:** Update Master Tracker: Phases 1, 2, 4 → ✅ with this commit hash + date.
-- [ ] **Step P.3.2:** Confirm 03 doc Phase 1, 2, 4 task checkboxes are `[x]` (subagents did this; verify).
-- [ ] **Step P.3.3:** Single commit: `Part03 03 Phase 1+2+4: schemas + aws factory + upload middleware (parallel subagent dispatch)`.
+- [x] **Step P.3.1:** Update Master Tracker: Phases 1, 2, 4 → ✅ with this commit hash + date. _2026-04-27 — done._
+- [x] **Step P.3.2:** Confirm 03 doc Phase 1, 2, 4 task checkboxes are `[x]` (subagents did this; verify). _2026-04-27 — N/A: 03 doesn't have task-level checkboxes for Phase 1/2/4 (only Pre-Phase 1 had them). Subagents were instructed to skip 03 box-flips per scope discipline; no checkboxes to verify._
+- [x] **Step P.3.3:** Single commit: `Part03 03 Phase 1+2+4: schemas + aws factory + upload middleware (parallel subagent dispatch)`. _2026-04-27 — this commit._
 
 **Subagent calibration log entry:** append to `claude-workspace/scratch/system-plane-notes.md` Subagents section: total wall time, sum of token usage across 3 subagents, any scope-discipline issues, coherence outcomes.
 
@@ -544,12 +544,13 @@ This produces three test surfaces with disjoint dependencies; both subagents pas
 
 Append to `claude-workspace/scratch/system-plane-notes.md` Subagents section after each calibration test:
 
-**Test #1 — Phase 1+2+4 parallel (3 independent files, disjoint test surfaces):**
-- Wall time vs. estimated sequential: ___ vs. ___
-- Total token usage across 3 subagents: ___
-- Scope discipline: any subagent touch files outside its remit?
-- Coherence: any naming/import drift between the three files?
-- Verdict: parallel won? broke even? lost?
+**Test #1 — Phase 1+2+4 parallel (3 independent files, disjoint test surfaces) — RESULT 2026-04-27:**
+- **Wall time:** ~109s (longest of 3 parallel; Subagent B was longest due to an fs-mock issue). Estimated sequential: ~234s (sum). **Parallel saved ~125s wall (~53% reduction).**
+- **Total token usage across 3 subagents:** ~81k (25k schemas + 33k aws + 23k upload). Main thread context preserved (only briefs + reports loaded into main).
+- **Scope discipline:** ✅ all three stayed strictly in their 2 files each; no docs touched; no commits.
+- **Coherence:** ✅ no naming/import drift. All three used CommonJS, matched existing codebase style, exported documented symbols.
+- **Side-finding (Subagent B):** `jest.mock('fs')` (full auto-mock) broke `@aws-sdk/token-providers` because it destructures `fs.promises.writeFile` at module load time. Fix: partial mock with `jest.requireActual('fs')` + override only `readFileSync`. Captured for future jest+fs+aws-sdk-v3 patterns.
+- **Verdict:** Parallel WON — 3 independent files with disjoint test surfaces is a clean parallelism opportunity. Confirms H1 (parallel wins for independent files).
 
 **Test #2 — Phase 6+7 parallel (2 separate-but-coupled files; tests decoupled via three-tier factoring):**
 - Wall time + tokens
