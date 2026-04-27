@@ -326,11 +326,11 @@ State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked ·
 
 ### Task 3.4: `getImageLabels(assetid)`
 
-- [ ] **Step 3.4.1:** Write failing tests per 03 Task 3.4 (unknown assetid throws; known with no labels returns []; known with labels returns mapped rows).
-- [ ] **Step 3.4.2:** Run → RED.
-- [ ] **Step 3.4.3:** Implement per 03: `SELECT assetid FROM assets WHERE assetid = ?` validates; `SELECT label, confidence FROM labels WHERE assetid = ? ORDER BY confidence DESC`; throws `'no such assetid'` on missing.
-- [ ] **Step 3.4.4:** Run → GREEN.
-- [ ] Atomic doc update + commit: `Part03 03 Phase 3.4: getImageLabels()`.
+- [x] **Step 3.4.1:** Write failing tests per 03 Task 3.4 (unknown assetid throws; known with no labels returns []; known with labels returns mapped rows). _2026-04-27 — wrote 3 tests using `mockResolvedValueOnce` to sequence the validation + labels SELECTs._
+- [x] **Step 3.4.2:** Run → RED. _2026-04-27 — 3 fail / 6 pass (getImageLabels undefined)._
+- [x] **Step 3.4.3:** Implement per 03: `SELECT assetid FROM assets WHERE assetid = ?` validates; `SELECT label, confidence FROM labels WHERE assetid = ? ORDER BY confidence DESC`; throws `'no such assetid'` on missing. _2026-04-27 — implemented; throw inside try block so `finally` still closes the connection._
+- [x] **Step 3.4.4:** Run → GREEN. _2026-04-27 — 9/9 tests green._
+- [x] Atomic doc update + commit: `Part03 03 Phase 3.4: getImageLabels()`. _2026-04-27 — this commit._
 
 ### Task 3.5: `searchImages(label)`
 

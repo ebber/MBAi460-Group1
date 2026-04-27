@@ -1,6 +1,6 @@
 const { ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const aws = require('./aws');
-const { userRowToObject, imageRowToObject } = require('../schemas');
+const { userRowToObject, imageRowToObject, labelRowToObject } = require('../schemas');
 
 async function getPing() {
   const bucket = aws.getBucket();
@@ -46,4 +46,24 @@ async function listImages(userid) {
   }
 }
 
-module.exports = { getPing, listUsers, listImages };
+async function getImageLabels(assetid) {
+  const dbConn = await aws.getDbConn();
+  try {
+    const [validation] = await dbConn.execute(
+      'SELECT assetid FROM assets WHERE assetid = ?',
+      [assetid]
+    );
+    if (validation.length === 0) {
+      throw new Error('no such assetid');
+    }
+    const [rows] = await dbConn.execute(
+      'SELECT label, confidence FROM labels WHERE assetid = ? ORDER BY confidence DESC',
+      [assetid]
+    );
+    return rows.map(labelRowToObject);
+  } finally {
+    await dbConn.end();
+  }
+}
+
+module.exports = { getPing, listUsers, listImages, getImageLabels };

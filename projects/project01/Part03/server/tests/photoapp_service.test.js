@@ -1,6 +1,6 @@
 jest.mock('../services/aws');
 const aws = require('../services/aws');
-const { getPing, listUsers, listImages } = require('../services/photoapp');
+const { getPing, listUsers, listImages, getImageLabels } = require('../services/photoapp');
 
 describe('getPing()', () => {
   test('returns counts from S3 and MySQL', async () => {
@@ -108,6 +108,57 @@ describe('listImages()', () => {
     aws.getDbConn.mockResolvedValue(fakeDb);
 
     await expect(listImages()).rejects.toThrow('boom');
+    expect(fakeDb.end).toHaveBeenCalled();
+  });
+});
+
+describe('getImageLabels()', () => {
+  test('unknown assetid throws "no such assetid"', async () => {
+    const fakeDb = {
+      execute: jest.fn().mockResolvedValueOnce([[]]),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+
+    await expect(getImageLabels(99999)).rejects.toThrow('no such assetid');
+    expect(fakeDb.end).toHaveBeenCalled();
+  });
+
+  test('known assetid with no labels returns []', async () => {
+    const fakeDb = {
+      execute: jest.fn()
+        .mockResolvedValueOnce([[{ assetid: 1001 }]])
+        .mockResolvedValueOnce([[]]),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+
+    const result = await getImageLabels(1001);
+
+    expect(result).toEqual([]);
+    expect(fakeDb.end).toHaveBeenCalled();
+  });
+
+  test('known assetid with labels returns mapped rows ordered by confidence DESC', async () => {
+    const fakeDb = {
+      execute: jest.fn()
+        .mockResolvedValueOnce([[{ assetid: 1001 }]])
+        .mockResolvedValueOnce([[
+          { label: 'Animal', confidence: 99 },
+          { label: 'Dog', confidence: 90 },
+        ]]),
+      end: jest.fn().mockResolvedValue(),
+    };
+    aws.getDbConn.mockResolvedValue(fakeDb);
+
+    const result = await getImageLabels(1001);
+
+    expect(result).toEqual([
+      { label: 'Animal', confidence: 99 },
+      { label: 'Dog', confidence: 90 },
+    ]);
+    const [labelsSql] = fakeDb.execute.mock.calls[1];
+    expect(labelsSql).toMatch(/SELECT label, confidence FROM labels WHERE assetid = \? ORDER BY confidence DESC/);
     expect(fakeDb.end).toHaveBeenCalled();
   });
 });
