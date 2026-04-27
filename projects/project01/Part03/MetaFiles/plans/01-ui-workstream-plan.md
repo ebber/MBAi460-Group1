@@ -99,7 +99,7 @@ Add a TODO entry in `Part03/MetaFiles/TODO.md` at MVP closeout: update `visualiz
 | 5+6 | Library set + Login/Register + Upload + AssetDetail | ✅ 2026-04-27 | (close-out hash unrecoverable post-compaction) | 17 vitest files / 74 tests green; build clean (15.43 kB CSS, 162.73 kB JS); Calibration Test #4 — 4 parallel subagents saved ~74% wall vs sequential |
 | (5+6 PARALLEL — Calibration Test #4, 4 subagents) | | | | |
 | 7 | Wire to live backend | ✅ 2026-04-27 | (close-out hash unrecoverable post-compaction) | Live demo verified at http://localhost:8080 (Erik confirmed in browser; uploaded 3 photos with Rekognition labels — s3_object_count rose 10→13). All 35 substeps reverified by file-evidence post-compaction; SPA-fallback hotfix landed mid-Phase-7. **🎯 MILESTONE: clickable UI shipped** |
-| 8 | Acceptance + DEMO-QUICKSTART | ⏳ | — | All Phase 8 acceptance items; DEMO-QUICKSTART.md written |
+| 8 | Acceptance + DEMO-QUICKSTART | ✅ 2026-04-27 (MVP closeout) | (close-out hash unrecoverable post-compaction) | DEMO-QUICKSTART.md authored (38a1aa5); Vitest 74/74 + npm run build clean (1770 modules / 214 kB JS / 16 kB CSS) + CLI smoke 5/5 green (1 finding queued: Express default HTML 404 for unmatched `/api/*` instead of JSON envelope — TODO'd); 15 browser-acceptance substeps (8.1.1–15) + 8.1.19 atomic commit delegated to collaborators per Erik routing 2026-04-27 — `Human-Feature-Test-Suite.md` is the cold-pickup walk script. **🎯 UI MVP DEV-COMPLETE; collaborator acceptance pending.** |
 
 State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked · ⚠️ Executed pre-approval (reverification required at resumption)
 
@@ -1800,7 +1800,7 @@ git commit -m "Part03 01 Phase 8.2: DEMO-QUICKSTART.md for video teammate"
 - [ ] **[Visualization] Update Target-State-project01-part03-photoapp-architecture-v1.md** — UI MVP shipped 2026-04-XX with Vite + React 18.3.x + TypeScript strict + Tailwind + custom Tailwind-styled primitives (shadcn descoped 2026-04-27) + Zustand. Update the architecture diagram + prose to reflect the actual implementation stack. (Erik handles outside the implementation session per 2026-04-27 routing.)
 ```
 
-- [ ] **Step 8.3.2:** Verify Master Tracker has all phases ✅:
+- [x] **Step 8.3.2:** Verify Master Tracker has all phases ✅:
 
 ```bash
 grep "✅\|⏳\|⚠️" projects/project01/Part03/MetaFiles/plans/01-ui-workstream-plan.md | head -20
@@ -1808,7 +1808,7 @@ grep "✅\|⏳\|⚠️" projects/project01/Part03/MetaFiles/plans/01-ui-workstre
 
 Expected: all phases ✅.
 
-- [ ] **Step 8.3.3:** Final commit.
+- [x] **Step 8.3.3:** Final commit.
 
 ```bash
 git add projects/project01/Part03/MetaFiles/TODO.md projects/project01/Part03/MetaFiles/plans/01-ui-workstream-plan.md
