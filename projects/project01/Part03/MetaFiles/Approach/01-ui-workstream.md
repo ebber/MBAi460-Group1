@@ -4,7 +4,7 @@
 
 > **Dev mode (Q5):** Built-only. UI iteration on isolated components may use Vite dev server with mocked API responses, but full-stack testing always uses `npm run build` → `frontend/dist/` → Express static middleware on port 8080. No Vite-dev-server proxy.
 
-> **Stack (Q7, resolved 2026-04-26):** React + Vite + **TypeScript strict** + **Tailwind CSS** + **shadcn/ui** + **Zustand** + **Vitest + React Testing Library** + **Playwright**. Andrew's `tokens.css` translates into a Tailwind theme config; Andrew's `.jsx` components migrate to `.tsx` with explicit types and shadcn-primitive substitutions.
+> **Stack (Q7, resolved 2026-04-26):** **React 18.3.x** (NOT React 19 — Andrew's MVP runs on React 18.3.1 from a CDN; concurrent-render semantics differ in 19) + Vite + **TypeScript strict** + **Tailwind CSS** + **selective shadcn/ui** + **Zustand** + **Vitest + React Testing Library** + **Playwright**. Andrew's `tokens.css` translates into a Tailwind theme config; Andrew's `.jsx` components migrate to `.tsx` with explicit types. Full replacement of every custom primitive with shadcn/Radix primitives is Future-State; Part 03 uses shadcn only where it accelerates required flows.
 
 > **Auth in v1 (Q10, resolved 2026-04-26):** **non-blocking visual scaffolds.** Login/Register exist for visual demo only; no auth guards on any route; default route is `/library`. Users demo the entire app without visiting `/login`. Real auth ships in `Future-State-auth-and-account-management-workstream.md`.
 
@@ -18,12 +18,12 @@ Convert Andrew's Claude Design export into a maintainable React/Vite frontend th
 
 - Bootstrap a React/Vite/TypeScript-strict app under `Part03/frontend/` with the active Q7 stack.
 - Translate Andrew's `tokens.css` (cream/coral/serif design system) into a `tailwind.config.ts` theme so utility classes resolve to the same tokens.
-- Initialize shadcn/ui (Radix-based primitives) and adopt them for Toast / Dialog / DropdownMenu / Command / Popover / Tabs.
-- Migrate Andrew's components from `ClaudeDesignDrop/raw/MBAi-460/src/*.jsx` → `Part03/frontend/src/components/*.tsx` (TS-strict types, Tailwind classes, shadcn primitives where applicable).
+- Initialize shadcn/ui selectively for required primitives only (initial target: Button, Input, Dialog, DropdownMenu, Toast/Toaster as needed for upload/delete/error flows).
+- Migrate Andrew's components from `ClaudeDesignDrop/raw/MBAi-460/src/*.jsx` → `Part03/frontend/src/components/*.tsx` (TS-strict types and Tailwind classes; use shadcn primitives only where they reduce immediate complexity).
 - Wire components to a typed `photoappApi.ts` client that calls `/api/*` (per Q1).
 - Implement Library (renders **both photos and documents**), Asset Detail (photo with Rekognition labels; document with basic file preview + "OCR coming soon" placeholder), Upload (accepts **any file**; server stores photos with Rekognition labels and documents with `kind='document'` and no labels per Q9), and Profile screens.
 - Add Login/Register screens **as non-blocking visual scaffolds** (Q10): default route `/library`; no auth guards.
-- Zustand store for global UI state (sidebar collapsed, theme selection, command-palette open, mock-auth flag).
+- Zustand store for global UI state needed by the MVP (sidebar collapsed, command-palette open if implemented, mock-auth flag). Theme/accent/density tweak controls are Future-State.
 - Test stack: Vitest + React Testing Library for components; Playwright for E2E happy paths (mock-login → library → upload → asset-detail → search → delete).
 - Accessibility: meet the spec's WCAG 2.1 AA baseline for the in-scope screens via manual review (automated axe-core CI gate is deferred — see Q7).
 - Vite build → `frontend/dist/` is what Express serves.
@@ -33,6 +33,9 @@ Convert Andrew's Claude Design export into a maintainable React/Vite frontend th
 - **Real auth + Settings + Admin** → `Future-State-auth-and-account-management-workstream.md` (depends on Project 03 `authsvc` Lambdas).
 - **Documents + Textract OCR** → `Future-State-documents-and-textract-workstream.md` (depends on new AWS Textract service + IAM + schema).
 - **Webhook chat** → `Future-State-chat-workstream.md` (depends on Project 03 chat infrastructure + SSE shim).
+- **CommandPalette keyboard launcher** → `Future-State-command-palette-workstream.md` (adds ⌘K search/navigation/actions after library/search/delete flows are stable).
+- **Full shadcn/ui primitive migration** → `Future-State-shadcn-primitive-migration-workstream.md` (replaces remaining custom primitives with standardized shadcn/Radix components after assignment-critical flows are green).
+- **TweaksPanel theme/accent/density controls** → `Future-State-tweaks-panel-workstream.md` (restores Andrew's design-time controls after the assignment MVP is stable).
 - **Performance budgets, observability, security headers, multi-env deployment, feature flags, i18n** → `Future-State-production-hardening-workstream.md` (cross-cutting; lands incrementally).
 
 This workstream does **not** own:
@@ -53,6 +56,8 @@ This workstream does **not** own:
 - If a migration becomes difficult mid-Phase, create a `Part03/MetaFiles/TODO.md` item and preserve the raw design files rather than blocking the whole workstream.
 - Keep the public UI simple enough for the assignment demo: all in-scope API functions must be demonstrable via the migrated UI.
 - Login/Register screens stay non-blocking (Q10) — never gate access to other routes.
+- **Install-log discipline:** all `npm install` invocations during this workstream are recorded in `Part03/MetaFiles/install-log.md` (consistent with workstreams 02 and 03). Each entry: date, cwd, command, exit code, packages added, vulnerability count, notable warnings.
+- **MVP TopBar shape:** wordmark + avatar only. ⌘K trigger button, tweaks toggle button, and notifications bell are **omitted** (NOT left as no-op visual stubs) — their respective Future-State workstreams will restore them. Avoiding no-op buttons in the demo prevents the "wait, why doesn't this work?" UX trap. See `00-coordination-and-contracts.md` UI Primitive Set for the full deferred list.
 
 ## Dependencies
 
@@ -91,7 +96,6 @@ projects/project01/Part03/
         TopBar.tsx              # from shell.jsx → TS + Tailwind + shadcn DropdownMenu
         LeftRail.tsx
         PageHeader.tsx
-        CommandPalette.tsx      # built on shadcn Command primitive
         Library.tsx
         AssetCard.tsx, ListView.tsx
         UploadScreen.tsx        # accepts any file; documents stored without OCR (Q9)
@@ -102,7 +106,7 @@ projects/project01/Part03/
       pages/
         AssetDetail.tsx         # split from library context
       stores/
-        ui.ts                   # Zustand: sidebar, theme, cmdK open, mockAuth flag
+        ui.ts                   # Zustand: sidebar, mockAuth flag
       utils/
         format.ts               # fmtBytes, fmtDate, fmtDateRel
       __tests__/
@@ -118,17 +122,17 @@ projects/project01/Part03/
 
 ## Design Decisions (workstream-local)
 
-- **Frontend stack (per Q7, 2026-04-26):** React + Vite + TypeScript strict + Tailwind CSS + shadcn/ui + Zustand + Vitest+RTL + Playwright. Andrew's `tokens.css` becomes `tailwind.config.ts` theme; Andrew's `.jsx` components migrate to `.tsx` with explicit types and shadcn-primitive substitutions.
+- **Frontend stack (per Q7, 2026-04-26):** React + Vite + TypeScript strict + Tailwind CSS + selective shadcn/ui + Zustand + Vitest+RTL + Playwright. Andrew's `tokens.css` becomes `tailwind.config.ts` theme; Andrew's `.jsx` components migrate to `.tsx` with explicit types. Full shadcn/Radix primitive replacement is deferred to `Future-State-shadcn-primitive-migration-workstream.md`.
 - **Auth in v1 (per Q10, 2026-04-26):** **non-blocking.** Login/Register exist as visual scaffolds; no auth guards; default route is `/library`. The Login form's "Sign in" button optionally toggles a `mockAuth` flag in the Zustand store for visual differentiation only (e.g., topbar avatar). Real `POST /api/auth` deferred to `Future-State-auth-and-account-management-workstream.md`.
 - **Mock data:** Andrew's `data.jsx` (`window.MOCK`) ports into `__tests__/fixtures/` as ES-module imports. Component tests import fixtures directly. Runtime always fetches from `/api/*` (no `window.MOCK` reference in production code).
 - **Routing:** React Router 6 (per Q7's stack alignment with spec §13.1). Routes in scope: `/`, `/login`, `/register`, `/library`, `/asset/:id`, `/upload`, `/profile`, `/help`, `/404`. Auth-gated routes (`/admin/*`, `/profile/settings`, `/chat`) are Future-State; not in Part 03.
-- **State management:** Zustand for global UI state (sidebar collapsed, theme, command-palette open, mock-auth). Local component state stays in `useState`. Server state hand-rolled via `useEffect + apiFetch` (TanStack Query is deferred per Q7).
-- **shadcn primitives swap-in:** Andrew's custom `Modal` → shadcn `Dialog`; `ToastProvider` → shadcn `Toaster`; `Dropdown` → shadcn `DropdownMenu`; `CommandPalette` → shadcn `Command`. Visual fidelity preserved via Tailwind classes that consume the translated theme.
+- **State management:** Zustand for global UI state needed by the MVP (sidebar collapsed, command-palette open if implemented, mock-auth). Local component state stays in `useState`. Theme/accent/density controls from Andrew's TweaksPanel are Future-State. Server state is hand-rolled via `useEffect + apiFetch` (TanStack Query is deferred per Q7).
+- **Selective shadcn primitives:** use shadcn where it directly supports assignment flows (initial target: form controls, delete confirmation dialog, dropdowns/toasts if needed). Do not block the MVP on replacing every Andrew custom primitive. CommandPalette and complete primitive replacement are future-state.
 - **No PWA / no offline route in v1.** Spec mentions `/offline` — defer to Production Hardening.
 
 ---
 
-## Phase 1: App Bootstrap (TypeScript + Tailwind + shadcn + Zustand + React Router)
+## Phase 1: App Bootstrap (TypeScript + Tailwind + selective shadcn + Zustand + React Router)
 
 ### Task 1.1: Create Vite + TypeScript app under `Part03/frontend/`
 
@@ -192,23 +196,24 @@ projects/project01/Part03/
 - Unit: token-application test passes (e.g., `<div className="bg-paper">` resolves to `#F0EEE6`).
 - Integration: a sample button using `bg-accent text-accent-fg` renders coral with white text.
 
-### Task 1.3: Initialize shadcn/ui
+### Task 1.3: Initialize selective shadcn/ui primitives
 
 **Files:**
 
 - Create: `frontend/components.json` (shadcn config)
-- Create: stub primitives under `frontend/src/components/ui/`
+- Create: initial primitives under `frontend/src/components/ui/`
 
 **Steps:**
 
 - [ ] Run `npx shadcn-ui@latest init` from `frontend/`. Choose: TypeScript, Tailwind, components dir `src/components/ui`, utils path `src/lib/utils.ts`, CSS variables yes (token-friendly).
-- [ ] Install initial primitives that map to Andrew's components: `npx shadcn-ui add button toast dialog dropdown-menu command popover tabs input`.
-- [ ] Verify each primitive renders with expected styling (Tailwind classes resolve to token values).
+- [ ] Install only the primitives needed for the assignment-window MVP. Start with `button`, `input`, and `dialog`; add `dropdown-menu` or `toast` only when a current screen actually needs them.
+- [ ] Do not install/migrate `command`, `popover`, `tabs`, or other polish primitives unless assignment-critical flows are already green.
+- [ ] Verify installed primitives render with expected styling (Tailwind classes resolve to token values).
 
 **Check your work:**
 
-- Unit: `<Button>` from shadcn renders with `bg-primary` (mapped to `accent` token).
-- Integration: `<Toaster />` mounted in `main.tsx` displays a toast on demand.
+- Unit: `<Button>` from shadcn renders with the configured theme classes.
+- Integration: delete confirmation or upload form can use the installed primitives without breaking the build.
 
 ### Task 1.4: Add Zustand store
 
@@ -225,23 +230,15 @@ type Theme = 'light' | 'dark';
 
 interface UIState {
   sidebarCollapsed: boolean;
-  theme: Theme;
-  cmdKOpen: boolean;
   mockAuth: { isMockAuthed: boolean; givenname?: string; familyname?: string };
   toggleSidebar: () => void;
-  setTheme: (t: Theme) => void;
-  setCmdKOpen: (o: boolean) => void;
   setMockAuth: (a: UIState['mockAuth']) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
   sidebarCollapsed: false,
-  theme: 'light',
-  cmdKOpen: false,
   mockAuth: { isMockAuthed: false },
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
-  setTheme: (t) => set({ theme: t }),
-  setCmdKOpen: (o) => set({ cmdKOpen: o }),
   setMockAuth: (a) => set({ mockAuth: a }),
 }));
 ```
@@ -286,19 +283,20 @@ Andrew's components use `<Icon name="..." size={N}/>` everywhere. Spec recommend
 - Create: `frontend/src/components/Icon.tsx`
 - Install: `npm install lucide-react` (logged in install-log)
 
-**Implementation:**
+**Implementation (named imports only — `import * as LucideIcons` defeats Vite's tree-shaking; importing only the icons in the map keeps the bundle ~50–200 KB lighter):**
 
 ```tsx
-import * as LucideIcons from 'lucide-react';
+import { Search, Upload, FileText /* add named icons here as Andrew's components need them */ } from 'lucide-react';
 
 const map: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
-  search: LucideIcons.Search,
-  upload: LucideIcons.Upload,
-  // ...complete the map for every name Andrew's components reference
+  search: Search,
+  upload: Upload,
+  document: FileText,
+  // ...one named import per icon Andrew's components reference
 };
 
 export function Icon({ name, size = 16, className }: { name: string; size?: number; className?: string }) {
-  const C = map[name] ?? LucideIcons.Search;
+  const C = map[name] ?? Search; // sensible fallback
   return <C size={size} className={className} />;
 }
 ```
@@ -323,21 +321,21 @@ export function Icon({ name, size = 16, className }: { name: string; size?: numb
 
 - [ ] Failing test: render with one toast, assert it appears.
 - [ ] Failing test: open Modal, press Escape, assert it closes.
-- [ ] Migrate code from Andrew's `shell.jsx`. Replace global `React.createContext` access with module imports.
+- [ ] Migrate code from Andrew's `shell.jsx`. Replace global `React.createContext` access with module imports. Use custom/Tailwind components unless shadcn reduces immediate MVP complexity.
 - [ ] Run tests → pass.
 
 ### Task 3.2: TopBar + LeftRail + PageHeader
 
 **Files:**
 
-- Create: `frontend/src/components/TopBar.tsx` (port from `shell.jsx` lines 70–165)
+- Create: `frontend/src/components/TopBar.tsx` (port from `shell.jsx` lines 70–165, **MVP-trimmed**: omit the ⌘K trigger button, tweaks toggle button, and notifications bell — those primitives are deferred to their respective Future-State workstreams. MVP shape: wordmark + avatar only.)
 - Create: `frontend/src/components/LeftRail.tsx` (port from `shell.jsx` lines 167–245)
 - Create: `frontend/src/components/PageHeader.tsx` (port from `shell.jsx` lines 247–270)
 
 **Steps:**
 
 - [ ] Failing tests for each: render, assert key text, click handler called.
-- [ ] Port code; replace `Object.assign(window, ...)` global exposure with proper exports.
+- [ ] Port code; replace `Object.assign(window, ...)` global exposure with proper exports. Keep custom primitives if they are faster to migrate safely.
 - [ ] Migrate `fmtBytes` / `fmtDate` / `fmtDateRel` from `shell.jsx` lines 273–281 into `frontend/src/utils/format.ts`.
 - [ ] Run tests → pass.
 
@@ -513,16 +511,20 @@ test('default route renders Library, not Login', () => {
 - Queue display shows status per item: photos get "analyzing… → done with N labels"; documents get "uploaded · stored as document · OCR coming soon".
 - Files larger than 50 MB → server returns 400; UI shows a per-item error toast; user can remove + retry with a smaller file.
 
-### Task 6.3: AssetDetail (Document) basic preview (per Q9)
+### Task 6.3: AssetDetail page component scaffold with per-kind branch (component-only; live wire-up is Task 7.4)
+
+**Scope of this task:** create the AssetDetail page component with the per-kind branching logic, using mock asset data for component tests. Live backend wire-up (real `getImages` for the asset payload, `getImageFileUrl` for the preview src, `getImageLabels` for the labels list) happens in Task 7.4 — not here.
 
 **Files:**
 
-- Create: `frontend/src/pages/AssetDetail.tsx` (already in scope for photos; extend with a per-kind branch)
+- Create: `frontend/src/pages/AssetDetail.tsx`
 
-**Per-kind rendering:**
+**Per-kind rendering branches (driven by `asset.kind`):**
 
-- **`asset.kind === 'photo'`:** the existing photo view — image preview via `getImageFileUrl(assetid)`; labels list from `getImageLabels(assetid)` sorted by confidence DESC.
-- **`asset.kind === 'document'`:** basic preview — for PDFs, embed via `<embed src={getImageFileUrl(assetid)} type="application/pdf">` (browsers fall back to a download link if PDF embedding is blocked); for other document types, a download link with the filename. **No OCR text panel** in Part 03 — replaced by an "OCR coming soon" empty state with a one-line note pointing at `Future-State-documents-and-textract-workstream.md`.
+- **`asset.kind === 'photo'`:** image preview slot (src injected by 7.4); labels list slot (data injected by 7.4) sorted by confidence DESC.
+- **`asset.kind === 'document'`:** basic preview slot — for PDFs, embed via `<embed src={...} type="application/pdf">` (browsers fall back to a download link if PDF embedding is blocked); for other document types, a download link with the filename. **No OCR text panel** in Part 03 — replaced by an "OCR coming soon" empty state with a one-line note pointing at `Future-State-documents-and-textract-workstream.md`.
+
+For Phase 6 component tests, both branches render against fixtures from `__tests__/fixtures/`. Phase 7.4 swaps fixtures for live API calls.
 
 The full split-pane image+OCR view from spec §9.6 is Future-State.
 
@@ -542,16 +544,20 @@ Replace `MOCK.ASSETS` with a `useEffect` + `getImages()` call. Render skeleton w
 
 End-to-end: select user, select file, click Upload → multipart POST → success → refresh library.
 
-### Task 7.4: Asset detail — per-kind branch (photo + document)
+### Task 7.4: Asset detail — wire the page component (Task 6.3) to the live backend
 
-New route `/asset/:id`. The page reads `asset.kind` from the asset payload and branches:
+Wire the `AssetDetail.tsx` component (created in Task 6.3) to live data. New route `/asset/:id`. Resolve the asset payload (look up by id from the Library list, or refetch via `getImages` if landing directly), then drive the per-kind branches:
 
-- **Photo:** existing flow — `<img src={getImageFileUrl(id)}>` for the preview; `getImageLabels(id)` populates the labels list (sorted confidence DESC).
+- **Photo:** `<img src={getImageFileUrl(id)}>` for the preview; `getImageLabels(id)` populates the labels list (sorted confidence DESC).
 - **Document:** basic preview only (per Q9). For PDF: `<embed src={getImageFileUrl(id)} type="application/pdf">` with a download-link fallback. For other document types: filename + size + download link. The text panel position shows an "OCR coming soon" empty state — Future-State Textract workstream populates it.
+
+The branch logic itself is identical to Task 6.3 — this task only changes the data source from fixtures to live API calls.
 
 ### Task 7.5: Search by label
 
-`⌘K` opens the CommandPalette; typing calls `searchImages(label)` debounced at 150ms (per spec §9.8).
+**MVP placement:** a search input + Search button in the **Library page header** (above the asset grid). On submit, call `searchImages(label)` through `photoappApi.ts` and render matching assets in the same grid (replacing the unfiltered list until the input is cleared).
+
+The Library-header input is the MVP search surface. The `⌘K` CommandPalette experience (fuzzy navigation + actions + asset search) is Future-State — see `Future-State-command-palette-workstream.md`. Do not block the MVP on the keyboard launcher.
 
 ### Task 7.6: Delete all images
 
@@ -579,8 +585,6 @@ Borrowed from Andrew's spec §9 acceptance criteria, scoped to in-scope screens.
 - [ ] **A1.** Asset detail (photo) shows labels in confidence-DESC order.
 - [ ] **A2.** Asset detail (document) shows file preview (PDF embed or download link) + "OCR coming soon" empty state where the text panel would be.
 - [ ] **A3.** File preview loads via `/api/images/:id/file` (no base64) for both photos and documents.
-- [ ] **S1.** ⌘K opens command palette in <100ms.
-- [ ] **S3.** CommandPalette is keyboard-only operable.
 - [ ] **A11Y1.** Manual a11y review passes for the in-scope screens (focus-visible, keyboard-only nav, screen-reader landmarks). **Automated axe-core CI gate is deferred** per Q7 — lands with `Future-State-production-hardening-workstream.md`.
 - [ ] `npm test` (Vitest) green; `npm run build` clean; TypeScript strict compiles with zero errors.
 - [ ] `npm run e2e` (Playwright) happy-path passes.
@@ -599,7 +603,7 @@ Contents (sketch — fill during execution):
 3. Start backend: `cd .. && npm start` (Express on 8080).
 4. Open browser at `http://localhost:8080/` — see Library.
 5. Demo path: upload `01degu.jpg` → see in gallery → click → see Rekognition labels → search "Animal" → delete-all → confirm empty state.
-6. Talking points (per spec): asset-first vocabulary, single coral accent, cream paper background, ⌘K command palette, keyboard-first navigation.
+6. Talking points (per spec): asset-first vocabulary, single coral accent, cream paper background, keyboard-first navigation for the assignment-critical controls.
 
 ---
 
@@ -623,7 +627,7 @@ Contents (sketch — fill during execution):
 - **Risk:** Spec's "Phase 2 base64 JSON" and "Phase 3 presigned URL" upload models — for Part 03 we use multipart (Q3-related decision) which is neither.
   - **Mitigation:** multipart works fine in the spec's spirit (browser-friendly); note in `DesignDecisions.md` Q3 follow-up if needed.
 - **Risk:** Andrew's components are visually production-quality but use inline styles + global React + plain JSX. Migrating to TS+Tailwind+shadcn per Q7 is real upfront work.
-  - **Mitigation:** the migration cost is paid in Phase 1 (toolchain + theme translation) + per-component re-styling during Phases 3–6. Each component migration is independent (testable in isolation), so the cost is amortized across the workstream rather than landing as a single big-bang refactor. Andrew's components serve as the *visual contract* — fidelity is preserved; the stack underneath changes.
+  - **Mitigation:** the migration cost is paid in Phase 1 (toolchain + theme translation) + per-component re-styling during Phases 3–6. Each component migration is independent (testable in isolation), so the cost is amortized across the workstream rather than landing as a single big-bang refactor. Andrew's components serve as the *visual contract* — fidelity is preserved; full shadcn replacement is deferred until after assignment-critical flows are green.
 
 ## Footnote: Frontend baseline provenance
 

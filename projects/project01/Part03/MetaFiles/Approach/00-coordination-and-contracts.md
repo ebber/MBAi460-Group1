@@ -63,18 +63,25 @@ Does not own:
 
 The Frontend MVP (Andrew, 2026-04-26, in `ClaudeDesignDrop/raw/MBAi-460/`) ships a working primitive set the UI Workstream carries forward — re-stacking the styling layer per Q7 (TS strict + Tailwind + shadcn/ui + Zustand) while preserving the component boundaries and behaviors:
 
-| Primitive | Andrew's source | Carry-forward |
+**MVP carry-forward (Part 03 in scope):**
+
+| Primitive | Andrew's source | MVP carry-forward |
 |---|---|---|
-| Toast (`ToastProvider` / `useToast`) | `src/shell.jsx` | shadcn `Toaster` + `useToast` hook; same tone variants, auto-dismiss, bottom-right stack |
-| Modal | `src/shell.jsx` | shadcn `Dialog` (ESC-to-close, focus return, click-outside) |
-| TopBar | `src/shell.jsx` | TS rewrite; wordmark + ⌘K trigger + tweaks toggle + notifications + avatar (shadcn `DropdownMenu`) |
-| LeftRail | `src/shell.jsx` | TS rewrite; Workspace / You / Admin (conditional) / Help groups; route-active highlighting |
+| Toast (`ToastProvider` / `useToast`) | `src/shell.jsx` | TS rewrite; same tone variants, auto-dismiss, bottom-right stack. (Selective shadcn `Toaster` if it accelerates the upload/delete flows; otherwise custom.) |
+| Modal | `src/shell.jsx` | shadcn `Dialog` (ESC-to-close, focus return, click-outside) — used for delete confirmation. |
+| TopBar | `src/shell.jsx` | TS rewrite; **MVP shape**: wordmark + avatar (shadcn `DropdownMenu`, driven by `mockAuth` flag from Zustand store). ⌘K trigger, tweaks toggle, and notifications bell are **omitted** in MVP — see deferred-primitives note below. |
+| LeftRail | `src/shell.jsx` | TS rewrite; Workspace / You / Help groups; route-active highlighting. (Admin group is auth-gated; deferred.) |
 | PageHeader | `src/shell.jsx` | TS rewrite; title + subtitle + breadcrumbs + actions slot |
-| CommandPalette | `src/screens.jsx` | shadcn `Command` (⌘K open, fuzzy search, full keyboard nav) |
-| TweaksPanel | `src/screens.jsx` | TS rewrite; theme / accent / density / mock-data seed (design-time helper) |
-| Library (grid + list) | `src/library.jsx` | TS rewrite; Tailwind grid; filter, sort, view toggle, batch select, empty state |
+| Library (grid + list) | `src/library.jsx` | TS rewrite; Tailwind grid; filter, sort, view toggle, empty state, search input in page header. (Batch select is polish; deferred.) |
 | AssetCard / ListView | `src/library.jsx` | TS rewrite; **photo cards** render Rekognition labels (top 3 + "+N" pill); **document cards** render metadata (filename, size, date, kind badge) + an "OCR coming soon" placeholder where the labels/excerpt would go. Real OCR excerpts on document cards are Future-State (per Q9 — Documents + Textract workstream replaces the placeholder). |
 | LoginScreen / RegisterScreen | `src/auth.jsx` | TS rewrite as **non-blocking visual scaffolds** (Q10); shadcn `Input`; password-rules checklist |
+
+**Deferred primitives** (kept in their Future-State workstream docs; not in Part 03 MVP):
+
+- **CommandPalette** (⌘K launcher) → `Future-State-command-palette-workstream.md`. The MVP search lives as a Library-header input (Phase 7.5 of `01-ui-workstream.md`).
+- **TweaksPanel** (theme / accent / density / mock-data seed controls) → `Future-State-tweaks-panel-workstream.md`. Design-time helper; not assignment-critical.
+- **Full shadcn/Radix primitive migration** (replacing every Andrew custom primitive) → `Future-State-shadcn-primitive-migration-workstream.md`. MVP uses shadcn selectively (initial target: Button, Input, Dialog, plus DropdownMenu/Toast on demand).
+- TopBar's ⌘K trigger, tweaks toggle, and notifications bell are removed from the MVP TopBar (rather than left as no-op visual elements) so the demo doesn't surface UX traps.
 
 Design tokens live in `src/tokens.css` and are translated into a `tailwind.config.ts` theme (Q7). `src/data.jsx` exposes `window.MOCK` for demo runs; the production frontend imports test fixtures from `__tests__/fixtures/` rather than referencing the global.
 
