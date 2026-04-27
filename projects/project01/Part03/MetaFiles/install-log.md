@@ -116,3 +116,23 @@ Used by future agents (and any human reviewer) to understand the dependency chai
   - `tsconfig.app.json` includes the strict additions per plan: `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride` (in addition to default `strict: true`).
   - `dist/` is gitignored at the frontend level; build output is local.
 - **Verification after install:** `npm run build` succeeded (`vite v5.4.21`; 30 modules transformed; `dist/index.html` 0.33 kB + `dist/assets/index-cc7BSt1h.js` 142.78 kB / 45.85 kB gzipped). Wordmark "MBAi 460 — PhotoApp" present in built bundle.
+
+---
+
+## 2026-04-27 — Phase 1.2 install: Tailwind 3 + PostCSS + Autoprefixer (Part03/frontend)
+
+- **Source:** `01-ui-workstream-plan.md` Phase 1 Task 1.2 — Tailwind toolchain + Andrew's tokens.css → tailwind.config.ts theme.
+- **Working directory:** `MBAi460-Group1/projects/project01/Part03/frontend/`
+- **Command:** `npm install -D tailwindcss@^3 postcss autoprefixer`
+- **Exit code:** `0`
+- **Packages installed (devDeps):**
+  - `tailwindcss@^3.4.19`
+  - `postcss@^8.5.12`
+  - `autoprefixer@^10.5.0`
+- **Pinned to Tailwind 3.x** (NOT v4 — v4 has breaking config syntax + PostCSS plugin interface changes; safer for the assignment window).
+- **Vulnerabilities:** unchanged (2 moderate from Phase 1.1; production audit still 0).
+- **Files created:**
+  - `tailwind.config.ts` — full token translation (4-level paper, 4-level ink, line + line-strong, accent stack, status colors, font scale 12–40 px, 4px-grid spacing, radius xs–xl + full, shadows 1/2/3, motion durations + ease, fade + shim animations, rail-w/topbar-h sizing).
+  - `postcss.config.js` — tailwindcss + autoprefixer.
+  - `src/styles/globals.css` — `@tailwind base/components/utilities` + body resets via `@apply` + focus-visible ring per tokens.css.
+- **Verification:** `npm run build` — `vite v5.4.21`; 31 modules transformed; new `dist/assets/index-B5RnLL3r.css` 5.67 kB / 1.76 kB gzipped. Compiled CSS contains the actual hex values (`#F0EEE6` paper, `#1E1E1C` ink, `#CC785C` accent), Source Serif 4 font stack, accent-soft `#cc785c1a` for selection, focus-visible outline at 2px solid accent.
