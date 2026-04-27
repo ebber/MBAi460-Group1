@@ -531,6 +531,8 @@ The full split-pane image+OCR view from spec §9.6 is Future-State.
 
 ## Phase 7: Wire to Live Backend
 
+**Implementation status:** ✅ Implemented 2026-04-27 per Plan §7.1–§7.7. Live demo verified at http://localhost:8080 — clickable UI against live RDS+S3, photo upload + Rekognition labels confirmed (Erik uploaded 3 photos; s3_object_count rose 10→13). SPA-fallback hotfix landed mid-Phase-7 to fix `/login` 404 from path-to-regexp v6 incompatibility (see `server/app.js` `app.use(...)` middleware-style fallback that defers `/api/*` to preserve API 404 behavior). 🎯 MILESTONE: clickable UI shipped.
+
 ### Task 7.1: App startup + `/api/ping` health probe
 
 App loads → calls `getPing()` → renders connected/disconnected indicator (see `LeftRail` "Status" item).

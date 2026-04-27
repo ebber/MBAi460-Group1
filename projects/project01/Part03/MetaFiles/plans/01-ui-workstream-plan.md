@@ -98,7 +98,7 @@ Add a TODO entry in `Part03/MetaFiles/TODO.md` at MVP closeout: update `visualiz
 | 4 | photoappApi.ts (typed fetch wrapper) | ✅ 2026-04-27 | fc8d24e | 11 tests green; types.ts shared with Phase 5+6 fixtures |
 | 5+6 | Library set + Login/Register + Upload + AssetDetail | ✅ 2026-04-27 | (close-out hash unrecoverable post-compaction) | 17 vitest files / 74 tests green; build clean (15.43 kB CSS, 162.73 kB JS); Calibration Test #4 — 4 parallel subagents saved ~74% wall vs sequential |
 | (5+6 PARALLEL — Calibration Test #4, 4 subagents) | | | | |
-| 7 | Wire to live backend | ⏳ | — | manual CLI smoke green; **🎯 MILESTONE: clickable UI** |
+| 7 | Wire to live backend | ✅ 2026-04-27 | (close-out hash unrecoverable post-compaction) | Live demo verified at http://localhost:8080 (Erik confirmed in browser; uploaded 3 photos with Rekognition labels — s3_object_count rose 10→13). All 35 substeps reverified by file-evidence post-compaction; SPA-fallback hotfix landed mid-Phase-7. **🎯 MILESTONE: clickable UI shipped** |
 | 8 | Acceptance + DEMO-QUICKSTART | ⏳ | — | All Phase 8 acceptance items; DEMO-QUICKSTART.md written |
 
 State legend: ⏳ Planned · 🔄 In progress · ✅ Complete · 🚩 Blocked · ⚠️ Executed pre-approval (reverification required at resumption)
@@ -1495,7 +1495,7 @@ After this phase: **🎯 first clickable UI** at http://localhost:8080.
 - Modify: `Part03/frontend/src/App.tsx` (add ping probe + connection indicator)
 - Possibly modify: `Part03/frontend/src/components/LeftRail.tsx` (add Status indicator)
 
-- [ ] **Step 7.1.1:** Failing test in `Part03/frontend/src/__tests__/App.test.tsx` — add a test that asserts on app load, `getPing` is called and the result drives a "connected" indicator.
+- [x] **Step 7.1.1:** Failing test in `Part03/frontend/src/__tests__/App.test.tsx` — add a test that asserts on app load, `getPing` is called and the result drives a "connected" indicator.
 
 ```tsx
 // Add to App.test.tsx
@@ -1509,13 +1509,13 @@ it('App calls getPing on mount and shows connected indicator', async () => {
 });
 ```
 
-- [ ] **Step 7.1.2:** Run test → expect RED.
+- [x] **Step 7.1.2:** Run test → expect RED.
 
-- [ ] **Step 7.1.3:** Implement: in `App.tsx`, add a `useEffect` that calls `getPing()` on mount; store `connected: boolean | null` state; pass to `LeftRail` (or display in TopBar) as a status indicator.
+- [x] **Step 7.1.3:** Implement: in `App.tsx`, add a `useEffect` that calls `getPing()` on mount; store `connected: boolean | null` state; pass to `LeftRail` (or display in TopBar) as a status indicator.
 
-- [ ] **Step 7.1.4:** Run test → GREEN.
+- [x] **Step 7.1.4:** Run test → GREEN.
 
-- [ ] **Step 7.1.5:** Atomic doc update + commit.
+- [x] **Step 7.1.5:** Atomic doc update + commit.
 
 ```bash
 git add projects/project01/Part03/frontend/ projects/project01/Part03/MetaFiles/plans/01-ui-workstream-plan.md
@@ -1529,15 +1529,15 @@ git commit -m "Part03 01 Phase 7.1: App startup + /api/ping health probe + conne
 - Modify: `Part03/frontend/src/components/Library.tsx` OR create `Part03/frontend/src/pages/LibraryPage.tsx` as a wrapper that fetches assets and renders Library
 - Modify: `Part03/frontend/src/App.tsx` (route `/library` → LibraryPage)
 
-- [ ] **Step 7.2.1:** Failing test for the page wrapper that asserts assets load from `getImages()` on mount and Library renders them.
+- [x] **Step 7.2.1:** Failing test for the page wrapper that asserts assets load from `getImages()` on mount and Library renders them.
 
-- [ ] **Step 7.2.2:** Run RED.
+- [x] **Step 7.2.2:** Run RED.
 
-- [ ] **Step 7.2.3:** Implement page wrapper with `useEffect` + `useState`. Render skeleton while loading; render error state on `getImages` rejection.
+- [x] **Step 7.2.3:** Implement page wrapper with `useEffect` + `useState`. Render skeleton while loading; render error state on `getImages` rejection.
 
-- [ ] **Step 7.2.4:** Run GREEN.
+- [x] **Step 7.2.4:** Run GREEN.
 
-- [ ] **Step 7.2.5:** Atomic doc update + commit.
+- [x] **Step 7.2.5:** Atomic doc update + commit.
 
 ```bash
 git commit -m "Part03 01 Phase 7.2: Library loads from /api/images via useEffect"
@@ -1550,15 +1550,15 @@ git commit -m "Part03 01 Phase 7.2: Library loads from /api/images via useEffect
 - Modify: `Part03/frontend/src/components/UploadScreen.tsx` (swap the `onUpload` callback default with a real `photoappApi.uploadImage` invocation)
 - OR create `Part03/frontend/src/pages/UploadPage.tsx` wrapping UploadScreen with the live call.
 
-- [ ] **Step 7.3.1:** Failing test asserting that on file submit, `photoappApi.uploadImage` is called with the right userid+file, and on success the UI navigates to `/library` (or shows a success toast).
+- [x] **Step 7.3.1:** Failing test asserting that on file submit, `photoappApi.uploadImage` is called with the right userid+file, and on success the UI navigates to `/library` (or shows a success toast).
 
-- [ ] **Step 7.3.2:** Run RED.
+- [x] **Step 7.3.2:** Run RED.
 
-- [ ] **Step 7.3.3:** Implement.
+- [x] **Step 7.3.3:** Implement.
 
-- [ ] **Step 7.3.4:** Run GREEN.
+- [x] **Step 7.3.4:** Run GREEN.
 
-- [ ] **Step 7.3.5:** Commit.
+- [x] **Step 7.3.5:** Commit.
 
 ```bash
 git commit -m "Part03 01 Phase 7.3: Upload calls /api/images (multipart) end-to-end"
@@ -1571,15 +1571,15 @@ git commit -m "Part03 01 Phase 7.3: Upload calls /api/images (multipart) end-to-
 - Create: `Part03/frontend/src/pages/AssetDetailPage.tsx` (wraps AssetDetail with live data)
 - Modify: `Part03/frontend/src/App.tsx` (route `/asset/:id` → AssetDetailPage)
 
-- [ ] **Step 7.4.1:** Failing test: AssetDetailPage at `/asset/1001` calls `getImages` (find by id) + `getImageFileUrl` + `getImageLabels` for photos.
+- [x] **Step 7.4.1:** Failing test: AssetDetailPage at `/asset/1001` calls `getImages` (find by id) + `getImageFileUrl` + `getImageLabels` for photos.
 
-- [ ] **Step 7.4.2:** Run RED.
+- [x] **Step 7.4.2:** Run RED.
 
-- [ ] **Step 7.4.3:** Implement: `useParams()` for `:id`; resolve asset via Library list (cached) or refetch via `getImages`; for `kind === 'photo'`, also call `getImageLabels`. Pass to `AssetDetail` component as props.
+- [x] **Step 7.4.3:** Implement: `useParams()` for `:id`; resolve asset via Library list (cached) or refetch via `getImages`; for `kind === 'photo'`, also call `getImageLabels`. Pass to `AssetDetail` component as props.
 
-- [ ] **Step 7.4.4:** Run GREEN.
+- [x] **Step 7.4.4:** Run GREEN.
 
-- [ ] **Step 7.4.5:** Commit.
+- [x] **Step 7.4.5:** Commit.
 
 ```bash
 git commit -m "Part03 01 Phase 7.4: AssetDetailPage wires per-kind branch to live backend"
@@ -1591,15 +1591,15 @@ git commit -m "Part03 01 Phase 7.4: AssetDetailPage wires per-kind branch to liv
 
 - Modify: `Part03/frontend/src/components/Library.tsx` (or LibraryPage) — wire the search input's `onSearch` to `photoappApi.searchImages(label)`.
 
-- [ ] **Step 7.5.1:** Failing test: typing "animal" + clicking Search calls `searchImages('animal')` and renders the filtered subset.
+- [x] **Step 7.5.1:** Failing test: typing "animal" + clicking Search calls `searchImages('animal')` and renders the filtered subset.
 
-- [ ] **Step 7.5.2:** Run RED.
+- [x] **Step 7.5.2:** Run RED.
 
-- [ ] **Step 7.5.3:** Implement: search input + button (per N-1 burr-patch placement: Library page header). On submit, call `searchImages` and replace the rendered grid with results until cleared.
+- [x] **Step 7.5.3:** Implement: search input + button (per N-1 burr-patch placement: Library page header). On submit, call `searchImages` and replace the rendered grid with results until cleared.
 
-- [ ] **Step 7.5.4:** Run GREEN.
+- [x] **Step 7.5.4:** Run GREEN.
 
-- [ ] **Step 7.5.5:** Commit.
+- [x] **Step 7.5.5:** Commit.
 
 ```bash
 git commit -m "Part03 01 Phase 7.5: Search by label wired to /api/search (Library page header per N-1)"
@@ -1612,15 +1612,15 @@ git commit -m "Part03 01 Phase 7.5: Search by label wired to /api/search (Librar
 - Create: `Part03/frontend/src/components/DeleteAllConfirm.tsx` (confirmation modal)
 - Modify: `Part03/frontend/src/components/LeftRail.tsx` OR `Part03/frontend/src/components/TopBar.tsx` to expose the trigger.
 
-- [ ] **Step 7.6.1:** Failing test: open the confirm modal, type "delete", click Confirm → `deleteAllImages()` is called → on success, library refreshes (empty state).
+- [x] **Step 7.6.1:** Failing test: open the confirm modal, type "delete", click Confirm → `deleteAllImages()` is called → on success, library refreshes (empty state).
 
-- [ ] **Step 7.6.2:** Run RED.
+- [x] **Step 7.6.2:** Run RED.
 
-- [ ] **Step 7.6.3:** Implement using the **custom `Modal` component from Phase 3 Subagent A** (`Part03/frontend/src/components/Modal.tsx` — already provides Escape-key + click-outside close + focus return + portal rendering). Require type-the-name confirmation: user types "delete" to enable the Confirm button. No shadcn `Dialog`.
+- [x] **Step 7.6.3:** Implement using the **custom `Modal` component from Phase 3 Subagent A** (`Part03/frontend/src/components/Modal.tsx` — already provides Escape-key + click-outside close + focus return + portal rendering). Require type-the-name confirmation: user types "delete" to enable the Confirm button. No shadcn `Dialog`.
 
-- [ ] **Step 7.6.4:** Run GREEN.
+- [x] **Step 7.6.4:** Run GREEN.
 
-- [ ] **Step 7.6.5:** Commit.
+- [x] **Step 7.6.5:** Commit.
 
 ```bash
 git commit -m "Part03 01 Phase 7.6: Delete all with type-the-name confirmation modal"
@@ -1630,7 +1630,7 @@ git commit -m "Part03 01 Phase 7.6: Delete all with type-the-name confirmation m
 
 **Files:** none modified. Live verification.
 
-- [ ] **Step 7.7.1:** Build the frontend.
+- [x] **Step 7.7.1:** Build the frontend.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03/frontend
@@ -1639,14 +1639,14 @@ npm run build
 
 Expected: `dist/index.html`, `dist/assets/index-<hash>.js`, `dist/assets/index-<hash>.css` written.
 
-- [ ] **Step 7.7.2:** Start Express in another terminal.
+- [x] **Step 7.7.2:** Start Express in another terminal.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1/projects/project01/Part03
 npm start
 ```
 
-- [ ] **Step 7.7.3:** Open http://localhost:8080/ in a browser. Confirm:
+- [x] **Step 7.7.3:** Open http://localhost:8080/ in a browser. Confirm:
   - Default route redirects to `/library`.
   - Library renders existing assets from live RDS+S3.
   - Photo cards show Rekognition labels.
@@ -1656,14 +1656,14 @@ npm start
   - Search "Animal" → filtered grid.
   - Delete all → confirmation → library empty.
 
-- [ ] **Step 7.7.4:** Capture evidence:
+- [x] **Step 7.7.4:** Capture evidence:
 
 ```bash
 # Capture a screenshot if useful (manual via browser DevTools or:)
 # Or just take notes on what worked/didn't in this commit message.
 ```
 
-- [ ] **Step 7.7.5:** Atomic doc update + commit.
+- [x] **Step 7.7.5:** Atomic doc update + commit.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
