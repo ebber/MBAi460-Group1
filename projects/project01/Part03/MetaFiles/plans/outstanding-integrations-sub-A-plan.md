@@ -38,8 +38,8 @@ Sub-A is complete when:
 
 | Phase | Goal | State | Commit | Evidence |
 |---|---|---|---|---|
-| 0 | Pre-execution baseline (git clean + Map confirmation) | ⏳ | — | `git status` shows clean tree; `OrientationMap.md` Active section shows sub-A is the designated next workstream |
-| 1 | Fill `export-notes.md` with Andrew's export metadata | ⏳ | — | All template fields populated; integration-status section added |
+| 0 | Pre-execution baseline (git clean + Map confirmation) | ✅ 2026-04-27 | (folded into Phase 1 commit per plan) | `git status` clean post `0bdf53a` (plan v3 finalized); Map confirms Outstanding Integrations active, sub-A ⏳ designated next |
+| 1 | Fill `export-notes.md` with Andrew's export metadata | ✅ 2026-04-27 | (backfilled at Phase 8) | All template fields populated (Source/Date/File Type/Known Issues/Integration Notes + components mapping table); integration-status section added at 🔄 |
 | 2 | Audit `UI-Design-Requirements.md` (per-screen + per-feature triage table) → `Andrew-MVP-Integration.md` | ⏳ | — | Audit table covers all 1609 lines via section sweep with checkpoint commits per section group; every row has a bucket assignment |
 | 3 | Set up `Accelerators/` scaffold (README only) | ⏳ | — | `Accelerators/` directory + `Accelerators/README.md` documenting the pattern. Subfolder population deferred to Phase 4 (post-triage) per F2 reviewer fix |
 | 4 | Triage gaps from Phase 2 audit + populate confirmed `Accelerators/` subfolders (with ⚠️ PAUSE gate for routing confirmation) | ⏳ | — | Each 🚩 gap routed via Erik confirmation; subfolders created for confirmed workstreams; artifacts copied (not moved) from `raw/src/` per F1 fix |
@@ -97,16 +97,16 @@ Doc-work analogue to TDD: for each audit table row, write the **claim** first ("
 
 **Files:** none modified.
 
-- [ ] **Step 0.1:** From `MBAi460-Group1/`, run `git status`. **Expected:** `nothing to commit, working tree clean`. If anything is staged or unstaged, surface to Erik before proceeding — do NOT auto-commit or stash.
+- [x] **Step 0.1:** From `MBAi460-Group1/`, run `git status`. **Expected:** `nothing to commit, working tree clean`. If anything is staged or unstaged, surface to Erik before proceeding — do NOT auto-commit or stash.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
 git status
 ```
 
-- [ ] **Step 0.2:** Read `Part03/MetaFiles/OrientationMap.md` Active section. Confirm: (a) Outstanding Integrations workstream is Active; (b) sub-A is the designated next sub-workstream (not "in progress" already; not yet Closed). If the Map says otherwise, surface the discrepancy to Erik before proceeding.
+- [x] **Step 0.2:** Read `Part03/MetaFiles/OrientationMap.md` Active section. Confirm: (a) Outstanding Integrations workstream is Active; (b) sub-A is the designated next sub-workstream (not "in progress" already; not yet Closed). If the Map says otherwise, surface the discrepancy to Erik before proceeding.
 
-- [ ] **Step 0.3:** No commit (read-only phase). Update Master Tracker Phase 0 row to ✅ as part of Phase 1's commit (atomic close-out absorbs Phase 0's verification).
+- [x] **Step 0.3:** No commit (read-only phase). Update Master Tracker Phase 0 row to ✅ as part of Phase 1's commit (atomic close-out absorbs Phase 0's verification).
 
 ---
 
@@ -120,18 +120,18 @@ git status
 
 **Why:** Closes one of the 3 stale Part-03 TODO entries; gives cold readers the "what is this drop" context immediately.
 
-- [ ] **Step 1.1:** Fill template fields:
+- [x] **Step 1.1:** Fill template fields:
   - **Source:** Andrew Tapple (MBAi 460 Spring 2026, Group 1)
   - **Date:** 2026-04-26 (commit `1f3c067` "Frontend MVP")
   - **File Type:** Hybrid — HTML (9 files, Console + Mobile variants), JSX (13 files in `src/`), CSS (`tokens.css`, `mobile.css`), supporting (`uploads/UI-Design-Requirements.md` 1609 lines + 1 PNG)
   - **Known Issues:** (a) original location was repo-root `MBAi-460/` (out-of-contract per `ClaudeDesignDrop/README.md`) — relocated 2026-04-26 to `ClaudeDesignDrop/raw/MBAi-460/`; (b) HTML files use React via unpkg CDN (not bundled); (c) src files include both desktop (shell, library, screens, etc.) and mobile (mobile-shell, mobile-core, mobile-screens, ios-frame) — desktop largely migrated to TS in our MVP, mobile is Future-State
   - **Integration Notes:** Point at `UI-Design-Requirements.md` as the canonical spec; cross-reference our `01-ui-workstream.md` for what landed in MVP; cross-reference `Andrew-MVP-Integration.md` (Phase 2 deliverable) for the audit table.
 
-- [ ] **Step 1.2:** Add an "Integration Status" section at the bottom of the file with:
+- [x] **Step 1.2:** Add an "Integration Status" section at the bottom of the file with:
   - Status: 🔄 In progress (Phase 2 audit underway as of 2026-04-27)
   - Will flip to ✅ when sub-A Phase 8 closes.
 
-- [ ] **Step 1.3:** Atomic commit.
+- [x] **Step 1.3:** Atomic commit.
 
 ```bash
 git add projects/project01/Part03/ClaudeDesignDrop/notes/export-notes.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md

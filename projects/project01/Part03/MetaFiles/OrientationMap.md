@@ -28,13 +28,13 @@
 
 **Goal:** Close the open integration threads between recently-shipped components (Andrew's MVP / backend / frontend / Class-Project / Lab-Root) before opening the next major arc.
 
-**Status:** 🔄 Substep structure designed; awaiting selection of which sub-workstream to engage first.
+**Status:** 🔄 Sub-A in flight — plan v3 greenlit + Phase 0 + Phase 1 complete 2026-04-27 (`outstanding-integrations-sub-A-plan.md` Master Tracker for execution detail).
 
 **Sub-workstreams:**
 
 | # | Sub-workstream | State | Pointer / source | Notes |
 |---|---|---|---|---|
-| A | Andrew's MVP — final handshakes | ⏳ | `Part03/MetaFiles/TODO.md` (3 entries dated 2026-04-26) + `ClaudeDesignDrop/` | Fill export-notes; surface Q1–Q6 to Andrew; reconcile UI-Design-Requirements.md (1609 lines) into approach docs; verify `1f3c067` artifact paths |
+| A | Andrew's MVP — final handshakes | 🔄 (Phase 1/8) | `Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md` (v3 greenlit 2026-04-27; execution started) | Phase 0 ✅ + Phase 1 ✅ (export-notes filled); Phase 2 (audit) next; ⚠️ PAUSE gate at Phase 4 for triage routing |
 | B | Frontend ↔ Backend ↔ Approach-doc coherence audit | ⏳ | `Part03/frontend/src/api/types.ts` + `Part03/server/schemas.js` + `Part03/MetaFiles/Approach/00-coordination-and-contracts.md` | Cross-check envelope shape, route table, and contracts; surface drift if any |
 | ~~C~~ | ~~Class Project ↔ Lab Root coordination~~ | **MOVED** | — | Relocated to Class Project queue 2026-04-27 per Q3 — see `MBAi460-Group1/MetaFiles/TODO.md` |
 | D | Visualization handoff | ⏳ | `Part03/MetaFiles/TODO.md` (visualization entry, deferred to Erik per 2026-04-27 routing) | Update `Target-State-project01-part03-photoapp-architecture-v1.md` with actual stack |
