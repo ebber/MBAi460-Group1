@@ -118,4 +118,4 @@ Out of scope:
 
 When this workstream activates, the executing agent builds the palette from scratch following Andrew's spec; Radix `Command` + custom Tailwind styling is the likely shape (no shadcn per R1).
 
-**Audit cross-refs:** rows 13 (keyboard-first principle), 55 (TopBar ⌘K), 60 (Library interactions: ⌘K + / + u key), 72 (search ⌘K command-palette style), 73 (search acceptance S1–S3), 78 (? help overlay) in `Andrew-MVP-Integration.md`.
+**Audit cross-refs:** rows 13 (keyboard-first principle), 55 (TopBar ⌘K), 60 (Library interactions: ⌘K + / + u key), 72 (search ⌘K command-palette style), 73 (search acceptance S1–S3), 78 (? help overlay) in `MetaFiles/archive/Andrew-MVP-Integration.md`.

@@ -3,7 +3,7 @@
 **Status:** Aspirational. **Not committed to Part 03.** The shipped MVP is desktop-first; mobile rendering works but isn't optimized.
 **Priority:** STANDARD
 **Source:** distilled from Andrew's `UI-Design-Requirements.md` §7.3 (mobile <768px hides rail behind hamburger), §13.9 (browser + device support: iOS Safari 15+, Chrome Android 100+, min viewport 360px, no IE11), and the substantial mobile source-file set Andrew shipped at `ClaudeDesignDrop/raw/MBAi-460/src/` (≈94 KB across 5 files).
-**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`Andrew-MVP-Integration.md` rows 109, 134).
+**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`MetaFiles/archive/Andrew-MVP-Integration.md` rows 109, 134).
 
 ---
 
@@ -24,7 +24,7 @@ Make the PhotoApp UI a first-class mobile experience: responsive layouts down to
 - **Andrew's spec:** §7.3 Navigation pattern, §13.9 Browser + device support
 - **Audit rows:** 109 (mobile <768 hamburger), 134 (browser + device support)
 - **Accelerators:** `Part03/Accelerators/ArtifactsForMobile/` — 5 source files copied from Andrew's `src/` for direct use when this workstream activates
-- **Andrew-MVP-Integration audit:** see `Andrew-MVP-Integration.md` for the row-level routing
+- **Andrew-MVP-Integration audit:** see `MetaFiles/archive/Andrew-MVP-Integration.md` for the row-level routing
 
 ## Implementation sketch
 

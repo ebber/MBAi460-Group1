@@ -114,4 +114,4 @@ For an assignment-window project, manual smoke is acceptable. For any continued 
 
 **No specific Accelerator subfolder for this workstream.** E2E testing infrastructure is not something Andrew shipped — his MVP is a visual + design spec, not a test suite. When this workstream activates, the executing agent builds the Playwright suite from scratch against the canonical user flows specified in `UI-Design-Requirements.md` §14.2 (testing strategy) and the journeys in §5 (J1–J6).
 
-**Audit cross-refs:** row 141 (FR-test — testing strategy: unit/component/E2E/a11y/visual-regression layered) in `Andrew-MVP-Integration.md`. Plus visibility of E2E coverage from Andrew's acceptance criteria across §9 screens.
+**Audit cross-refs:** row 141 (FR-test — testing strategy: unit/component/E2E/a11y/visual-regression layered) in `MetaFiles/archive/Andrew-MVP-Integration.md`. Plus visibility of E2E coverage from Andrew's acceptance criteria across §9 screens.

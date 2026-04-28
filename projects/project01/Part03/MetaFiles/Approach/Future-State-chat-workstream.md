@@ -120,4 +120,4 @@ Andrew's `ChatScreen` demo lives in `ClaudeDesignDrop/raw/MBAi-460/src/screens.j
 
 There's no separate `ArtifactsForChat/` subfolder — chat-specific source code is bounded to the ChatScreen demo + mock data shapes (`data.jsx`'s `MOCK_MESSAGES` / `MOCK_CHAT_USERS`). When this workstream activates, the executing agent extracts the ChatScreen patterns from the multi-screen file.
 
-**Audit cross-refs:** rows 26 (J5 chat journey), 76 (chat full screen layout + states), 99 (FR-CHAT-1..8 grouped) in `Andrew-MVP-Integration.md`.
+**Audit cross-refs:** rows 26 (J5 chat journey), 76 (chat full screen layout + states), 99 (FR-CHAT-1..8 grouped) in `MetaFiles/archive/Andrew-MVP-Integration.md`.

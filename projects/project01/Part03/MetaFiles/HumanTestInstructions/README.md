@@ -6,7 +6,7 @@
 
 This guide is **backend-only**. UI E2E smoke (Phase 9 of the plan) is gated on Andrew's `frontend/dist/` landing — see `MetaFiles/Approach/01-ui-workstream.md`.
 
-For the full implementation map, see `MetaFiles/Approach/03-api-routes.md` (source of truth) and `MetaFiles/plans/03-api-routes-plan.md` (execution tracker).
+For the full implementation map, see `MetaFiles/Approach/03-api-routes.md` (source of truth) and `MetaFiles/plans/archive/03-api-routes-plan.md` (execution tracker).
 
 ## Prerequisites
 
@@ -199,7 +199,7 @@ That hits S3+RDS through the live server, reads the seeded users, and verifies t
 
 ## Related docs
 
-- `MetaFiles/plans/03-api-routes-plan.md` — execution plan + state tracker.
+- `MetaFiles/plans/archive/03-api-routes-plan.md` — execution plan + state tracker.
 - `MetaFiles/Approach/03-api-routes.md` — source-of-truth approach (per-route specs, behavior, edge cases).
 - `MetaFiles/Approach/00-coordination-and-contracts.md` — API contract + envelope shapes.
 - `MetaFiles/DesignDecisions.md` — Q1–Q10 (Q8 = `kind` derivation, Q9 = documents accepted / Textract deferred).

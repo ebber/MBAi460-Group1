@@ -3,7 +3,7 @@
 **Status:** Aspirational. **Not committed to Part 03.** Shipped MVP has the Library page working with grid+list toggle + search by label; this workstream adds the spec's full set of browse/filter/multi-select features.
 **Priority:** **HIGH** (per Erik routing 2026-04-27 — most user-visible Future-State work in the queue)
 **Source:** distilled from Andrew's `UI-Design-Requirements.md` §5.4 (J4 browse + search journey), §9.4 (Library/Dashboard screen), §9.5 (Asset detail Photo), §10.2 (FR-ASSET-2..9).
-**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`Andrew-MVP-Integration.md` rows 23, 25, 35, 38, 57, 58, 60, 62-65, 82-89, 96, 123 — 15+ row cluster).
+**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`MetaFiles/archive/Andrew-MVP-Integration.md` rows 23, 25, 35, 38, 57, 58, 60, 62-65, 82-89, 96, 123 — 15+ row cluster).
 
 ---
 

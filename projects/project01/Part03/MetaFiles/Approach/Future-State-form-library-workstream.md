@@ -3,7 +3,7 @@
 **Status:** Aspirational. **Not committed to Part 03.** Shipped MVP uses plain `useState` + bare HTML inputs; this workstream introduces a typed form library + the form primitives Andrew's spec calls for.
 **Priority:** **HIGH** (per Erik routing 2026-04-27 — pairs with Library Polish for the most user-visible polish work)
 **Source:** distilled from Andrew's `UI-Design-Requirements.md` §9.1 (Login interactions), §9.2 (Register R1–R3), §11.7 (component inventory), §12.4 (form patterns), §13.1 (RHF + Zod stack), §13.4 (auth handling).
-**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`Andrew-MVP-Integration.md` rows 50, 53-R2, 117 partial, 124, 126 partial).
+**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`MetaFiles/archive/Andrew-MVP-Integration.md` rows 50, 53-R2, 117 partial, 124, 126 partial).
 
 ---
 
