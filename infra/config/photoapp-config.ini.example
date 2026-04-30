@@ -1,3 +1,16 @@
+; =====================================================================
+; BACKBONE photoapp config
+;   Consumed by: utils/validate-db, utils/smoke-test-aws, utils/run-sql
+;   MySQL identity: photoapp-read-only (read-only access)
+;
+; NOTE: TWO files share this filename in the repo. The CLIENT config at
+;   projects/project01/client/photoapp-config.ini
+; is consumed by the Part 02 Python client (client/photoapp.py) and
+; the Part 03 Express server (Part03/server/services/aws.js), uses
+; photoapp-read-write, and must also be populated. See
+; MetaFiles/QUICKSTART.md step 5.
+; =====================================================================
+
 [rds]
 endpoint = <full-rds-endpoint from: terraform -chdir=infra/terraform output rds_address>
 port_number = 3306

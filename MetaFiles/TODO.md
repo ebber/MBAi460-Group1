@@ -38,6 +38,8 @@
 
 - [ ] **[Docs] Elaborate purpose of `MBAi460-Group1/learnings/`** — directory exists (last touched 2026-04-24) but is not described in memory, project_overview, or README. Capture: what belongs there, who writes to it, lifecycle, audience. (Spin-up env scan, 2026-04-26)
 
+- [x] **[Hygiene/Onboarding] Disambiguate dual `photoapp-config.ini`** — CLOSED 2026-04-30: surfaced as H2 during a 2026-04-30 troubleshooting probe (collaborator load-failure incident; collaborator self-resolved as PEBAK, but H2 remains structurally real for future onboarding). Two files share the literal filename: `infra/config/photoapp-config.ini` (backbone, `photoapp-read-only`, consumed by `validate-db` / `smoke-test-aws` / `run-sql`) and `projects/project01/client/photoapp-config.ini` (client, `photoapp-read-write`, consumed by Part 02 Python client + Part 03 Express server). Mitigated in same commit via three reinforcing layers: (1) callout + verification `ls` in QUICKSTART step 5 after the cp commands; (2) `NOTE` header in both `.example` templates naming role + pointing at the sibling file; (3) this entry. Architectural alternatives (consolidate to single file; rename one file) deferred — high blast radius vs zero confirmed instances of the failure mode in practice.
+
 ## Backlog
 
 ### Tooling candidates (3x rule — see Future-State-Ideal-Lab.md for full list)

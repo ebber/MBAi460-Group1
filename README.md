@@ -40,6 +40,7 @@ See [`MetaFiles/QUICKSTART.md`](MetaFiles/QUICKSTART.md) for a complete collabor
 | [`MetaFiles/Future-State-Ideal-Lab.md`](MetaFiles/Future-State-Ideal-Lab.md) | Long-term design target |
 | [`MetaFiles/TODO.md`](MetaFiles/TODO.md) | Active action queue |
 | [`MetaFiles/Journal/`](MetaFiles/Journal/) | Session journal — agents and collaborators may leave entries here at their discretion |
+| [`MetaFiles/Offered_Memories/`](MetaFiles/Offered_Memories/) | Agent-offered memory entries — agents may drop content here for analysis and potential ingestion by other agents |
 
 ## Queue Surfaces
 
