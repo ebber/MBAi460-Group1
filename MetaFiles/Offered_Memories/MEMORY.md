@@ -1,0 +1,5 @@
+- [User: MBAi 460 context](user_mbai460_context.md) — Erik is working on an MBAi 460 group class project; AWS-backed photo web app
+- [Project: repo overview](project_repo_overview.md) — what this repo is, its layout, and conventions
+- [Project: current state 2026-04-27](project_state_2026_04_27.md) — between workstreams; MVP dev-complete; collaborator UAT in flight
+- [Reference: orientation surfaces](reference_orientation_surfaces.md) — where to look first when resuming a session
+- [Reference: sibling lab repo](reference_sibling_lab_repo.md) — `mbai460-client/` lab-orchestration repo and its claude-workspace memory
