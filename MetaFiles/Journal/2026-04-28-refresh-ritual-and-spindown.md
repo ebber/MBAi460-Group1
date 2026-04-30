@@ -116,8 +116,12 @@ Yesterday's `2026-04-27-session-spin-and-reflections.md` is the canonical record
 
 1. **Mechanical close-out evidence.** The archive structure now exists on disk + in git history (commit `8f2ec42`). Cross-refs uniformly retargeted. Workspace tidied to a clean substrate.
 2. **Memory + system-plane-notes capture.** The 5 candidates + 4 system-notes entries staged in yesterday's backup are now durable — written to `claude-workspace/memory/` and `claude-workspace/scratch/system-plane-notes.md` respectively.
-3. **One additional memory from today's Ritual itself.** `feedback_root_grounded_cross_refs.md` was not in yesterday's backup; it emerged from today's Q-Phase2-2 routing decision.
-4. **Refinement of an existing memory.** `feedback_repo_health_pass.md` evolved from 2-phase to 3-phase reflecting the introduction of 1C Debt Harvest.
+3. **Six additional memories emerged from today's Ritual itself** (beyond the 5 backup-staged candidates):
+   - `feedback_root_grounded_cross_refs.md` — surfaced from the Q-Phase2-2 path-style routing decision
+   - `feedback_execution_confidence_loop.md`, `feedback_map_divergence_protocol.md`, `feedback_mutation_gating.md` — three verification-discipline memos that emerged from Erik's mid-SpinDown teaching, slotting into a layered structure (per-step / per-divergence / per-mutation, alongside the existing per-resume Refresh Ritual)
+   - `feedback_verification_at_every_scale.md` — the meta-principle naming the layered structure (cost rises with consequence of being wrong)
+   - `feedback_compaction_insurance_backup.md` — capturing the verified pattern that bridged yesterday→today (pre-ritual filesystem backup of at-risk content)
+4. **Two existing memories refined.** `feedback_repo_health_pass.md` evolved from 2-phase to 3-phase to reflect the introduction of 1C Debt Harvest. `feedback_flagging_protocol.md` extended from 4 routing options to 5 — added **HOLD** ("captured but not acted on, not queued; awaiting future direction"), an option Erik used multiple times during today's EOR routing that hadn't been named in the existing protocol.
 5. **Confirmation that the ritual's adversarial stance scales down.** Yesterday demonstrated it at session-resume scale (102-checkbox catch); today demonstrated it at mid-ritual scale (path-style + confabulation catches).
 
 If a cold reader can only read one of the two: read **yesterday's spin doc** for the work and reflection; read this entry for the structural close-out + the patterns promoted to durable memory.
