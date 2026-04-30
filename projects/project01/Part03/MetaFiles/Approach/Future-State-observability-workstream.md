@@ -3,7 +3,7 @@
 **Status:** Aspirational. **Not committed to Part 03.** Shipped MVP has only `console.error('UNHANDLED ERROR:', err)` from the error middleware + a startup banner; no structured logging, no RUM, no error reporting, no synthetic checks.
 **Priority:** STANDARD
 **Source:** distilled from Andrew's `UI-Design-Requirements.md` §13.12 (Observability), §14.1 (Success metrics), §14.3 (Error taxonomy), §14.4 (Edge cases catalog), §14.5 (SLOs); FR-SYS-2 (correlation IDs).
-**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`Andrew-MVP-Integration.md` rows 12, 103, 137, 140, 143, 144). Split out from `Future-State-production-hardening-workstream.md` per Erik's Q-Phase4-4 ruling — observability is a distinct concern from hardening (visibility vs. safety).
+**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`MetaFiles/archive/Andrew-MVP-Integration.md` rows 12, 103, 137, 140, 143, 144). Split out from `Future-State-production-hardening-workstream.md` per Erik's Q-Phase4-4 ruling — observability is a distinct concern from hardening (visibility vs. safety).
 
 ---
 

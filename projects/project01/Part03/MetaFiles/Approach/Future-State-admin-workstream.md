@@ -3,7 +3,7 @@
 **Status:** Aspirational. **Not committed to Part 03.** No admin features in shipped MVP.
 **Priority:** STANDARD
 **Source:** distilled from Andrew's `UI-Design-Requirements.md` §4.3 (Staff TA persona), §5.6 (J6 Admin audit journey), §9.12 (Admin Users), §9.13 (Admin Assets), §10.5 (FR-ADMIN-1..4).
-**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`Andrew-MVP-Integration.md` rows 20, 27, 77, 100).
+**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`MetaFiles/archive/Andrew-MVP-Integration.md` rows 20, 27, 77, 100).
 
 ---
 

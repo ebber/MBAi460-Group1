@@ -9,7 +9,7 @@
 **Tech stack:** Markdown doc edits + minimal TypeScript narrowing.
 
 **Reference:**
-- **Audit doc (canonical):** `Part03/MetaFiles/contract-audit-FE-BE-doc.md` (committed at `45d2d4f`).
+- **Audit doc (canonical):** `Part03/MetaFiles/archive/contract-audit-FE-BE-doc.md` (committed at `45d2d4f`).
 - **Drift Finding #1 location:** `Part03/MetaFiles/Approach/00-coordination-and-contracts.md` lines 263-273 (stale Asset example missing `kind`).
 - **Phase 3 type-tightening location:** `Part03/frontend/src/api/photoappApi.ts` line 54 (deleteAllImages return type narrowing).
 - **Map:** sub-B row in `Part03/MetaFiles/OrientationMap.md`.
@@ -166,7 +166,7 @@ git commit -m "Part03 sub-B Phase 3: tighten deleteAllImages type — Promise<{d
 
 **Files:**
 
-- Modify: `Part03/MetaFiles/contract-audit-FE-BE-doc.md` (Status banner; Drift row 4; bucket distribution; closeout summary).
+- Modify: `Part03/MetaFiles/archive/contract-audit-FE-BE-doc.md` (Status banner; Drift row 4; bucket distribution; closeout summary).
 
 **Goal:** Re-run the audit row-by-row against the post-fix state. Expect zero 🚩 rows. Update the audit doc to reflect the resolved drift + flip the Status banner to ✅.
 
@@ -192,7 +192,7 @@ Expected: 77 + 74 tests pass.
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
-git add projects/project01/Part03/MetaFiles/contract-audit-FE-BE-doc.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-B-plan.md
+git add projects/project01/Part03/MetaFiles/archive/contract-audit-FE-BE-doc.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-B-plan.md
 git commit -m "Part03 sub-B Phase 4: re-audit ✅ — zero 🚩 rows; audit doc Status flipped to COMPLETE"
 ```
 

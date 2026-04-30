@@ -109,4 +109,4 @@ Andrew shipped multi-screen form patterns in `ClaudeDesignDrop/raw/MBAi-460/src/
 
 `auth.jsx` is NOT in Accelerators — it was already migrated to `LoginScreen.tsx` + `RegisterScreen.tsx` in shipped MVP (Q10 non-blocking). The `Accelerators/ArtifactsForFormLibrary/README.md` notes this overlap explicitly.
 
-**Audit cross-refs:** rows 80 (FR-AUTH-1..9), 101 (FR-PROFILE), 32 (Authentication header) in `Andrew-MVP-Integration.md`.
+**Audit cross-refs:** rows 80 (FR-AUTH-1..9), 101 (FR-PROFILE), 32 (Authentication header) in `MetaFiles/archive/Andrew-MVP-Integration.md`.

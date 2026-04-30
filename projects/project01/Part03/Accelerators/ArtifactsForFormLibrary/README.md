@@ -32,5 +32,5 @@ The Form Library workstream is the *primary* destination because Andrew's spec e
 - **Original location:** `Part03/ClaudeDesignDrop/raw/MBAi-460/src/screens.jsx`
 - **Copied to:** `Part03/Accelerators/ArtifactsForFormLibrary/screens.jsx` (this dir)
 - **Copy date:** 2026-04-27 (Outstanding Integrations sub-A Phase 4.3)
-- **Audit cross-refs:** rows 50 (password show/hide + autocomplete), 53-R2 (password rules live checklist), 117 (component inventory partial), 124 (form patterns), 126 (RHF+Zod stack) in `MetaFiles/Andrew-MVP-Integration.md`
+- **Audit cross-refs:** rows 50 (password show/hide + autocomplete), 53-R2 (password rules live checklist), 117 (component inventory partial), 124 (form patterns), 126 (RHF+Zod stack) in `MetaFiles/archive/Andrew-MVP-Integration.md`
 - **Originals:** preserved in `raw/` (do not modify); this copy is modifiable.

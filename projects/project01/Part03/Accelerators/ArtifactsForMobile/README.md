@@ -27,5 +27,5 @@ Either path uses these files as starting reference, not literal `.jsx` to `.tsx`
 - **Original location:** `Part03/ClaudeDesignDrop/raw/MBAi-460/src/{mobile-core, mobile-screens, mobile-shell, ios-frame}.jsx + mobile.css`
 - **Copied to:** `Part03/Accelerators/ArtifactsForMobile/` (this dir)
 - **Copy date:** 2026-04-27 (Outstanding Integrations sub-A Phase 4.3 — commit TBD post this commit)
-- **Audit cross-refs:** rows 109 (mobile <768 hamburger), 134 (browser+device support) in `MetaFiles/Andrew-MVP-Integration.md`
+- **Audit cross-refs:** rows 109 (mobile <768 hamburger), 134 (browser+device support) in `MetaFiles/archive/Andrew-MVP-Integration.md`
 - **Originals:** preserved in `raw/` (do not modify); these copies are modifiable.

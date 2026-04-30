@@ -31,10 +31,10 @@ The two layers serve different purposes (preservation vs. usability) and intenti
 
 ## Lifecycle
 
-- Created when an audit + triage pass identifies artifacts useful for a future workstream (typically as part of a "MVP Integration" sub-workstream like Sub-A — see `MetaFiles/Andrew-MVP-Integration.md`).
+- Created when an audit + triage pass identifies artifacts useful for a future workstream (typically as part of a "MVP Integration" sub-workstream like Sub-A — see `MetaFiles/archive/Andrew-MVP-Integration.md`).
 - Stays until the target workstream consumes the artifacts (e.g., the mobile workstream activates, integrates `ArtifactsForMobile/` into its implementation, then the subfolder may be retired).
 - Retirement is a deliberate close-out step — don't auto-delete.
 
 ## Provenance
 
-Track each subfolder's origin in its own README so future readers can trace back to the audit row + the originating contributor / drop. Example: `ArtifactsForMobile/README.md` should reference the relevant rows in `MetaFiles/Andrew-MVP-Integration.md` and the source location in `ClaudeDesignDrop/raw/MBAi-460/src/`.
+Track each subfolder's origin in its own README so future readers can trace back to the audit row + the originating contributor / drop. Example: `ArtifactsForMobile/README.md` should reference the relevant rows in `MetaFiles/archive/Andrew-MVP-Integration.md` and the source location in `ClaudeDesignDrop/raw/MBAi-460/src/`.

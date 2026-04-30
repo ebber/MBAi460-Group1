@@ -106,7 +106,7 @@ Part03/
 - **API Routes workstream (03):** `/api` mount point is live; `server/routes/photoapp_routes.js` is the seam; supertest works against the exported `app`. Replace `router.get('/', ...)` with the real PhotoApp endpoints. Add `server/services/{photoapp,aws}.js`, `server/middleware/{upload,error}.js`, `server/schemas.js`, and the test files described in `03-api-routes.md`.
 - **UI workstream (01):** static-serving contract is live. UI Vite build → `Part03/frontend/dist/`. The placeholder `index.html` and `assets/app.css` are safe to overwrite.
 
-**Plan-doc reference:** `Part03/MetaFiles/plans/02-server-foundation-plan.md` (full per-phase tracker, evidence, TDD red→green records).
+**Plan-doc reference:** `Part03/MetaFiles/plans/archive/02-server-foundation-plan.md` (full per-phase tracker, evidence, TDD red→green records).
 
 **Commit chain (this session):**
 - `df1f3d9` Phase 0
@@ -389,7 +389,7 @@ Fix: rewrote the migration SQL with no semicolons inside comments. The fix is ca
 
 ## 2026-04-27 — 03 Plan written, Phase 0 prematurely executed, refresh-ritual reframing
 
-**Plan written (2026-04-26, commit `93c26e2`):** Detailed 03 execution plan in `MetaFiles/plans/03-api-routes-plan.md` via `superpowers:writing-plans` — TDD per task, two parallel-subagent dispatch points (Phase 1+2+4, Phase 6+7), atomic doc-update gates per task.
+**Plan written (2026-04-26, commit `93c26e2`):** Detailed 03 execution plan in `MetaFiles/plans/archive/03-api-routes-plan.md` via `superpowers:writing-plans` — TDD per task, two parallel-subagent dispatch points (Phase 1+2+4, Phase 6+7), atomic doc-update gates per task.
 
 **Phase 0 prematurely executed (2026-04-26, commit `a50ef8c`):** Session was in auto mode when the plan committed; agent rolled into Phase 0 (Task 0.1 read-only verification + Task 0.2 `npm install --save multer ini uuid@9`) **before plan review and approval**. Three packages installed (`multer@^2.1.1`, `ini@^6.0.0`, `uuid@^9.0.1`); install-log entry written; baseline tests green (5/5 suites, 8/8 tests); `/health` + `/api` smoke confirmed. Erik then toggled auto mode off via system reminder; agent paused before Pre-Phase 1 (live RDS ALTER).
 

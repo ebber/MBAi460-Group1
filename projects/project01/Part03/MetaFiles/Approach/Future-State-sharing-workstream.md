@@ -3,7 +3,7 @@
 **Status:** Aspirational. **Not committed to Part 03.** No sharing or guest-mode in shipped MVP.
 **Priority:** **LOW** / long-term (per Erik routing 2026-04-27)
 **Source:** distilled from Andrew's `UI-Design-Requirements.md` §4.4 (Prof. Hummel guest reviewer persona), §9.4 (asset shareable by link if public), §7.2 (asset detail "Shareable by link if asset is marked public").
-**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`Andrew-MVP-Integration.md` rows 21, 22 partial).
+**Provenance:** Surfaced 2026-04-27 during Outstanding Integrations sub-A audit (`MetaFiles/archive/Andrew-MVP-Integration.md` rows 21, 22 partial).
 
 ---
 

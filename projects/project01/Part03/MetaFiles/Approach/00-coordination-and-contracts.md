@@ -101,7 +101,7 @@ When linking files in docs, prefer **repo-relative paths from the `MBAi460-Group
 
 When writing user-facing UI copy, always use **`MBAi 460`** (with space) — this is the brand placeholder that ships in the wordmark + page title.
 
-(Provenance: clarified 2026-04-27 during Outstanding Integrations sub-A Phase 6, in response to row 6 of `Andrew-MVP-Integration.md` flagging the naming drift.)
+(Provenance: clarified 2026-04-27 during Outstanding Integrations sub-A Phase 6, in response to row 6 of `MetaFiles/archive/Andrew-MVP-Integration.md` flagging the naming drift.)
 
 ## Shared Architecture Rules
 

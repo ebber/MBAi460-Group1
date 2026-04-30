@@ -130,7 +130,7 @@ These items collectively constitute a "AI on-demand model" sub-stream within the
 - `ClaudeDesignDrop/raw/MBAi-460/src/screens.jsx` lines 6–119 (UploadScreen with OCR-mode picker) — also at `Part03/Accelerators/ArtifactsForFormLibrary/screens.jsx` for the Form Library workstream
 - `ClaudeDesignDrop/raw/MBAi-460/src/data.jsx` (mock document assets with `ocr_excerpt`, `ocr_status`, `ocr_mode`, `ocr_conf`, `ocr_words`, `ocr_lines` — example shape for the schema)
 - `MetaFiles/DesignDecisions.md` Q9 (Textract scope decision) — proposed in `DesignDecisions.md`
-- `MetaFiles/Andrew-MVP-Integration.md` rows 40, 70, 91-97 (audit detail for on-demand AI items)
+- `MetaFiles/archive/Andrew-MVP-Integration.md` rows 40, 70, 91-97 (audit detail for on-demand AI items)
 - AWS docs: [Textract DetectDocumentText](https://docs.aws.amazon.com/textract/latest/dg/API_DetectDocumentText.html), [AnalyzeDocument](https://docs.aws.amazon.com/textract/latest/dg/API_AnalyzeDocument.html), [StartDocumentTextDetection](https://docs.aws.amazon.com/textract/latest/dg/API_StartDocumentTextDetection.html)
 
 ---
@@ -141,4 +141,4 @@ Andrew's `UploadScreen` + OCR-mode-picker lives in `ClaudeDesignDrop/raw/MBAi-46
 
 `data.jsx` (mock document assets with `ocr_excerpt`, `ocr_status`, etc. — useful for schema design) is NOT in Accelerators — it's mock data only, superseded by live API. Reference from `raw/` directly when designing the document-asset schema fields.
 
-**Audit cross-refs (T6 — AI on-demand model):** rows 40 (POST /assets/:id/labels), 70 (DetectText fallback), 91 (FR-AI-1), 92 (FR-AI-2), 96 (FR-AI-6 manual re-run), 97 (FR-AI-7 client cache) in `Andrew-MVP-Integration.md`. Plus all OCR-specific rows: 5, 19, 24, 66, 67, 68, 93, 94, 95, 98.
+**Audit cross-refs (T6 — AI on-demand model):** rows 40 (POST /assets/:id/labels), 70 (DetectText fallback), 91 (FR-AI-1), 92 (FR-AI-2), 96 (FR-AI-6 manual re-run), 97 (FR-AI-7 client cache) in `MetaFiles/archive/Andrew-MVP-Integration.md`. Plus all OCR-specific rows: 5, 19, 24, 66, 67, 68, 93, 94, 95, 98.

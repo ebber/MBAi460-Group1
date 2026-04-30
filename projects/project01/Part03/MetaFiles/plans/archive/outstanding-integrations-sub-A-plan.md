@@ -66,7 +66,7 @@ After each task's substeps complete:
 ### Naming-rule new files (Ask column compliance)
 
 Per `MetaFiles/PossiblePermissionsModel.md`, naming new files surfaces for Erik approval:
-- `Part03/MetaFiles/Andrew-MVP-Integration.md` — audit table + integration status (new file)
+- `Part03/MetaFiles/archive/Andrew-MVP-Integration.md` — audit table + integration status (new file)
 - `Part03/Accelerators/README.md` — pattern doc + index (new file)
 - `Part03/Accelerators/ArtifactsForMobile/` — mobile artifacts directory (new dir)
 - `MBAi460-Group1/MetaFiles/Journal/2026-04-27-mvp-closeout-andrew-handshake.md` — coordination follow-up (new file)
@@ -142,11 +142,11 @@ git commit -m "Part03 sub-A Phase 1: fill export-notes.md with Andrew MVP metada
 
 ## Phase 2: Audit `UI-Design-Requirements.md` → `Andrew-MVP-Integration.md`
 
-**Reference:** Source = `Part03/ClaudeDesignDrop/raw/MBAi-460/uploads/UI-Design-Requirements.md` (1609 lines). Output = new file `Part03/MetaFiles/Andrew-MVP-Integration.md`.
+**Reference:** Source = `Part03/ClaudeDesignDrop/raw/MBAi-460/uploads/UI-Design-Requirements.md` (1609 lines). Output = new file `Part03/MetaFiles/archive/Andrew-MVP-Integration.md`.
 
 **Files:**
 
-- Create: `Part03/MetaFiles/Andrew-MVP-Integration.md`
+- Create: `Part03/MetaFiles/archive/Andrew-MVP-Integration.md`
 
 **Why:** Produces the per-screen / per-feature accountability table that drives Q-A1's "everything goes into implemented / Future-State / TODO; surface the rest." Without it, gap-finding is informal/lossy.
 
@@ -171,42 +171,42 @@ git commit -m "Part03 sub-A Phase 1: fill export-notes.md with Andrew MVP metada
 
 ```bash
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
-git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
+git add projects/project01/Part03/MetaFiles/archive/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
 git commit -m "Part03 sub-A Phase 2.1: Andrew-MVP-Integration.md shell + audit table skeleton"
 ```
 
 - [x] **Step 2.2:** Audit §0–6 of `UI-Design-Requirements.md` — Document metadata, glossary, vision, users, journeys. Mostly informational + design-decision conflicts with our Q1–Q6 + Q10 non-blocking auth model. Add audit rows per major claim. Apply TDD-style claim-then-verify per Standing Instructions. Then commit (Phase 2 checkpoint #2):
 
 ```bash
-git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
+git add projects/project01/Part03/MetaFiles/archive/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
 git commit -m "Part03 sub-A Phase 2.2: audit §0–6 (metadata + glossary + vision + users + journeys)"
 ```
 
 - [x] **Step 2.3:** Audit §9 — Screen-by-screen specs (the meat). Each screen Andrew specifies → one audit row. Cross-ref to our implementing page wrapper or component (e.g., LibraryPage.tsx, AssetDetailPage.tsx, etc.). Then commit (Phase 2 checkpoint #3):
 
 ```bash
-git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
+git add projects/project01/Part03/MetaFiles/archive/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
 git commit -m "Part03 sub-A Phase 2.3: audit §9 (screen-by-screen specs)"
 ```
 
 - [x] **Step 2.4:** Audit §10 — Numbered functional requirements (the other meat). Each FR → one audit row. Cross-ref to implementing file or assignment. Then commit (Phase 2 checkpoint #4):
 
 ```bash
-git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
+git add projects/project01/Part03/MetaFiles/archive/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
 git commit -m "Part03 sub-A Phase 2.4: audit §10 (numbered functional requirements)"
 ```
 
 - [x] **Step 2.5:** Audit §7–8 + §11–15 — System context + IA + visual design system + tech requirements + NFRs + phased roadmap. Section-by-section rows; cross-refs as before. Then commit (Phase 2 checkpoint #5):
 
 ```bash
-git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
+git add projects/project01/Part03/MetaFiles/archive/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
 git commit -m "Part03 sub-A Phase 2.5: audit §7–8 + §11–15 (system context + IA + visual + tech + NFR + roadmap)"
 ```
 
 - [x] **Step 2.6:** Final review pass — verify every ✅ row by reading the implementing file (TDD-style claim-then-verify). Reclassify anything that appears ✅ but isn't actually shipped. Confirm 🚩 rows are well-formed for Phase 4 triage input. Then commit (Phase 2 close-out):
 
 ```bash
-git add projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
+git add projects/project01/Part03/MetaFiles/archive/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
 git commit -m "Part03 sub-A Phase 2.6: audit final-pass verification — every ✅ row file-confirmed; 🚩 gap queue ready for Phase 4"
 ```
 
@@ -290,7 +290,7 @@ git commit -m "Part03 sub-A Phase 3: Accelerators/ scaffold + README.md (subfold
 # Replace <touched files> with the actual paths from Step 4.2 / 4.3 work.
 # Replace <N>, <X>, <Y>, <Z> with the actual counts from the triage outcome.
 cd /Users/erik/Documents/Lab/mbai460-client/MBAi460-Group1
-git add <touched files> projects/project01/Part03/MetaFiles/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
+git add <touched files> projects/project01/Part03/MetaFiles/archive/Andrew-MVP-Integration.md projects/project01/Part03/MetaFiles/plans/outstanding-integrations-sub-A-plan.md
 git commit -m "Part03 sub-A Phase 4: triage <N> gaps from Andrew MVP audit (<X> TODOs added; <Y> Future-State entries; <Z> out-of-scope) + populate <K> Accelerators/ArtifactsFor<*>/ subfolders"
 ```
 
@@ -380,7 +380,7 @@ git commit -m "Part03 sub-A Phase 7: coordination follow-up journal entry — MV
 
 **Files:**
 
-- Modify: `Part03/MetaFiles/Andrew-MVP-Integration.md` (status banner: 🔄 → ✅)
+- Modify: `Part03/MetaFiles/archive/Andrew-MVP-Integration.md` (status banner: 🔄 → ✅)
 - Modify: `Part03/ClaudeDesignDrop/notes/export-notes.md` (Integration Status: 🔄 → ✅)
 - Modify: `Part03/MetaFiles/Approach/01-ui-workstream.md` (add reference banner)
 - Modify: `Part03/MetaFiles/TODO.md` (close 3 stale sub-A entries with cross-ref to this commit)
@@ -397,7 +397,7 @@ git commit -m "Part03 sub-A Phase 7: coordination follow-up journal entry — MV
 
 - [x] **Step 8.2:** Flip "Integration Status" section in `export-notes.md` (🔄 → ✅).
 
-- [x] **Step 8.3:** Add reference banner to `01-ui-workstream.md`: "Andrew's UI Design Requirements have been fully audited + integrated — see `Part03/MetaFiles/Andrew-MVP-Integration.md` for the audit table + triage queue."
+- [x] **Step 8.3:** Add reference banner to `01-ui-workstream.md`: "Andrew's UI Design Requirements have been fully audited + integrated — see `Part03/MetaFiles/archive/Andrew-MVP-Integration.md` for the audit table + triage queue."
 
 - [x] **Step 8.4:** Close the 3 stale sub-A entries in `Part03/MetaFiles/TODO.md`:
   - "[UI] Fill `ClaudeDesignDrop/notes/export-notes.md`..."

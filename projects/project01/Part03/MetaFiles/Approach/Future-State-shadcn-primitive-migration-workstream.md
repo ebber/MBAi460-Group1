@@ -124,4 +124,4 @@ Out of scope:
 
 This workstream is preserved as a historical record of the original recommendation and as the activation point if/when a future agent decides to migrate from custom Tailwind to shadcn primitives. Andrew's `tokens.css` is already translated to `tailwind.config.ts` — that translation persists regardless of shadcn adoption. There are no shadcn-specific source artifacts to accelerate from Andrew's drop.
 
-**Audit cross-ref:** row 118 (§11.7 shadcn recommendation — explicitly DESCOPED) in `Andrew-MVP-Integration.md`.
+**Audit cross-ref:** row 118 (§11.7 shadcn recommendation — explicitly DESCOPED) in `MetaFiles/archive/Andrew-MVP-Integration.md`.

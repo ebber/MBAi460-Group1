@@ -30,7 +30,7 @@ Hybrid — multiple file types in one drop:
 
 **What landed in our shipped MVP:** see `Part03/MetaFiles/Approach/01-ui-workstream.md` for Part-03 implementation notes; `Part03/MetaFiles/plans/01-ui-workstream-plan.md` Master Tracker for execution status.
 
-**Audit table (per-section accountability):** see `Part03/MetaFiles/Andrew-MVP-Integration.md` (created during Sub-A Phase 2). Each functional/visual item from UI-Design-Requirements.md is routed to a bucket: ✅ implemented / ⏳ Future-State / 📋 TODO / ❌ out-of-scope-rejected.
+**Audit table (per-section accountability):** see `Part03/MetaFiles/archive/Andrew-MVP-Integration.md` (created during Sub-A Phase 2). Each functional/visual item from UI-Design-Requirements.md is routed to a bucket: ✅ implemented / ⏳ Future-State / 📋 TODO / ❌ out-of-scope-rejected.
 
 **Accelerators for Future-State workstreams:** see `Part03/Accelerators/` for curated copies of relevant Andrew artifacts (e.g., `ArtifactsForMobile/` populated post-Phase-4 triage). Originals stay preserved in `raw/` per the drop-zone contract; Accelerators is the curated copy layer.
 
@@ -50,4 +50,4 @@ Hybrid — multiple file types in one drop:
 
 ## Integration Status
 
-✅ **COMPLETE** 2026-04-27 — Sub-A closed. All 1609 lines of `UI-Design-Requirements.md` audited via `Part03/MetaFiles/Andrew-MVP-Integration.md` (147 audit rows / 13 routing themes); 7 source files curated to `Part03/Accelerators/` (5 mobile + asset.jsx + screens.jsx); 6 NEW Future-State workstream docs created + 2 existing docs extended; 9 standalone TODOs added; all 8 existing Future-State workstream docs have cross-reference sections back to Accelerators + audit table.
+✅ **COMPLETE** 2026-04-27 — Sub-A closed. All 1609 lines of `UI-Design-Requirements.md` audited via `Part03/MetaFiles/archive/Andrew-MVP-Integration.md` (147 audit rows / 13 routing themes); 7 source files curated to `Part03/Accelerators/` (5 mobile + asset.jsx + screens.jsx); 6 NEW Future-State workstream docs created + 2 existing docs extended; 9 standalone TODOs added; all 8 existing Future-State workstream docs have cross-reference sections back to Accelerators + audit table.
