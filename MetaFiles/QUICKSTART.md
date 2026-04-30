@@ -122,6 +122,13 @@ cp projects/project01/client/photoapp-config.ini.example  projects/project01/cli
 cp labs/lab02/shorten-config.ini.example           labs/lab02/shorten-config.ini
 ```
 
+> **These are THREE separate files**, not one. The first two share the literal filename `photoapp-config.ini` despite different roles — backbone (`infra/config/...`, `photoapp-read-only`, consumed by `validate-db` / `smoke-test-aws` / `run-sql`) vs client (`projects/project01/client/...`, `photoapp-read-write`, consumed by Part 02 client + Part 03 Express server). Populating only the backbone leaves the Part 03 server unable to start — it reads the *client* file specifically.
+
+Verify all three copies landed:
+```bash
+ls -la infra/config/photoapp-config.ini projects/project01/client/photoapp-config.ini labs/lab02/shorten-config.ini
+```
+
 > **How passwords work:** The SQL schema files use `${PLACEHOLDER}` variables instead of
 > hardcoded passwords. When you run `run-sql`, it reads these config files and substitutes
 > the placeholders before executing. **You choose the passwords here** — whatever you put
