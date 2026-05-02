@@ -212,7 +212,18 @@ Approach pointer: 00-shared-library-extraction.md (697 lines)
 - [x] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation; § Phase 3) ✅ 2026-05-02 (commits `1fe272c` SQL extraction + `2c21634` characterization test + `35f508c` reconciliation log; 99/99 lib tests green; 15-assertion characterization suite locks literal SQL; live regression PENDING ERIK per learnings/2026-05-02-photoapp-server-extraction.md)
 - [x] **Phase 0.4** — Update Part 03 to Consume the Library (§ Phase 4) ✅ 2026-05-02 — § 4.1 source updates landed across `6b9a35c` (Phase 0.2) + `1092b89` (server.js boot fix + boot-smoke regression test); § 4.2 workspace-aware Dockerfile + monorepo .dockerignore in `1b4d720`; § 4.3 Gradescope packaging script + self-contained tarball test in `66c28ab`; § 4.4 smoke green: Part 03 npm test 32+2 skipped, workspace-wide npm test --workspaces green, docker run image boots and `/health` returns 200; § 4.4 item 4 (PHOTOAPP_RUN_LIVE_TESTS=1) PENDING ERIK
 - [x] **Phase 0.5** — Doc-Staleness Prevention Protocol (CL11; § Phase 5) ✅ 2026-05-02 — DOC-FRESHNESS.md + TODO.md schema in `c235e36`; CONTRIBUTING.md + lib README full population + PR template + root README + QUICKSTART + Part 03 README + 02-server-foundation/03-api-routes touchpoints + refactor-log closeout in `b765e56`. Tests stayed green throughout (doc-only changes).
-- [ ] **Phase 0.6** — Acceptance + branch-protection update + tag (§ Phase 6)
+- 🟡 **Phase 0.6** — Acceptance + branch-protection update + tag (§ Phase 6) — agent-side green; remaining items external-gated:
+  - [x] § 6.1.2 `npm test --workspaces` green (99 lib + 32+2 skipped Part 03)
+  - [x] § 6.1.3 Part 03 `npm test` green
+  - [x] § 6.1.4 lib `npm test` green
+  - [x] § 6.1.6 `docker build` green (image `mbai460-part03:dev`; container boots; /health=200)
+  - [x] § 6.1.7 `utils/cred-sweep` — no NEW credential patterns introduced by this branch (verified via `git diff main..HEAD`); pre-existing baseline hits unchanged from before Phase 0
+  - [x] § 6.2 fresh-clone smoke green via `utils/freshclone-smoke` (commit `cd7f6ab`; ~3s end-to-end)
+  - [ ] § 6.1.1 clean install `rm -rf node_modules && npm install` — **PENDING ERIK** (rm -rf is sandbox-gated; trivial for Erik to run on return)
+  - [ ] § 6.1.5 live regression `PHOTOAPP_RUN_LIVE_TESTS=1 npm test` — **PENDING ERIK** (per directive "don't change AWS"; lab is spun-down so requires `utils/lab-up` first)
+  - [ ] § 6.1.8 `utils/smoke-test-aws` — currently 7/10 fail because lab is spun-down (RDS missing, S3 ACLs absent); will become **PENDING ERIK** once spun up
+  - [ ] § 6.3 branch-protection updates — **PENDING ERIK** (GitHub UI: required status checks `test (lib/photoapp-server)` and `test (projects/project01/Part03)` + `lib:photoapp-server` label creation)
+  - [ ] § 6.4 communication wrap-up + tag `library-1.0.0-extraction-complete` — **PENDING ERIK** (post-merge tag)
 
 ### Phase 1 — Foundation
 
@@ -403,7 +414,7 @@ The Approach establishes a six-layer test pyramid that runs throughout. **Erik f
 - [x] `utils/no-service-leak` — ✅ Built 2026-05-02 commit `2ec2f26` (pre-commit guard against `cp lib/.../services/X.js projects/.../services/X.js` regressions; scoped to library consumers — currently `project01/Part03/server` only; Phase 1 of foundation appends `project02/server`)
 - [ ] `utils/freshen-lockfile` — referenced as part of CL10 collaboration-safety; introduced in Phase 0.5 (Doc-Freshness Protocol)
 - [ ] ⏭️ `utils/run-extraction-canary` — Phase 0.3 reconciliation iteration helper (Optional Utility) — assessed 2026-05-02 and DEFERRED; canary ran cleanly on every Phase 0.x commit, no iteration loop materialized; revisit if Phase 1 Foundation work re-triggers iteration
-- [ ] `utils/freshclone-smoke` — CL11 self-enforcement (Phase 0.6 Optional Utility, **strongly recommended**)
+- [x] `utils/freshclone-smoke` — ✅ Built 2026-05-02 commit `cd7f6ab` (CL11 self-enforcement; clones current branch via `git clone --shared`, runs npm install + lib-symlink-check + lib + Part 03 tests; ~3s end-to-end; surfaced and remediated frontend/dist gap during validation)
 - [ ] `tools/route-scaffold.sh <name>` — Phase 2 route scaffolder (Optional Utility)
 - [ ] `tools/gradescope-preview` — Phase 2.9 submission iteration loop closer (Optional Utility, **strongly recommended for iteration speed**)
 - [ ] `tools/gradescope-preview-client` — Phase 3.6 client submission preview (Optional Utility)
@@ -528,7 +539,7 @@ Each row references the Approach doc section so the executing agent can read the
 - [x] ✅ **UTIL** `utils/no-service-leak` (Built 2026-05-02 commit `2ec2f26`; consumer-scoped; reports clean post-extraction)
 - [x] ✅ **TEST** `lib/photoapp-server/tests/repositories/sql-characterization.test.js` (Built 2026-05-02 commit `2c21634`; 15 assertions locking literal SQL strings + params + ORDER BY clauses for every repo function; surfaced and protected three byte-identical subtleties: `assets.findAll` empty-params arg, `INSERT IGNORE`+`ROUND(?)` literal, AUTO_INCREMENT=1001 seed)
 - [ ] ⏭️ **UTIL** `utils/run-extraction-canary` (assessed 2026-05-02 — DEFERRED; canary hit once per phase commit only, well under 3+ iteration threshold; build later if Phase 1 change re-triggers iteration; § Phase 3.1)
-- [ ] ⏳ **UTIL** `utils/freshclone-smoke` / `make freshclone-smoke` (CL11 enforcement; § Phase 6.2; **strongly recommended**)
+- [x] ✅ **UTIL** `utils/freshclone-smoke` (Built 2026-05-02 commit `cd7f6ab`; passes in ~3s; `make freshclone-smoke` Makefile wrapper deferred to Phase 1.10 with the rest of the Makefile targets per Plan Thread B); `make freshclone-smoke` itself rolls into Phase 1.10's Makefile delivery — tracked there.
 
 ### Phase 1 — Foundation Optionals
 

@@ -12,7 +12,7 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-02 — Phase 0.5 (Doc-Freshness Protocol) ✅ closed (commits `c235e36` DOC-FRESHNESS.md + TODO.md Deferred Optional Steps schema + `b765e56` CONTRIBUTING.md + lib README full population + root README/QUICKSTART workspace-install path + PR template + Part 03 README/Approach touchpoints + refactor-log closeout). Lib tests 99/99 green; Part 03 canary 32+2 skipped green throughout. Phase 0.6 (Acceptance — clean install + verification commands + tag library-1.0.0-extraction-complete) is the next and final sub-frame.
+> **Last updated:** 2026-05-02 — **Phase 0 agent-side complete; awaits Erik gates.** Final commits: `cd7f6ab` (utils/freshclone-smoke for CL11 self-enforcement). 6 of 7 Phase 0 Optional Steps Built (Mermaid + lib-symlink-check + exports-shape + no-service-leak + sql-characterization + freshclone-smoke; only `utils/run-extraction-canary` retired); 17 commits ahead of main on `feat/lib-extraction`; lib 99/99 + Part 03 32+2 skipped green; Part 03 image boots clean; submission tarball self-contained; freshclone-smoke ~3s green. Awaiting Erik for: § 6.1.1 clean install (rm -rf sandbox-gated), § 6.1.5 live AWS regression, § 6.1.8 smoke-test-aws (lab spun-down), § 6.3 branch-protection updates, § 6.4 tag `library-1.0.0-extraction-complete`. Phase 1 (Foundation) opens once Phase 0 closes.
 
 ---
 
@@ -64,22 +64,22 @@ Position:
   Phase 0.3 ✅ (CL9 SQL-into-repositories bounded reconciliation +
   characterization test + reconciliation log), Phase 0.4 ✅ (server.js
   boot fix + workspace-aware Dockerfile + Gradescope packaging script +
-  end-to-end smoke), Phase 0.5 ✅ (Doc-Freshness Protocol —
-  DOC-FRESHNESS.md + TODO.md schema + CONTRIBUTING + lib README +
-  README/QUICKSTART + PR template + Part 03 touchpoints).
-- Now: Between sub-phases — feat/lib-extraction carries 16 commits ahead
-  of main; lib tests 99/99 green; Part 03 canary 32+2 skipped green;
-  Part 03 image boots cleanly via `docker run mbai460-part03:dev` with
-  /health=200; submission tarball self-contained; live AWS regression
-  PENDING ERIK.
-- Next: Phase 0.6 — Acceptance gate. Verification commands (clean
-  `rm -rf node_modules && npm install` + workspace tests + lib tests +
-  Part 03 tests + Docker build + cred-sweep + smoke-test-aws); fresh-clone
-  smoke test (Optional `utils/freshclone-smoke` strongly recommended);
-  branch-protection updates (Erik); tag `library-1.0.0-extraction-complete`.
-- Down: 1 sub-phase remains — 0.6 Acceptance + tag.
-- Up: Project 02 Part 01 quest. After Phase 0.6 closes, the workstream
-  closes and Phase 1 (Foundation) becomes the next Active Frame.
+  end-to-end smoke), Phase 0.5 ✅ (Doc-Freshness Protocol — DOC-FRESHNESS
+  + TODO.md schema + CONTRIBUTING + lib README + README/QUICKSTART +
+  PR template + Part 03 touchpoints), Phase 0.6 agent-side ✅
+  (verification commands run; freshclone-smoke green).
+- Now: 🟡 **Awaiting Erik gates.** All work I can do solo is committed:
+  17 commits ahead of main; lib 99/99 + Part 03 32+2 skipped green;
+  Part 03 image boots clean; submission tarball self-contained;
+  freshclone-smoke passes in ~3s. Five external gates remaining
+  (§ 6.1.1 clean install — rm -rf sandbox-gated, § 6.1.5 live AWS,
+  § 6.1.8 smoke-test-aws spin-up, § 6.3 branch-protection, § 6.4 tag).
+- Next: Erik runs the external gates on return; this Active Frame
+  flips to ✅ at tag `library-1.0.0-extraction-complete`. Then the
+  workstream closes; OrientationMap "Closed (recent — this quest arc)"
+  gains a Phase 0 row; Phase 1 (Foundation) becomes the next pickup.
+- Down: (empty — no sub-frame; awaiting external gates only.)
+- Up: Project 02 Part 01 quest.
 
 Scope:
 - In:
@@ -161,7 +161,7 @@ Resumption (per state):
 - [x] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation) ✅ 2026-05-02 (commits `1fe272c` SQL extraction + `2c21634` characterization test + `35f508c` reconciliation log; § Phase 3)
 - [x] **Phase 0.4** — Update Part 03 to Consume the Library ✅ 2026-05-02 (commits `1092b89` server.js boot fix + boot-smoke test + `1b4d720` Dockerfile + `66c28ab` Gradescope packaging script + tarball test; § 4.4 item 4 live AWS PENDING ERIK; § Phase 4)
 - [x] **Phase 0.5** — Doc-Staleness Prevention Protocol (CL11) ✅ 2026-05-02 (commits `c235e36` DOC-FRESHNESS.md + TODO.md schema + `b765e56` CONTRIBUTING + lib README + READMEs/QUICKSTART + PR template + Part 03 touchpoints + refactor-log closeout; § Phase 5)
-- [ ] **Phase 0.6** — Acceptance + branch-protection update + tag (§ Phase 6)
+- 🟡 **Phase 0.6** — Acceptance (commit `cd7f6ab` utils/freshclone-smoke; § Phase 6) — agent-side green (§ 6.1.2/3/4/6/7 + § 6.2); awaits Erik for § 6.1.1 clean install + § 6.1.5 live AWS + § 6.1.8 smoke-test-aws (lab currently spun-down) + § 6.3 branch-protection + § 6.4 tag `library-1.0.0-extraction-complete`. See Plan § Phase 0.6 for the per-item ledger.
 
 ---
 
