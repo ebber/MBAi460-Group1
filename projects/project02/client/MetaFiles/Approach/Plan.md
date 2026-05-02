@@ -208,7 +208,7 @@ Approach pointer: 00-shared-library-extraction.md (697 lines)
 ```
 
 - [x] **Phase 0.1** — Workspace Bootstrap ✅ 2026-05-02 (commits `9b4bf47` workspace bootstrap + `38f258b` lib-symlink-check + library exports fix; Approach § Phase 1)
-- [ ] **Phase 0.2** — Extract Service Core mechanically pure (§ Phase 2)
+- [x] **Phase 0.2** — Extract Service Core mechanically pure ✅ 2026-05-02 (commits `6b9a35c` extraction + factories + Part 03 consumer update + `2ec2f26` exports-shape test + no-service-leak util; § Phase 2)
 - [ ] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation; § Phase 3)
 - [ ] **Phase 0.4** — Update Part 03 to Consume the Library (§ Phase 4)
 - [ ] **Phase 0.5** — Doc-Staleness Prevention Protocol (CL11; § Phase 5)
@@ -400,7 +400,7 @@ The Approach establishes a six-layer test pyramid that runs throughout. **Erik f
 **Permanent (mandatory) utilities** introduced in this arc:
 
 - [x] `utils/lib-symlink-check` — ✅ Built 2026-05-02 commit `38f258b` (workspace install-state sanity; runs clean 5/5 PASS for Part 03 consumer)
-- [ ] `utils/no-service-leak` — pre-commit guard against `cp lib/.../services/X.js projects/.../services/X.js` regressions (Phase 0.2 Optional Utility)
+- [x] `utils/no-service-leak` — ✅ Built 2026-05-02 commit `2ec2f26` (pre-commit guard against `cp lib/.../services/X.js projects/.../services/X.js` regressions; scoped to library consumers — currently `project01/Part03/server` only; Phase 1 of foundation appends `project02/server`)
 - [ ] `utils/freshen-lockfile` — referenced as part of CL10 collaboration-safety; introduced in Phase 0.5 (Doc-Freshness Protocol)
 - [ ] `utils/run-extraction-canary` — Phase 0.3 reconciliation iteration helper (Optional Utility)
 - [ ] `utils/freshclone-smoke` — CL11 self-enforcement (Phase 0.6 Optional Utility, **strongly recommended**)
@@ -523,9 +523,9 @@ Each row references the Approach doc section so the executing agent can read the
 ### Phase 0 — Library Extraction Optionals
 
 - [x] ✅ **VIZ** `Target-State-mbai460-photoapp-server-lib-extraction-v1.md` (Built 2026-05-02; commits `c86fb67` initial + `cee5cad` review-pass round 1 + `f0a2e19` review-pass round 2; reviewer-approved)
-- [ ] ⏳ **TEST** `lib/photoapp-server/tests/exports-shape.test.js` (snapshot of public exports map; § Phase 2.2)
+- [x] ✅ **TEST** `lib/photoapp-server/tests/exports-shape.test.js` (Built 2026-05-02 commit `2ec2f26`; explicit `toEqual()` checks — 12 tests; covers top-level keys + sub-export keys + factory shapes + repositories sentinel)
 - [x] ✅ **UTIL** `utils/lib-symlink-check` (Built 2026-05-02 commit `38f258b`; 5/5 PASS — Part 03 consumer green; Project 02 WARN-skipped as designed)
-- [ ] ⏳ **UTIL** `utils/no-service-leak` (pre-commit; § Phase 2.2)
+- [x] ✅ **UTIL** `utils/no-service-leak` (Built 2026-05-02 commit `2ec2f26`; consumer-scoped; reports clean post-extraction)
 - [ ] ⏳ **TEST** `lib/photoapp-server/tests/repositories/sql-characterization.test.js` (CL9 SQL byte-identical assertion; § Phase 3.1)
 - [ ] ⏳ **UTIL** `utils/run-extraction-canary` (Phase 3 iteration helper; § Phase 3.1)
 - [ ] ⏳ **UTIL** `utils/freshclone-smoke` / `make freshclone-smoke` (CL11 enforcement; § Phase 6.2; **strongly recommended**)
