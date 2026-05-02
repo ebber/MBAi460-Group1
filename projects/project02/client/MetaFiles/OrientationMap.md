@@ -12,7 +12,7 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-02 — created during quest opening; orchestration scaffolding complete (Plan + Map both authored); awaiting execution greenlight.
+> **Last updated:** 2026-05-02 — Phase 0 (Library Extraction) picked up on branch `feat/lib-extraction`; pre-flight gates verified; Active section transitioned to Frame instance. Phase 0.1 (Workspace Bootstrap) is the next sub-frame to enter after Mermaid review + Optional Steps batch routing.
 
 ---
 
@@ -47,19 +47,111 @@ Map status symbols mapped to Frame `State` semantics (per `Approach/Proposed_Exe
 
 ## Active
 
-**No workstream actively engaged 2026-05-02 — orchestration scaffolding complete; awaiting execution greenlight.**
+**🔄 Phase 0 — Library Extraction** (entry-gate workstream; In Progress on branch `feat/lib-extraction` since 2026-05-02)
 
-When execution opens, the *Active* section transitions to a full **Frame instance** for the engaged workstream — Purpose / Position (with Down / Up populated) / Scope (In, Out) / Workset / State / Entry Conditions / Exit Conditions / Verification / Resumption-by-state. Today the Active section is intentionally empty pending Erik's execution greenlight + execution-handoff choice.
+```
+[Frame Instance: Phase 0 — Library Extraction]
 
-**Workstream candidates** (one of these will be Active when Erik gives the execution greenlight; pickup order per `Plan.md` Master Tracker):
+Purpose:
+- Extract Part 03's service core into @mbai460/photoapp-server@1.0.0; Part 03
+  becomes a consumer post-extraction; Project 02 will be a second consumer in
+  Phase 1. Mechanically pure extraction (CL9) — only behaviour change is the
+  bounded SQL-into-repositories refactor in Phase 0.3.
 
-1. **Phase 0 — Library Extraction** ⏳ (entry gate; everything else depends on it)
-2. (Phase 1 unlocks after Phase 0 ✅)
-3. (Phase 2 unlocks after Phase 1 ✅)
-4. (Phase 3 unlocks after Phase 2 ✅)
-5. (Phase 4 unlocks after Phase 2 ✅ AND Phase 3 ✅)
+Position:
+- Back: Project 02 Part 01 quest declared; Plan + Map authored, committed,
+  pushed (06c0250). Pre-flight gates verified 2026-05-02.
+- Now: Phase 0 pickup — feat/lib-extraction branch live; refactor-log seeded;
+  Mermaid render in flight (review checkpoint pending).
+- Next: Phase 0.1 (Workspace Bootstrap) — npm workspace root + .npmrc +
+  .gitattributes; first commit chore(monorepo): introduce npm workspaces with
+  lib/photoapp-server skeleton.
+- Down: 6 internal phases — 0.1 Workspace Bootstrap → 0.2 Service-Core
+  Extraction (mechanically pure) → 0.3 Repository Layer (CL9 reconciliation)
+  → 0.4 Update Part 03 to Consume → 0.5 Doc-Freshness Protocol → 0.6 Acceptance.
+- Up: Project 02 Part 01 quest.
 
-See `Approach/Plan.md` § *How Collaborating Agents Pick Up This Plan* for the pickup protocol when execution opens.
+Scope:
+- In:
+  - MBAi460-Group1/lib/photoapp-server/ (new) — extracted service core, repos,
+    middleware factories, envelopes, row converters
+  - MBAi460-Group1/package.json + .npmrc + .gitattributes — npm workspace root
+  - MBAi460-Group1/CONTRIBUTING.md (new) — workspace etiquette, lockfile, library protocol
+  - MBAi460-Group1/MetaFiles/DOC-FRESHNESS.md (new) — onboarding-doc protocol
+  - MBAi460-Group1/MetaFiles/TODO.md (new) — Optional-Steps queue schema
+  - MBAi460-Group1/projects/project01/Part03/server/ (modify) — consume the library
+  - MBAi460-Group1/projects/project01/Part03/Dockerfile (modify) — workspace-aware copy pattern
+  - .github/pull_request_template.md (new) — onboarding-impact + library label
+  - lib:photoapp-server GitHub label (new)
+  - learnings/2026-XX-XX-photoapp-server-extraction.md (new) — CL9 reconciliation log
+- Out:
+  - Any change to Part 03 /api/* wire contract (CL2 internals-only)
+  - Project 02 server tree (Phase 1)
+  - Project 02-specific middleware promotions (request_id, validate, pino-http,
+    OTel) — YAGNI per CL2 until 3rd consumer
+  - Infrastructure / Terraform changes
+
+Workset:
+- Approach: 00-shared-library-extraction.md (697 lines)
+- Branch: feat/lib-extraction
+- Refactor-log: projects/project01/Part03/MetaFiles/refactor-log.md (seeded 2026-05-02)
+- Files moving from Part 03 → lib/photoapp-server/src/:
+  config.js • services/aws.js • services/photoapp.js • middleware/error.js
+  (becomes factory) • middleware/upload.js (becomes factory) • schemas.js
+  (splits → schemas/envelopes.js + schemas/rows.js)
+- Files NEW in lib/photoapp-server/src/repositories/: users.js, assets.js,
+  labels.js (CL9 SQL-from-services extraction)
+
+State: 🔄 In Progress
+
+Entry Conditions:
+- ✅ Lab status PASS (utils/lab-status 2026-05-02)
+- ✅ Class Project main clean + synced with origin/main (06c0250)
+- ✅ Part 03 regression baseline: 77 passed, 2 skipped (live-gated), 0 failed
+- ✅ No in-flight Part 03 PRs (Erik manual confirm 2026-05-02)
+- ✅ Branch feat/lib-extraction created
+- ✅ Pickup announcement in Part 03 refactor-log
+- ⏳ Slack heads-up posted (Erik action; draft prepared)
+
+Exit Conditions:
+- All 6 sub-phases ✅
+- Part 03 npm test green throughout (regression baseline maintained)
+- Part 03 live regression green (PHOTOAPP_RUN_LIVE_TESTS=1)
+- Workspace-aware Dockerfile + Gradescope packaging script working
+- lib:photoapp-server GitHub label live; PR template updated
+- DOC-FRESHNESS.md exists; CONTRIBUTING.md authored; lib README authored
+- MetaFiles/TODO.md schema established (Phase 0.5.7)
+- Fresh-clone smoke test passes (CL11)
+- Tag library-1.0.0-extraction-complete on merge
+
+Verification:
+- cd MBAi460-Group1 && rm -rf node_modules && npm install (clean state succeeds)
+- npm test --workspaces (every workspace's tests green)
+- cd projects/project01/Part03 && npm test (surface tests green)
+- cd lib/photoapp-server && npm test (lib tests green)
+- PHOTOAPP_RUN_LIVE_TESTS=1 npm test (live regression green)
+- docker build -t mbai460-server-test projects/project01/Part03/ (workspace-aware)
+- utils/cred-sweep (no leaks)
+- utils/smoke-test-aws (env intact)
+
+Resumption (per state):
+- If Planned: read Approach 00-shared-library-extraction.md end-to-end; ensure
+  pre-flight gates are still green; begin Phase 0.1.
+- If In Progress: read this Active section + recent git log on feat/lib-extraction
+  + refactor-log.md to find current sub-phase. Verify last commit's claims
+  against file state (adversarial Phase 2 stance per feedback_refresh_ritual.md).
+- If Verified at sub-phase: update tracker + continue to next sub-phase.
+- If Blocked: capture in refactor-log + surface to user.
+```
+
+**Sub-phase progress** (lifted from Plan.md § Phase 0):
+
+- [ ] **Phase 0.1** — Workspace Bootstrap (`00-shared-library-extraction.md` § Phase 1)
+- [ ] **Phase 0.2** — Extract Service Core mechanically pure (§ Phase 2)
+- [ ] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation; § Phase 3)
+- [ ] **Phase 0.4** — Update Part 03 to Consume the Library (§ Phase 4)
+- [ ] **Phase 0.5** — Doc-Staleness Prevention Protocol (CL11; § Phase 5)
+- [ ] **Phase 0.6** — Acceptance + branch-protection update + tag (§ Phase 6)
 
 ---
 
@@ -69,7 +161,7 @@ Frame-compact rows derived from the Plan's Master Tracker. Each row references t
 
 | Workstream | State | Branch | Depends on | Acceptance | Approach pointer |
 |---|---|---|---|---|---|
-| **Phase 0 — Library Extraction** | ⏳ Planned (gate) | `feat/lib-extraction` | NONE | `library-1.0.0-extraction-complete` tag; lib + Part 03 tests green; live regression green; fresh-clone smoke green | `Approach/00-shared-library-extraction.md` |
+| **Phase 0 — Library Extraction** | 🔄 **In Progress** (Active) | `feat/lib-extraction` | NONE | `library-1.0.0-extraction-complete` tag; lib + Part 03 tests green; live regression green; fresh-clone smoke green | `Approach/00-shared-library-extraction.md` |
 | **Phase 1 — Foundation** | ⏳ Planned | `feat/p02-foundation` | Phase 0 ✅ | `make up` healthy; six-layer harness in place; lint clean; Terraform `state mv` cutover green | `Approach/01-foundation.md` |
 | **Phase 2 — Web Service (60/60)** | ⏳ Planned | `feat/p02-web-service` | Phase 1 ✅ | Gradescope server **60/60**; tag `gradescope-server-60-60`; contract suite + happy-path E2E green | `Approach/02-web-service.md` |
 | **Phase 3 — Client API (30/30)** | ⏳ Planned | `feat/p02-client-api` | Phase 2 ✅ | Gradescope client **30/30**; tag `gradescope-client-30-30`; integration sweep + contract conformance green | `Approach/03-client-api.md` |

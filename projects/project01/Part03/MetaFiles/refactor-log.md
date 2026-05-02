@@ -429,3 +429,32 @@ Remaining checks:
 - Run `npm start` from `projects/project01/Part03`.
 - Confirm `GET /`, `GET /ping`, and `GET /users` respond.
 
+
+---
+
+## 2026-05-02 - Phase 0 (Library Extraction) Pickup
+
+Beginning Phase 0 of the Project 02 Part 01 quest. Part 03's service core (`config.js`, `services/aws.js`, `services/photoapp.js`, `middleware/error.js`, `middleware/upload.js`, `schemas.js`) is being extracted into the shared library `@mbai460/photoapp-server` at `MBAi460-Group1/lib/photoapp-server/`. After extraction, this Part 03 server becomes a *consumer* of the library; Project 02 will be a second consumer in Phase 1.
+
+**What changes in this Part 03 tree:**
+
+- `config.js`, `services/aws.js`, `services/photoapp.js`, `middleware/error.js`, `middleware/upload.js`, `schemas.js` — **deleted from this tree**; same files (or split) appear under `lib/photoapp-server/src/`.
+- `app.js` — modified to import services / middleware / schemas from `@mbai460/photoapp-server` (workspace-resolved).
+- `routes/photoapp_routes.js` — modified to import services from the library; calls `successResponse({ data })` from the library's envelope module.
+- `package.json` — removes hoisted deps (mysql2, AWS SDK, multer, etc.); adds `"@mbai460/photoapp-server": "*"` (workspace protocol per CL8 pre-1.0.0 floating).
+- `Dockerfile` — workspace-aware copy pattern (root `package.json` + lockfile + each workspace's `package.json` before src).
+- `package-lock.json` — **deleted** (replaced by single root lockfile at `MBAi460-Group1/package-lock.json`).
+- Service-layer tests (`tests/aws.test.js`, `tests/photoapp_service.test.js`, `tests/error.test.js`, `tests/upload.test.js`, `tests/schemas.test.js`) — **moved to the library's tests directory**.
+- Surface-specific tests **stay** (`tests/app.test.js`, `tests/health.test.js`, `tests/static.test.js`, `tests/photoapp_routes.test.js`, `tests/integration_routes_error.test.js`, `tests/live_photoapp_integration.test.js`).
+
+**Wire contract: unchanged.** All `/api/*` endpoints keep their existing verb / path / status / envelope shapes (CL2 — internals-only). Part 03's existing test suite is the regression baseline canary.
+
+**Branch:** `feat/lib-extraction` from `main` at `06c0250`.
+**Plan:** `MBAi460-Group1/projects/project02/client/MetaFiles/Approach/Plan.md` § Phase 0.
+**Approach:** `MBAi460-Group1/projects/project02/client/MetaFiles/Approach/00-shared-library-extraction.md`.
+
+**Pre-flight regression baseline** (HEAD `06c0250`): Part 03 `npm test` → **77 passed, 2 skipped (live-gated), 0 failed**, 12 of 13 suites green. Live regression (`PHOTOAPP_RUN_LIVE_TESTS=1 npm test`) deferred to Phase 0.6 acceptance per Approach § Phase 6.
+
+**Pre-flight communication:** Erik manually confirmed no in-flight Part 03 PRs (2026-05-02). Slack heads-up draft prepared.
+
+**CL9 reconciliation log entries** (the only behaviour-affecting refactor in Phase 0 — SQL-into-repositories) will land at `learnings/2026-05-XX-photoapp-server-extraction.md` as Phase 0.3 unfolds. Cross-referenced from this file when each lands.
