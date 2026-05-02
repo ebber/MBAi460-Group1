@@ -9,7 +9,7 @@
 //
 
 const app = require('./app');
-const config = require('./config');
+const { config } = require('@mbai460/photoapp-server');
 
 const port = config.web_service_port;
 
