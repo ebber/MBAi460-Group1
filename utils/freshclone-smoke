@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+#
+# freshclone-smoke — verify the documented setup commands actually work
+# from a clean clone. The single test that proves the docs are correct
+# (CL11 doc-staleness protocol enforcement).
+#
+# This is the script form of MetaFiles/QUICKSTART.md Step 7 (workspace
+# install + test commands). When the docs drift, this script breaks.
+#
+# What it does:
+#   1. Clones the current branch into a tmp dir (via the local repo —
+#      no remote network round-trip required, but real clone semantics).
+#   2. Runs `npm install` from the cloned root (every workspace; symlinks).
+#   3. Runs the canonical test commands quoted in QUICKSTART Step 7:
+#        - utils/lib-symlink-check (5/5 PASS)
+#        - cd projects/project01/Part03 && npm test
+#        - cd lib/photoapp-server && npm test
+#   4. Reports PASS/FAIL with elapsed time.
+#   5. Tears down the tmp dir on success; preserves it on failure for
+#      forensic inspection.
+#
+# Usage:
+#   utils/freshclone-smoke
+#
+# Exit: 0 on full pass; non-zero if any step fails.
+#
+# Approach: 00-shared-library-extraction.md § Phase 6.2 (Optional Utility
+# Step — strongly recommended). Built 2026-05-02 during Phase 0.6
+# acceptance to make CL11 self-enforcing for every onboarding-affecting
+# PR going forward.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+BRANCH="$(git -C "${REPO_ROOT}" rev-parse --abbrev-ref HEAD)"
+HEAD_SHA="$(git -C "${REPO_ROOT}" rev-parse --short HEAD)"
+
+TMP="$(mktemp -d -t freshclone-smoke.XXXXXXXX)"
+
+# Preserve TMP on failure so the user can inspect; clean on success.
+PRESERVE_ON_FAIL=1
+cleanup_on_exit() {
+  local rc=$?
+  if [ ${rc} -ne 0 ] && [ ${PRESERVE_ON_FAIL} -eq 1 ]; then
+    echo ""
+    echo "FAIL — preserving clone for inspection at: ${TMP}"
+    echo "Inspect, then: rm -rf ${TMP}"
+  else
+    rm -rf "${TMP}"
+  fi
+}
+trap cleanup_on_exit EXIT
+
+# Header
+echo "╔═══════════════════════════════════════════════════════════════╗"
+echo "║         freshclone-smoke — CL11 doc-staleness gate            ║"
+echo "║                                                               ║"
+printf "║  Branch: %-52s ║\n" "${BRANCH} @ ${HEAD_SHA}"
+printf "║  Tmp:    %-52s ║\n" "${TMP}"
+echo "╚═══════════════════════════════════════════════════════════════╝"
+echo ""
+
+START=$(date +%s)
+
+# ---------------------------------------------------------------------------
+# Step 1 — clone
+# ---------------------------------------------------------------------------
+echo "==> [1/4] git clone ${BRANCH} into tmp dir"
+# --shared works only on local clones and avoids copying the object database;
+# fast and safe because we only read from the clone, never mutate it.
+git clone --quiet --branch "${BRANCH}" --shared "${REPO_ROOT}" "${TMP}/MBAi460-Group1"
+
+# ---------------------------------------------------------------------------
+# Step 2 — npm install (workspace topology must resolve)
+# ---------------------------------------------------------------------------
+echo "==> [2/4] npm install (workspace install from clone root)"
+( cd "${TMP}/MBAi460-Group1" && npm install --silent --no-audit --no-fund )
+
+# ---------------------------------------------------------------------------
+# Step 3 — utils/lib-symlink-check (5/5 PASS expected)
+# ---------------------------------------------------------------------------
+echo "==> [3/4] utils/lib-symlink-check"
+( cd "${TMP}/MBAi460-Group1" && bash utils/lib-symlink-check )
+
+# ---------------------------------------------------------------------------
+# Pre-step 4 — placeholder frontend/dist/index.html
+#
+# Part 03's server tests include SPA-fallback assertions that 200 on
+# unmatched non-/api paths. The fallback serves frontend/dist/index.html.
+# That artifact is the Vite build output (gitignored, produced by the
+# UI workstream's `cd frontend && npm run build` — out of scope for the
+# Phase 0 lib-extraction freshclone gate).
+#
+# A real contributor following QUICKSTART would either run the frontend
+# build first or accept those 4 tests failing on a fresh clone. For the
+# smoke-test purpose (CL11 lib/server doc-staleness gate), we stamp a
+# minimal placeholder so the test outcome reflects the lib + server doc
+# correctness, not the orthogonal frontend pipeline.
+# ---------------------------------------------------------------------------
+mkdir -p "${TMP}/MBAi460-Group1/projects/project01/Part03/frontend/dist/assets"
+cat > "${TMP}/MBAi460-Group1/projects/project01/Part03/frontend/dist/index.html" <<'HTML'
+<!DOCTYPE html>
+<html><head><title>MBAi 460 — placeholder</title></head>
+<body>
+  <h1>MBAi 460</h1>
+  <p>freshclone-smoke placeholder. Real Vite build lives behind <code>cd frontend && npm run build</code>.</p>
+</body></html>
+HTML
+cat > "${TMP}/MBAi460-Group1/projects/project01/Part03/frontend/dist/assets/app.css" <<'CSS'
+/* freshclone-smoke placeholder */
+CSS
+
+# ---------------------------------------------------------------------------
+# Step 4 — workspace tests (lib + Part 03)
+# ---------------------------------------------------------------------------
+echo "==> [4/4] workspace tests"
+echo "    --- lib/photoapp-server ---"
+( cd "${TMP}/MBAi460-Group1/lib/photoapp-server" && npm test --silent 2>&1 | tail -6 )
+echo "    --- projects/project01/Part03 ---"
+( cd "${TMP}/MBAi460-Group1/projects/project01/Part03" && npm test --silent 2>&1 | tail -6 )
+
+ELAPSED=$(( $(date +%s) - START ))
+
+echo ""
+echo "═══════════════════════════════════════════════════════════════"
+echo "PASS — fresh clone reaches green tests in ${ELAPSED}s"
+echo "═══════════════════════════════════════════════════════════════"

@@ -13,6 +13,7 @@
 const express = require('express');
 const path = require('path');
 const photoappRoutes = require('./routes/photoapp_routes');
+const { middleware: libMiddleware } = require('@mbai460/photoapp-server');
 
 const app = express();
 
@@ -70,6 +71,10 @@ app.use((req, res, next) => {
   res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
 });
 
-app.use(require('./middleware/error'));
+// Centralized error middleware via the shared library's DI factory. Default
+// args reproduce Part 03's pre-extraction status-code mapping + error envelope
+// shape exactly (see lib/photoapp-server/src/middleware/error.js for the
+// default mapping; this consumer passes {} = use Part 03 defaults).
+app.use(libMiddleware.createErrorMiddleware({}));
 
 module.exports = app;

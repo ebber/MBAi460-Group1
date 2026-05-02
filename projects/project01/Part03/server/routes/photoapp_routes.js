@@ -18,9 +18,16 @@
 
 const express = require('express');
 const router = express.Router();
-const photoapp = require('../services/photoapp');
-const { upload } = require('../middleware/upload');
-const { successResponse, errorResponse } = require('../schemas');
+
+// Consume the shared library `@mbai460/photoapp-server` for service core,
+// upload middleware factory, and envelope helpers. Part 03 surface owns
+// only this routes file (and app.js + tests/); the library owns services,
+// middleware factories, and schemas. Approach 00-shared-library-extraction.md
+// § Phase 4.1 documents this consume pattern.
+const lib = require('@mbai460/photoapp-server');
+const photoapp = lib.services.photoapp;
+const upload = lib.middleware.createUploadMiddleware();  // {} = Part 03 defaults (50 MB, os.tmpdir/photoapp-uploads)
+const { successResponse, errorResponse } = lib.schemas.envelopes;
 
 // GET /api/ping
 router.get('/ping', async (req, res, next) => {

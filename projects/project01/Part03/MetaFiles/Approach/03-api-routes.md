@@ -1462,3 +1462,7 @@ Key smoothing actions embedded in the phases above:
 - **Automated tests.** Every route, service function, and middleware gets Jest unit/integration coverage; live AWS tests are opt-in via `PHOTOAPP_RUN_LIVE_TESTS=1`.
 
 Track specific copied-baseline refactors in `projects/project01/Part03/MetaFiles/refactor-log.md`.
+
+---
+
+> **Service-core extraction note (added 2026-05-02):** The service / repository / middleware-factory / schema layers referenced throughout this workstream were extracted on 2026-05-02 into the shared library `@mbai460/photoapp-server` (see `MBAi460-Group1/lib/photoapp-server/`). The `/api/*` routes themselves remain owned by Part 03 — only their service-call boundary changed (e.g., `routes/photoapp_routes.js` now calls `lib.services.photoapp.uploadImage(...)` instead of an in-tree `services/photoapp.js`). Wire contracts, response envelopes, and DB-first delete ordering are unchanged (CL2 — internals-only). The extraction is documented in `MBAi460-Group1/projects/project02/client/MetaFiles/Approach/00-shared-library-extraction.md` and reconciled (CL9 byte-identical SQL) in `MBAi460-Group1/learnings/2026-05-02-photoapp-server-extraction.md`. Refactor-log closeout entry: `MetaFiles/refactor-log.md` 2026-05-02.

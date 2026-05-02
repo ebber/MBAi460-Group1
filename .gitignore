@@ -61,6 +61,13 @@ yarn-debug.log*
 yarn-error.log*
 
 # ============================================================
+# Submission tarball outputs (Phase 0.4 § 4.3 packaging script)
+# Note: NOT a blanket **/dist because frontend/dist is checked-in
+# pre-built SPA assets that the server serves at runtime.
+# ============================================================
+projects/project01/Part03/dist/
+
+# ============================================================
 # Standard ignores
 # ============================================================
 **/.DS_Store

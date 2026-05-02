@@ -1,0 +1,9 @@
+# MBAi 460 Group 1 monorepo — .gitattributes
+#
+# npm lockfile merge strategy. The 'union' strategy concatenates conflicting
+# blocks rather than failing the merge — sufficient for most workspace lockfile
+# conflicts (npm reorders deterministically). For PRs that touch workspace
+# dependencies and produce stubborn conflicts, install npm-merge-driver per
+# CONTRIBUTING.md (Phase 0.5).
+
+package-lock.json merge=union

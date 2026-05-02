@@ -728,3 +728,7 @@ On 2026-04-26, the team confirmed Express/Node as the Part 03 backend direction 
 - Q6 — visualization is agnosticized (handled by design agent).
 
 This workstream's job is to smooth the copied baseline into the shape this checklist describes: split `app.js` and `server.js`, mount `/api` before static, ship a placeholder frontend build, add Jest + supertest, and document run commands. Refactor notes for any deviations belong in `projects/project01/Part03/MetaFiles/refactor-log.md`.
+
+---
+
+> **Service-core extraction note (added 2026-05-02):** The service core, middleware, schemas, and config originally specified in this workstream were extracted on 2026-05-02 into the shared library `@mbai460/photoapp-server` (see `MBAi460-Group1/lib/photoapp-server/`). After that change, the surface-specific concerns described in this doc (Express skeleton, mount order, Jest harness, surface tests) remain owned by Part 03; the library owns the cross-consumer service / repository / middleware-factory / schema layers. The extraction is documented in `MBAi460-Group1/projects/project02/client/MetaFiles/Approach/00-shared-library-extraction.md` and reconciled in `MBAi460-Group1/learnings/2026-05-02-photoapp-server-extraction.md`. Refactor-log closeout entry: `MetaFiles/refactor-log.md` 2026-05-02.

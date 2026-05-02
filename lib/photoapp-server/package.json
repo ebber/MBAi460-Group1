@@ -1,0 +1,32 @@
+{
+  "name": "@mbai460/photoapp-server",
+  "version": "1.0.0",
+  "description": "Shared service core for MBAi 460 PhotoApp surfaces — extracted from Project 01 Part 03 server tree (Phase 0.2 mechanically pure + Phase 0.3 CL9 SQL-into-repositories bounded reconciliation). Internals-only: exports services / repositories / middleware (factories) / schemas; never routers (consumers own routing because their wire contracts differ).",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "test": "jest --passWithNoTests"
+  },
+  "license": "ISC",
+  "engines": {
+    "node": ">=24.x",
+    "npm": ">=11.x"
+  },
+  "dependencies": {
+    "@aws-sdk/client-rekognition": "^3.946.0",
+    "@aws-sdk/client-s3": "^3.972.0",
+    "@aws-sdk/credential-providers": "^3.969.0",
+    "ini": "^6.0.0",
+    "multer": "^2.1.1",
+    "mysql2": "^3.16.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "express": "^5.2.1",
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
+  }
+}

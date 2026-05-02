@@ -238,6 +238,48 @@ Expected: `Checks: 26 | Passed: 26 | Failed: 0`. Validates schema, seed data, AU
 
 ---
 
+## Step 7 — Install Node workspace + run a consumer's tests
+
+The JS portions of the repo are an [npm workspaces](https://docs.npmjs.com/cli/v10/using-npm/workspaces) monorepo. Install once from the repo root; consumers see the shared library `@mbai460/photoapp-server` via symlinks into their `node_modules/`.
+
+### Prerequisites
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| Node 24.x | Runtime for the JS surfaces | `brew install node@24` (or `nvm install 24`) |
+| npm 11.x | Workspaces, the lockfile, the symlinks | Bundled with Node 24 |
+
+`engines` in the root `package.json` enforces these majors with `engine-strict=true` from `.npmrc`. Drift will surface as a hard error at install time, not a silent runtime weirdness later.
+
+### Install
+
+```bash
+cd MBAi460-Group1     # repo root, NOT inside a workspace
+npm install
+```
+
+This installs every workspace's deps and creates symlinks like `node_modules/@mbai460/photoapp-server -> ../lib/photoapp-server/`.
+
+### Verify the symlink + boot
+
+```bash
+utils/lib-symlink-check                              # 5/5 PASS expected
+cd projects/project01/Part03 && npm test             # 32 passed, 2 skipped (live-gated)
+cd lib/photoapp-server && npm test                   # 99 passed
+```
+
+### Working with the shared library
+
+- **Editing lib code:** `lib/photoapp-server/src/...` — consumers see the change immediately via the symlink. No re-install needed.
+- **Editing lib `package.json`** (new dep, version): re-run `npm install` from the repo root once.
+- **Adding a public export:** see the *How to add a new export* section in [`lib/photoapp-server/README.md`](../lib/photoapp-server/README.md). Update `tests/exports-shape.test.js` in the same PR.
+
+If `require('@mbai460/photoapp-server')` ever fails with "Cannot find module," run `utils/lib-symlink-check` from the repo root for a 5-line ground-truth check on workspace state.
+
+For day-2 contribution discipline (where to install new deps, lockfile conflict survival, library-touching protocol, conventional commits): see [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+
+---
+
 ## Gradescope submission
 
 The `gs` CLI lives inside the Docker image. Submissions run from inside a container. The Gradescope auth token (`.gradescope`) is gitignored and lives **outside** the Class Project repo — typically at the lab repo root or wherever the project owner keeps it.
