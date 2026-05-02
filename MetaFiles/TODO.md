@@ -73,3 +73,42 @@
 - [x] **[OwnershipAmbiguity] project02/client/photoapp-client-config.ini tracked with localhost:8080** — CLOSED 2026-04-23: confirmed intentional placeholder; comment added: "update to deployed URL when starting project02". (Phase 1B: B13)
 - [x] **[GoodPractice] Historical lab01 setup guide has open checkboxes** — CLOSED 2026-04-23: historical annotation added to `labs/lab01/Part 01 - AWS Setup/MetaFiles/Steps-for-initial-AWS-Lab-setup-while-completing-the-assignment.md` — banner at top marks file as historical reference, Lab01 complete (10/10), do not re-execute. (Phase 1B: B14)
 - [ ] **[OwnershipAmbiguity] project03 staff API endpoint committed** — `projects/project03/client/authsvc-client-config-staff.ini` contains a live staff API endpoint URL committed to git; assess whether this is intentional (class-provided, expected) or should be gitignored. (Phase 1B: B6)
+
+---
+
+## Deferred Optional Steps
+
+> Schema established 2026-05-02 by Phase 0.5.7 of the library extraction (Approach `projects/project02/client/MetaFiles/Approach/00-shared-library-extraction.md`). Format and protocol are deliberately constrained so the queue stays parseable. **Don't free-form here** — if a row doesn't fit the schema, route to the regular Class-Project Active/Backlog above instead.
+
+Queue of Optional Test / Utility / Visualization Steps deferred from the Approach docs (see `projects/project02/client/MetaFiles/Approach/00-overview-and-conventions.md` § Optional Steps Convention). One row per deferred step; promote to `### Resolved` (with the resolving commit SHA) when built or formally retired.
+
+### Format
+
+- **Provenance** — `<workstream-doc>:<phase|task>` (e.g., `02-web-service.md:Phase 1`)
+- **Type** — `Test` | `Utility` | `Visualization`
+- **Suggested artifact** — file path, tool name, or visualization filename, verbatim from the callout
+- **Decision date** — ISO date when "queue" was chosen (so stale entries are visible)
+- **One-sentence intent** — verbatim from the callout's "What it does" / "What to lock down"
+- **Trigger to revisit** — what event would make this worth promoting from queue to build (e.g., "second contributor onboards", "third repetition of this command sequence", "first live regression failure")
+
+Row template (single line):
+
+```markdown
+- [ ] **`<workstream>:<phase>`** — `<Type>` | `<artifact>` | `<YYYY-MM-DD>` | `<intent>` | _Trigger: <event>_
+```
+
+### Open
+
+(Empty — first entries land as Phase 1+ workstreams begin and route Optional-Step decisions through here.)
+
+### Resolved
+
+- [x] **`00-shared-library-extraction.md:Phase 0.5.7`** — `Schema` | `MetaFiles/TODO.md § Deferred Optional Steps` | `2026-05-02` | resolved by Phase 0.5 commit (this file's authorship)
+
+### Retired (built consideration; decided not to pursue)
+
+- [x] **`00-shared-library-extraction.md:Phase 3.1`** — `Utility` | `utils/run-extraction-canary` | `2026-05-02` | retired: assessed during Phase 0.3 close-out — Phase 0.x canary ran cleanly on every commit without iteration looping; the wrapper would have saved zero keystrokes. Revisit if Phase 1 Foundation work re-triggers the iteration shape this utility was designed for.
+
+### Grooming
+
+Re-read this section at the start of every workstream (it is listed as a Documentation touchpoint in each Approach doc). Promote anything whose Trigger fired; retire anything whose context evaporated. Stale entries (>90 days, no Trigger movement) are reviewed at workstream-acceptance time.
