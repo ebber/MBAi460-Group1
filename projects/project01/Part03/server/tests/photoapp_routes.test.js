@@ -20,10 +20,36 @@
 // production with cleanupTempFile).
 //
 
-jest.mock('../services/photoapp');
+// Mock the library's photoapp service while preserving all other library
+// exports (middleware factories, schemas, config). The factory + requireActual
+// pattern is required because the surface routes consume the library via
+// `const lib = require('@mbai460/photoapp-server')` and use
+// `lib.services.photoapp.*` — we mock the inner service ref while leaving
+// `lib.middleware.createUploadMiddleware()` (real multer) + the envelope
+// helpers intact.
+jest.mock('@mbai460/photoapp-server', () => {
+  const actual = jest.requireActual('@mbai460/photoapp-server');
+  return {
+    ...actual,
+    services: {
+      ...actual.services,
+      photoapp: {
+        getPing: jest.fn(),
+        listUsers: jest.fn(),
+        listImages: jest.fn(),
+        getImageLabels: jest.fn(),
+        searchImages: jest.fn(),
+        uploadImage: jest.fn(),
+        downloadImage: jest.fn(),
+        deleteAll: jest.fn(),
+      },
+    },
+  };
+});
 
 const request = require('supertest');
-const photoapp = require('../services/photoapp');
+const { services: libServices } = require('@mbai460/photoapp-server');
+const photoapp = libServices.photoapp;
 const app = require('../app');
 
 beforeEach(() => {

@@ -1,7 +1,7 @@
 {
   "name": "project01-part03-photoapp",
   "version": "1.0.0",
-  "description": "Project 01 Part 03 PhotoApp web server working baseline",
+  "description": "Project 01 Part 03 PhotoApp web server — consumer of @mbai460/photoapp-server (post-Phase-0 extraction)",
   "main": "server/app.js",
   "scripts": {
     "test": "jest --passWithNoTests",
@@ -11,17 +11,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-rekognition": "^3.946.0",
-    "@aws-sdk/client-s3": "^3.972.0",
-    "@aws-sdk/credential-providers": "^3.969.0",
+    "@mbai460/photoapp-server": "*",
     "@types/node": "^25.0.9",
     "express": "^5.2.1",
-    "ini": "^6.0.0",
     "is-network-error": "^1.1.0",
-    "multer": "^2.1.1",
-    "mysql2": "^3.16.1",
-    "p-retry": "^7.1.0",
-    "uuid": "^9.0.1"
+    "p-retry": "^7.1.0"
   },
   "engines": {
     "node": ">=24.x",

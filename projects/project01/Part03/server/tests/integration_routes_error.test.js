@@ -9,11 +9,33 @@
 // Per plan §Phase 6+7 three-tier test factoring (post-reviewing-agent
 // redesign 2026-04-27).
 
-jest.mock('../services/photoapp');
+// Mock the library's photoapp service while preserving all other library
+// exports (middleware factories, schemas, config). See photoapp_routes.test.js
+// for the rationale on the factory + requireActual pattern.
+jest.mock('@mbai460/photoapp-server', () => {
+  const actual = jest.requireActual('@mbai460/photoapp-server');
+  return {
+    ...actual,
+    services: {
+      ...actual.services,
+      photoapp: {
+        getPing: jest.fn(),
+        listUsers: jest.fn(),
+        listImages: jest.fn(),
+        getImageLabels: jest.fn(),
+        searchImages: jest.fn(),
+        uploadImage: jest.fn(),
+        downloadImage: jest.fn(),
+        deleteAll: jest.fn(),
+      },
+    },
+  };
+});
 
 const { Readable } = require('stream');
 const request = require('supertest');
-const photoapp = require('../services/photoapp');
+const { services: libServices } = require('@mbai460/photoapp-server');
+const photoapp = libServices.photoapp;
 const app = require('../app');
 
 // Silence the 500-path console.error so test output stays clean.

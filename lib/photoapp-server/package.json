@@ -14,5 +14,19 @@
   "engines": {
     "node": ">=24.x",
     "npm": ">=11.x"
+  },
+  "dependencies": {
+    "@aws-sdk/client-rekognition": "^3.946.0",
+    "@aws-sdk/client-s3": "^3.972.0",
+    "@aws-sdk/credential-providers": "^3.969.0",
+    "ini": "^6.0.0",
+    "multer": "^2.1.1",
+    "mysql2": "^3.16.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "express": "^5.2.1",
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
   }
 }
