@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# utils/lib-symlink-check — workspace install-state sanity probe for @mbai460/photoapp-server.
+# Asserts the npm workspaces symlink + require() resolution + version alignment
+# across all library consumers (Part 03 today; Project 02 server in Phase 1+).
+# Runnable from any directory.
+#
+# Built per the Optional Utility Step in Approach 00-shared-library-extraction.md
+# § Phase 1.2 — strongly recommended because the symlink magic is the "did the
+# workspace install correctly?" gate; without a one-shot check it gets diagnosed
+# by sequence of ls/cat/node-e invocations every time.
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+LIB_PATH="${CLASS_ROOT}/lib/photoapp-server"
+LIB_NAME="@mbai460/photoapp-server"
+
+# Consumers to verify. Each entry is a path relative to CLASS_ROOT.
+# A consumer is checked if (a) the directory exists AND (b) it has a package.json.
+# Otherwise the script warns and skips (e.g., Project 02 server during Phase 0
+# before Phase 1 creates its package.json).
+CONSUMERS=(
+  "projects/project01/Part03"
+  "projects/project02/server"
+)
+
+PASS=0
+FAIL=0
+
+pass()    { printf "  [PASS] %s\n" "$1"; PASS=$((PASS + 1)); }
+warn()    { printf "  [WARN] %s\n" "$1"; }
+fail()    { printf "  [FAIL] %s\n" "$1"; FAIL=$((FAIL + 1)); }
+section() { printf "\n== %s ==\n" "$1"; }
+
+printf "\n╔══════════════════════════════════════════════════════════╗\n"
+printf "║  Library Symlink Check — %-31s ║\n" "$LIB_NAME"
+printf "╚══════════════════════════════════════════════════════════╝\n"
+
+# Check 1: library package.json exists + version readable.
+section "Library state"
+if [[ ! -f "${LIB_PATH}/package.json" ]]; then
+  fail "Library package.json missing at ${LIB_PATH}/package.json"
+  printf "\n  [FAIL] Library not yet skeleton'd. Run Phase 0.1 of the extraction Approach.\n\n"
+  exit 1
+fi
+pass "Library package.json exists at lib/photoapp-server/"
+
+LIB_VERSION="$(node -e "console.log(require('${LIB_PATH}/package.json').version)" 2>/dev/null || echo "")"
+if [[ -z "$LIB_VERSION" ]]; then
+  fail "Could not read library version from package.json"
+  exit 1
+fi
+pass "Library version: ${LIB_VERSION}"
+
+# Check 2: root node_modules has the @mbai460/photoapp-server symlink.
+section "Root workspace symlink"
+ROOT_SYMLINK="${CLASS_ROOT}/node_modules/${LIB_NAME}"
+if [[ -L "$ROOT_SYMLINK" ]]; then
+  TARGET="$(readlink "$ROOT_SYMLINK")"
+  pass "Root node_modules symlink: ${LIB_NAME} → ${TARGET}"
+else
+  fail "Root node_modules symlink missing: ${ROOT_SYMLINK}"
+fi
+
+# Checks 3 + 4: per-consumer require + version match.
+for consumer in "${CONSUMERS[@]}"; do
+  section "Consumer: ${consumer}"
+  consumer_dir="${CLASS_ROOT}/${consumer}"
+  if [[ ! -d "$consumer_dir" ]]; then
+    warn "Consumer directory missing (expected during early phases): ${consumer}"
+    continue
+  fi
+  if [[ ! -f "${consumer_dir}/package.json" ]]; then
+    warn "Consumer has no package.json yet — skipping require check (will activate when workspace member is created)"
+    continue
+  fi
+  # Try to require from inside consumer.
+  REQUIRE_OUT="$(cd "$consumer_dir" && node -e "
+    const lib = require('${LIB_NAME}');
+    const pkg = require('${LIB_NAME}/package.json');
+    console.log('REQUIRE_OK ' + pkg.version);
+  " 2>&1)" || REQUIRE_OUT="REQUIRE_FAIL"
+
+  if [[ "$REQUIRE_OUT" == REQUIRE_OK* ]]; then
+    CONSUMER_VERSION="${REQUIRE_OUT#REQUIRE_OK }"
+    pass "require('${LIB_NAME}') resolves from ${consumer} (version: ${CONSUMER_VERSION})"
+    if [[ "$CONSUMER_VERSION" == "$LIB_VERSION" ]]; then
+      pass "Consumer's resolved version matches workspace library version"
+    else
+      fail "Version mismatch: consumer sees ${CONSUMER_VERSION}, workspace has ${LIB_VERSION}"
+    fi
+  else
+    fail "require('${LIB_NAME}') failed from ${consumer}: ${REQUIRE_OUT}"
+  fi
+done
+
+# Summary
+section "Summary"
+TOTAL=$((PASS + FAIL))
+printf "  Checks: %d | Passed: %d | Failed: %d\n" "$TOTAL" "$PASS" "$FAIL"
+if [[ $FAIL -gt 0 ]]; then
+  printf "\n  [FAIL] Workspace symlinks not in expected state.\n"
+  printf "  Hint: cd ${CLASS_ROOT} && rm -rf node_modules package-lock.json && npm install\n\n"
+  exit 1
+else
+  printf "\n  [PASS] Library symlinks healthy across all consumers.\n\n"
+  exit 0
+fi
