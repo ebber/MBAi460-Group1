@@ -12,7 +12,7 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-02 — Phase 0.2 (Service Core Extraction) ✅ closed (commits `6b9a35c` extraction + `2ec2f26` optionals); 4 of 7 Phase 0 Optional Steps Built (Mermaid + lib-symlink-check + exports-shape test + no-service-leak); 77 + 2 skipped tests = pre-Phase-0 baseline maintained EXACTLY (zero regression). Phase 0.3 (CL9 SQL-into-repositories bounded reconciliation) is the next sub-frame.
+> **Last updated:** 2026-05-02 — Phase 0.3 (Repository Layer / CL9 bounded reconciliation) ✅ closed (commits `1fe272c` SQL extraction + `2c21634` characterization test + `35f508c` reconciliation log). 5 of 7 Phase 0 Optional Steps Built (Mermaid + lib-symlink-check + exports-shape + no-service-leak + sql-characterization); `utils/run-extraction-canary` DEFERRED (no iteration loop materialized). Lib tests 99/99 green; Part 03 canary green; live AWS regression PENDING ERIK per `learnings/2026-05-02-photoapp-server-extraction.md`. Phase 0.4 (workspace-aware Dockerfile + Gradescope packaging; § 4.1 Part 03 source updates already landed in 0.2's `6b9a35c`) is the next sub-frame.
 
 ---
 
@@ -59,16 +59,18 @@ Purpose:
   bounded SQL-into-repositories refactor in Phase 0.3.
 
 Position:
-- Back: Project 02 Part 01 quest declared; Plan + Map authored, committed,
-  pushed (06c0250). Pre-flight gates verified 2026-05-02.
-- Now: Phase 0 pickup — feat/lib-extraction branch live; refactor-log seeded;
-  Mermaid render in flight (review checkpoint pending).
-- Next: Phase 0.1 (Workspace Bootstrap) — npm workspace root + .npmrc +
-  .gitattributes; first commit chore(monorepo): introduce npm workspaces with
-  lib/photoapp-server skeleton.
-- Down: 6 internal phases — 0.1 Workspace Bootstrap → 0.2 Service-Core
-  Extraction (mechanically pure) → 0.3 Repository Layer (CL9 reconciliation)
-  → 0.4 Update Part 03 to Consume → 0.5 Doc-Freshness Protocol → 0.6 Acceptance.
+- Back: Phase 0.1 ✅ (workspace bootstrap), Phase 0.2 ✅ (mechanically pure
+  service-core extraction; § 4.1 Part 03 source updates landed here too),
+  Phase 0.3 ✅ (CL9 SQL-into-repositories bounded reconciliation +
+  characterization test + reconciliation log).
+- Now: Between sub-phases — feat/lib-extraction branch carries 9 commits
+  ahead of main; lib tests 99/99 green; Part 03 canary green; live AWS
+  regression PENDING ERIK.
+- Next: Phase 0.4 — workspace-aware Dockerfile (§ 4.2) + Gradescope
+  packaging script (§ 4.3) + end-to-end smoke (§ 4.4). § 4.1 already landed
+  in Phase 0.2's commit `6b9a35c`.
+- Down: 3 sub-phases remain — 0.4 Update Part 03 (Dockerfile + Gradescope
+  packaging) → 0.5 Doc-Freshness Protocol → 0.6 Acceptance.
 - Up: Project 02 Part 01 quest.
 
 Scope:
@@ -148,8 +150,8 @@ Resumption (per state):
 
 - [x] **Phase 0.1** — Workspace Bootstrap ✅ 2026-05-02 (commits `9b4bf47` + `38f258b`)
 - [x] **Phase 0.2** — Extract Service Core mechanically pure ✅ 2026-05-02 (commits `6b9a35c` + `2ec2f26`)
-- [ ] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation; § Phase 3)
-- [ ] **Phase 0.4** — Update Part 03 to Consume the Library (§ Phase 4)
+- [x] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation) ✅ 2026-05-02 (commits `1fe272c` SQL extraction + `2c21634` characterization test + `35f508c` reconciliation log; § Phase 3)
+- [ ] **Phase 0.4** — Update Part 03 to Consume the Library (§ Phase 4) — § 4.1 source updates already in 0.2's `6b9a35c`; remaining: 4.2 Dockerfile + 4.3 Gradescope packaging + 4.4 e2e smoke
 - [ ] **Phase 0.5** — Doc-Staleness Prevention Protocol (CL11; § Phase 5)
 - [ ] **Phase 0.6** — Acceptance + branch-protection update + tag (§ Phase 6)
 
