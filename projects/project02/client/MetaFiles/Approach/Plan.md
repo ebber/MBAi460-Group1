@@ -207,7 +207,7 @@ Tag at acceptance: library-1.0.0-extraction-complete
 Approach pointer: 00-shared-library-extraction.md (697 lines)
 ```
 
-- [ ] **Phase 0.1** — Workspace Bootstrap (`00-shared-library-extraction.md` § Phase 1)
+- [x] **Phase 0.1** — Workspace Bootstrap ✅ 2026-05-02 (commits `9b4bf47` workspace bootstrap + `38f258b` lib-symlink-check + library exports fix; Approach § Phase 1)
 - [ ] **Phase 0.2** — Extract Service Core mechanically pure (§ Phase 2)
 - [ ] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation; § Phase 3)
 - [ ] **Phase 0.4** — Update Part 03 to Consume the Library (§ Phase 4)
@@ -399,7 +399,7 @@ The Approach establishes a six-layer test pyramid that runs throughout. **Erik f
 
 **Permanent (mandatory) utilities** introduced in this arc:
 
-- [ ] `utils/lib-symlink-check` — workspace install-state sanity (Phase 0.2 Optional Utility, **strongly recommended**)
+- [x] `utils/lib-symlink-check` — ✅ Built 2026-05-02 commit `38f258b` (workspace install-state sanity; runs clean 5/5 PASS for Part 03 consumer)
 - [ ] `utils/no-service-leak` — pre-commit guard against `cp lib/.../services/X.js projects/.../services/X.js` regressions (Phase 0.2 Optional Utility)
 - [ ] `utils/freshen-lockfile` — referenced as part of CL10 collaboration-safety; introduced in Phase 0.5 (Doc-Freshness Protocol)
 - [ ] `utils/run-extraction-canary` — Phase 0.3 reconciliation iteration helper (Optional Utility)
@@ -522,9 +522,9 @@ Each row references the Approach doc section so the executing agent can read the
 
 ### Phase 0 — Library Extraction Optionals
 
-- [ ] ⏳ **VIZ** `Target-State-mbai460-photoapp-server-lib-extraction-v1.md` (`00-shared-library-extraction.md` § Phase 1 area; **strongly recommended**)
+- [x] ✅ **VIZ** `Target-State-mbai460-photoapp-server-lib-extraction-v1.md` (Built 2026-05-02; commits `c86fb67` initial + `cee5cad` review-pass round 1 + `f0a2e19` review-pass round 2; reviewer-approved)
 - [ ] ⏳ **TEST** `lib/photoapp-server/tests/exports-shape.test.js` (snapshot of public exports map; § Phase 2.2)
-- [ ] ⏳ **UTIL** `utils/lib-symlink-check` (§ Phase 1.2; **strongly recommended**)
+- [x] ✅ **UTIL** `utils/lib-symlink-check` (Built 2026-05-02 commit `38f258b`; 5/5 PASS — Part 03 consumer green; Project 02 WARN-skipped as designed)
 - [ ] ⏳ **UTIL** `utils/no-service-leak` (pre-commit; § Phase 2.2)
 - [ ] ⏳ **TEST** `lib/photoapp-server/tests/repositories/sql-characterization.test.js` (CL9 SQL byte-identical assertion; § Phase 3.1)
 - [ ] ⏳ **UTIL** `utils/run-extraction-canary` (Phase 3 iteration helper; § Phase 3.1)

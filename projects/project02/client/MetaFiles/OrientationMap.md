@@ -12,7 +12,7 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-02 — Phase 0 (Library Extraction) picked up on branch `feat/lib-extraction`; pre-flight gates verified; Active section transitioned to Frame instance. Phase 0.1 (Workspace Bootstrap) is the next sub-frame to enter after Mermaid review + Optional Steps batch routing.
+> **Last updated:** 2026-05-02 — Phase 0.1 (Workspace Bootstrap) ✅ closed (commits `9b4bf47` + `38f258b`); Mermaid + lib-symlink-check Optional Steps Built; Phase 0.2 (mechanically pure service-core extraction) is the next sub-frame.
 
 ---
 
@@ -146,7 +146,7 @@ Resumption (per state):
 
 **Sub-phase progress** (lifted from Plan.md § Phase 0):
 
-- [ ] **Phase 0.1** — Workspace Bootstrap (`00-shared-library-extraction.md` § Phase 1)
+- [x] **Phase 0.1** — Workspace Bootstrap ✅ 2026-05-02 (commits `9b4bf47` + `38f258b`)
 - [ ] **Phase 0.2** — Extract Service Core mechanically pure (§ Phase 2)
 - [ ] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation; § Phase 3)
 - [ ] **Phase 0.4** — Update Part 03 to Consume the Library (§ Phase 4)
