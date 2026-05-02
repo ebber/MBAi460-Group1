@@ -1,0 +1,49 @@
+# Part 03 .dockerignore — used when building from the monorepo root with
+# `-f projects/project01/Part03/Dockerfile`.
+#
+# Patterns are relative to the build context (monorepo root). Whatever is
+# listed here is invisible to COPY in the Dockerfile; that means a smaller
+# context to ship to the daemon AND a smaller resulting image.
+
+# Workspace + lab-side artifacts that should never enter an image.
+**/node_modules
+**/.git
+**/.cache
+**/.cursor-server
+**/coverage
+
+# Tests, fixtures, IDE configs — runtime image doesn't need them.
+**/tests
+**/__tests__
+**/*.test.js
+**/jest.config.js
+**/.vscode
+**/.idea
+
+# Source maps and TypeScript build artifacts (Part 03 frontend); we ship the
+# pre-built dist/ instead.
+projects/project01/Part03/frontend/src
+projects/project01/Part03/frontend/node_modules
+projects/project01/Part03/frontend/*.tsbuildinfo
+
+# Environment/secrets — never bake credentials into images.
+.env
+.env.*
+**/photoapp-config.ini
+**/aws-credentials.ini
+
+# Lab-internal directories not part of any deployable surface.
+claude-workspace
+infra/terraform
+labs
+docs
+visualizations
+learnings
+MetaFiles
+**/MetaFiles
+docker
+
+# Generated/temp.
+**/dist/cache
+tmp
+*.log
