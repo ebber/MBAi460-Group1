@@ -7,7 +7,7 @@
 >
 > **Plan reference:** `MBAi460-Group1/projects/project02/client/MetaFiles/Approach/Plan.md` § Phase 0
 >
-> **Last updated:** 2026-05-02 — v1 review-pass revisions: divorced labels from time, corrected Project-02-server-tree framing, red border around library subgraph, "Extracted" classDef, transport-adapter edge labels, descriptive section titles, Pre-Work State split into its own diagram.
+> **Last updated:** 2026-05-02 — v1 review-pass revisions (round 2): softened subgraph-position claims (Mermaid layout isn't deterministic in `flowchart LR`); added grouping-vs-splitting node convention to Reading section. Round 1 covered: divorced labels from time, corrected Project-02-server-tree framing, red border around library subgraph, "Extracted" classDef, transport-adapter edge labels, descriptive section titles, Pre-Work State split into its own diagram.
 
 ---
 
@@ -139,7 +139,7 @@ flowchart LR
 
 **Reading:**
 
-- **Subgraphs** are trees: LIB (extracted shared library, leftmost — red border denotes the architectural boundary), P03A (Part 03 after extraction, middle), P02 (Project 02 server, right; comes online in Phase 1+).
+- **Subgraphs** are trees: `LIB` (the extracted shared library; red border denotes the architectural boundary), `P03A` (Part 03 after extraction), `P02` (Project 02 server; comes online in Phase 1+). Mermaid auto-arranges subgraph layout in `flowchart LR` based on edge weights, node order, and the renderer's algorithm; relative positions may vary across renderers — don't rely on left/middle/right being deterministic.
 - **Solid arrows within a tree** are normal `require()` dependencies.
 - **Solid `consumes`-labeled arrows crossing the library boundary** are import-from-library statements (e.g., `const { services } = require('@mbai460/photoapp-server')`).
 - **Transport-adapter labels on consumer → library edges** show where the buffer-native library meets each surface's wire contract:
@@ -147,6 +147,7 @@ flowchart LR
   - Project 02's `controllers/v1/*.js` does **base64 ↔ buffer** transport at the route boundary (`Buffer.from(req.body.data, 'base64')` for upload; `dataBuffer.toString('base64')` for download into a JSON envelope).
 - **DI labels on consumer → factory arrows** show that *same library code* (the factory) **+ different DI config** (passed at consumer's `app.js`) **= divergent surface needs**. This is the architectural keystone — what makes the shared library work for both Part 03's `{message, data}` uniform envelope and Project 02's variadic per-route shapes.
 - The library is **buffer-native** (`L_PHOTO` annotation) — it does not know or care which transport produced the buffer. Surfaces own transport.
+- **Grouping vs. splitting node convention:** library modules that represent parallel files of *one* architectural move appear as a single grouped node — e.g., `repositories/users.js · assets.js · labels.js` is three files but one move (extracting SQL out of `services/photoapp.js` into a repositories layer; CL9 reconciliation). Library modules where the *split itself was the architectural decision* appear as separate nodes — e.g., `schemas/envelopes.js` + `schemas/rows.js` are two nodes because the splitting *is* the move (pre-Phase-0 these were one file `schemas.js`; the split into envelope helpers vs row converters is the architectural decision worth visualizing).
 
 **Where do the extracted Part 03 modules go?** Per Phase 0.2 of `Approach/00-shared-library-extraction.md`:
 - `T_CFG → L_CFG`, `T_AWS → L_AWS`, `T_PHOTO → L_PHOTO` — moved (`git mv`); import paths updated.
