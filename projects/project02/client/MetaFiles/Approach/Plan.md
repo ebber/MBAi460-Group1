@@ -210,7 +210,7 @@ Approach pointer: 00-shared-library-extraction.md (697 lines)
 - [x] **Phase 0.1** — Workspace Bootstrap ✅ 2026-05-02 (commits `9b4bf47` workspace bootstrap + `38f258b` lib-symlink-check + library exports fix; Approach § Phase 1)
 - [x] **Phase 0.2** — Extract Service Core mechanically pure ✅ 2026-05-02 (commits `6b9a35c` extraction + factories + Part 03 consumer update + `2ec2f26` exports-shape test + no-service-leak util; § Phase 2)
 - [x] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation; § Phase 3) ✅ 2026-05-02 (commits `1fe272c` SQL extraction + `2c21634` characterization test + `35f508c` reconciliation log; 99/99 lib tests green; 15-assertion characterization suite locks literal SQL; live regression PENDING ERIK per learnings/2026-05-02-photoapp-server-extraction.md)
-- [ ] **Phase 0.4** — Update Part 03 to Consume the Library (§ Phase 4) — Approach § 4.1 source updates landed early in Phase 0.2 commit `6b9a35c`; remaining: § 4.2 workspace-aware Dockerfile, § 4.3 Gradescope packaging script, § 4.4 end-to-end smoke
+- [x] **Phase 0.4** — Update Part 03 to Consume the Library (§ Phase 4) ✅ 2026-05-02 — § 4.1 source updates landed across `6b9a35c` (Phase 0.2) + `1092b89` (server.js boot fix + boot-smoke regression test); § 4.2 workspace-aware Dockerfile + monorepo .dockerignore in `1b4d720`; § 4.3 Gradescope packaging script + self-contained tarball test in `66c28ab`; § 4.4 smoke green: Part 03 npm test 32+2 skipped, workspace-wide npm test --workspaces green, docker run image boots and `/health` returns 200; § 4.4 item 4 (PHOTOAPP_RUN_LIVE_TESTS=1) PENDING ERIK
 - [ ] **Phase 0.5** — Doc-Staleness Prevention Protocol (CL11; § Phase 5)
 - [ ] **Phase 0.6** — Acceptance + branch-protection update + tag (§ Phase 6)
 

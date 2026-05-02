@@ -12,7 +12,7 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-02 — Phase 0.3 (Repository Layer / CL9 bounded reconciliation) ✅ closed (commits `1fe272c` SQL extraction + `2c21634` characterization test + `35f508c` reconciliation log). 5 of 7 Phase 0 Optional Steps Built (Mermaid + lib-symlink-check + exports-shape + no-service-leak + sql-characterization); `utils/run-extraction-canary` DEFERRED (no iteration loop materialized). Lib tests 99/99 green; Part 03 canary green; live AWS regression PENDING ERIK per `learnings/2026-05-02-photoapp-server-extraction.md`. Phase 0.4 (workspace-aware Dockerfile + Gradescope packaging; § 4.1 Part 03 source updates already landed in 0.2's `6b9a35c`) is the next sub-frame.
+> **Last updated:** 2026-05-02 — Phase 0.4 (Update Part 03 to Consume the Library) ✅ closed (commits `1092b89` server.js boot fix + boot-smoke regression test, `1b4d720` workspace-aware Dockerfile + monorepo .dockerignore, `66c28ab` Gradescope packaging script + tarball test). § 4.1 source updates retroactively credited to Phase 0.2 commit `6b9a35c`; § 4.4 smoke green (Part 03 npm test 32+2 skipped; workspace-wide npm test --workspaces green; `docker run` of `mbai460-part03:dev` boots cleanly with /health=200); item 4 (PHOTOAPP_RUN_LIVE_TESTS=1) PENDING ERIK. Lib tests 99/99 green; Part 03 canary green throughout. Phase 0.5 (Doc-Freshness Protocol — CONTRIBUTING / DOC-FRESHNESS / lib README / PR template) is the next sub-frame.
 
 ---
 
@@ -62,15 +62,19 @@ Position:
 - Back: Phase 0.1 ✅ (workspace bootstrap), Phase 0.2 ✅ (mechanically pure
   service-core extraction; § 4.1 Part 03 source updates landed here too),
   Phase 0.3 ✅ (CL9 SQL-into-repositories bounded reconciliation +
-  characterization test + reconciliation log).
-- Now: Between sub-phases — feat/lib-extraction branch carries 9 commits
-  ahead of main; lib tests 99/99 green; Part 03 canary green; live AWS
-  regression PENDING ERIK.
-- Next: Phase 0.4 — workspace-aware Dockerfile (§ 4.2) + Gradescope
-  packaging script (§ 4.3) + end-to-end smoke (§ 4.4). § 4.1 already landed
-  in Phase 0.2's commit `6b9a35c`.
-- Down: 3 sub-phases remain — 0.4 Update Part 03 (Dockerfile + Gradescope
-  packaging) → 0.5 Doc-Freshness Protocol → 0.6 Acceptance.
+  characterization test + reconciliation log), Phase 0.4 ✅ (server.js
+  boot fix + workspace-aware Dockerfile + Gradescope packaging script +
+  end-to-end smoke).
+- Now: Between sub-phases — feat/lib-extraction carries 13 commits ahead
+  of main; lib tests 99/99 green; Part 03 canary 32+2 skipped green;
+  Part 03 image boots cleanly via `docker run mbai460-part03:dev` with
+  /health=200; submission tarball self-contained; live AWS regression
+  PENDING ERIK.
+- Next: Phase 0.5 — Doc-Freshness Protocol (CL11). MetaFiles/DOC-FRESHNESS
+  + CONTRIBUTING.md + lib/photoapp-server/README.md + PR template +
+  MetaFiles/TODO.md schema; root README + QUICKSTART refresh.
+- Down: 2 sub-phases remain — 0.5 Doc-Freshness Protocol → 0.6 Acceptance
+  + tag library-1.0.0-extraction-complete.
 - Up: Project 02 Part 01 quest.
 
 Scope:
@@ -151,7 +155,7 @@ Resumption (per state):
 - [x] **Phase 0.1** — Workspace Bootstrap ✅ 2026-05-02 (commits `9b4bf47` + `38f258b`)
 - [x] **Phase 0.2** — Extract Service Core mechanically pure ✅ 2026-05-02 (commits `6b9a35c` + `2ec2f26`)
 - [x] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation) ✅ 2026-05-02 (commits `1fe272c` SQL extraction + `2c21634` characterization test + `35f508c` reconciliation log; § Phase 3)
-- [ ] **Phase 0.4** — Update Part 03 to Consume the Library (§ Phase 4) — § 4.1 source updates already in 0.2's `6b9a35c`; remaining: 4.2 Dockerfile + 4.3 Gradescope packaging + 4.4 e2e smoke
+- [x] **Phase 0.4** — Update Part 03 to Consume the Library ✅ 2026-05-02 (commits `1092b89` server.js boot fix + boot-smoke test + `1b4d720` Dockerfile + `66c28ab` Gradescope packaging script + tarball test; § 4.4 item 4 live AWS PENDING ERIK; § Phase 4)
 - [ ] **Phase 0.5** — Doc-Staleness Prevention Protocol (CL11; § Phase 5)
 - [ ] **Phase 0.6** — Acceptance + branch-protection update + tag (§ Phase 6)
 
