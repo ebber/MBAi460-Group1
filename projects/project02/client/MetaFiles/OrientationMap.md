@@ -12,19 +12,24 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-02 — **Phase 0 agent-side complete; awaits Erik gates.** Final commits: `cd7f6ab` (utils/freshclone-smoke for CL11 self-enforcement). 6 of 7 Phase 0 Optional Steps Built (Mermaid + lib-symlink-check + exports-shape + no-service-leak + sql-characterization + freshclone-smoke; only `utils/run-extraction-canary` retired); 17 commits ahead of main on `feat/lib-extraction`; lib 99/99 + Part 03 32+2 skipped green; Part 03 image boots clean; submission tarball self-contained; freshclone-smoke ~3s green. Awaiting Erik for: § 6.1.1 clean install (rm -rf sandbox-gated), § 6.1.5 live AWS regression, § 6.1.8 smoke-test-aws (lab spun-down), § 6.3 branch-protection updates, § 6.4 tag `library-1.0.0-extraction-complete`. Phase 1 (Foundation) opens once Phase 0 closes.
+> **Last updated:** 2026-05-02 — **Phase 0 ✅ closed (agent-side); workstream moved to Closed.** All six sub-phases complete; 23 commits on `feat/lib-extraction`; lib 99/99 + Part 03 32+2 skipped green; freshclone-smoke ~3s green. Erik post-merge actions: spin lab + run live AWS regression (gates the tag), update GitHub branch protection + create `lib:photoapp-server` label, tag merge commit `library-1.0.0-extraction-complete`. **Active section reverted to "between workstreams"** per OrientationMap protocol; Phase 1 (Foundation) is the next pickup once Phase 0 is merged.
 
 ---
 
 ## Frame Position (where this Map sits)
 
 ```
-- Back:  Spin-Up Ritual + git posture cleanup + Project 02 Part 01 quest declared
-         + Approach analyzed (~5000 lines across 7 docs) + Plan.md authored & committed (2385bb5)
-- Now:   Orchestration scaffolding complete (Plan + Map both authored); execution arc ready
-- Next:  Execution handoff decision (subagent-driven / inline / multi-clone); first
-         workstream pickup is Phase 0 (Library Extraction) — entry gate; everything else gates on it
-- Down:  Phase 0 (next sub-frame to enter when execution begins)
+- Back:  Phase 0 (Library Extraction) ✅ closed agent-side 2026-05-02 across 23 commits
+         on feat/lib-extraction (lib 1.0.0 extracted; Part 03 consumer migrated;
+         CL9 SQL repos + characterization; doc-freshness protocol live;
+         freshclone-smoke green). Phase 0 row in Closed section.
+- Now:   Between workstreams. Awaiting Erik to push feat/lib-extraction, run live
+         AWS regression + smoke-test-aws (lab spin-up first), update GitHub branch
+         protection + lib:photoapp-server label, merge, and tag
+         library-1.0.0-extraction-complete on the merge commit.
+- Next:  Phase 1 (Foundation) — the next pickup once Phase 0 is merged. Branched
+         off feat/p02-foundation from main; consumes the now-stable @mbai460/photoapp-server.
+- Down:  (empty — between sub-frames)
 - Up:    Lab session arc
 ```
 
@@ -47,121 +52,31 @@ Map status symbols mapped to Frame `State` semantics (per `Approach/Proposed_Exe
 
 ## Active
 
-**🔄 Phase 0 — Library Extraction** (entry-gate workstream; In Progress on branch `feat/lib-extraction` since 2026-05-02)
+**Between workstreams.** Phase 0 ✅ closed agent-side 2026-05-02 (see *Closed (recent — this quest arc)* for the row + commit chain). Phase 1 (Foundation) is the next pickup once Erik merges `feat/lib-extraction` and tags `library-1.0.0-extraction-complete` on the merge commit.
 
-```
-[Frame Instance: Phase 0 — Library Extraction]
+**To pick up Phase 1:** read `Approach/01-foundation.md` end-to-end, verify pre-flight gates (root `main` carries the merged Phase 0 work; `npm install` from root resolves the workspace; `npm test --workspaces` green; `utils/lab-status` PASS), then branch `feat/p02-foundation` from `main` and follow `Plan.md` § Phase 1 Master Tracker. The Active section flips to a Phase 1 Frame instance at that point.
 
-Purpose:
-- Extract Part 03's service core into @mbai460/photoapp-server@1.0.0; Part 03
-  becomes a consumer post-extraction; Project 02 will be a second consumer in
-  Phase 1. Mechanically pure extraction (CL9) — only behaviour change is the
-  bounded SQL-into-repositories refactor in Phase 0.3.
+**Erik's post-merge punch list (gates the Phase 0 tag):**
 
-Position:
-- Back: Phase 0.1 ✅ (workspace bootstrap), Phase 0.2 ✅ (mechanically pure
-  service-core extraction; § 4.1 Part 03 source updates landed here too),
-  Phase 0.3 ✅ (CL9 SQL-into-repositories bounded reconciliation +
-  characterization test + reconciliation log), Phase 0.4 ✅ (server.js
-  boot fix + workspace-aware Dockerfile + Gradescope packaging script +
-  end-to-end smoke), Phase 0.5 ✅ (Doc-Freshness Protocol — DOC-FRESHNESS
-  + TODO.md schema + CONTRIBUTING + lib README + README/QUICKSTART +
-  PR template + Part 03 touchpoints), Phase 0.6 agent-side ✅
-  (verification commands run; freshclone-smoke green).
-- Now: 🟡 **Awaiting Erik gates.** All work I can do solo is committed:
-  17 commits ahead of main; lib 99/99 + Part 03 32+2 skipped green;
-  Part 03 image boots clean; submission tarball self-contained;
-  freshclone-smoke passes in ~3s. Five external gates remaining
-  (§ 6.1.1 clean install — rm -rf sandbox-gated, § 6.1.5 live AWS,
-  § 6.1.8 smoke-test-aws spin-up, § 6.3 branch-protection, § 6.4 tag).
-- Next: Erik runs the external gates on return; this Active Frame
-  flips to ✅ at tag `library-1.0.0-extraction-complete`. Then the
-  workstream closes; OrientationMap "Closed (recent — this quest arc)"
-  gains a Phase 0 row; Phase 1 (Foundation) becomes the next pickup.
-- Down: (empty — no sub-frame; awaiting external gates only.)
-- Up: Project 02 Part 01 quest.
+1. `git push origin feat/lib-extraction`
+2. Open PR; reviewers see `lib:photoapp-server` label (create the label first if it doesn't exist yet — § 6.3 of the Phase 0 Approach)
+3. Update GitHub branch protection: required status checks `test (lib/photoapp-server)` + `test (projects/project01/Part03)`
+4. `utils/lab-up` (Terraform up — outside agent scope)
+5. `cd projects/project01/Part03 && PHOTOAPP_RUN_LIVE_TESTS=1 npm test -- live_photoapp_integration.test.js` — green is the strongest signal Phase 0 is mechanically pure
+6. `utils/smoke-test-aws --mode live` — should return to 10/10 with lab up
+7. Local `cd MBAi460-Group1 && rm -rf node_modules && npm install` — belt-and-suspenders; freshclone-smoke already exercises the equivalent
+8. Merge to `main`
+9. `git tag library-1.0.0-extraction-complete <merge-commit-sha>`
+10. `git push origin --tags`
 
-Scope:
-- In:
-  - MBAi460-Group1/lib/photoapp-server/ (new) — extracted service core, repos,
-    middleware factories, envelopes, row converters
-  - MBAi460-Group1/package.json + .npmrc + .gitattributes — npm workspace root
-  - MBAi460-Group1/CONTRIBUTING.md (new) — workspace etiquette, lockfile, library protocol
-  - MBAi460-Group1/MetaFiles/DOC-FRESHNESS.md (new) — onboarding-doc protocol
-  - MBAi460-Group1/MetaFiles/TODO.md (new) — Optional-Steps queue schema
-  - MBAi460-Group1/projects/project01/Part03/server/ (modify) — consume the library
-  - MBAi460-Group1/projects/project01/Part03/Dockerfile (modify) — workspace-aware copy pattern
-  - .github/pull_request_template.md (new) — onboarding-impact + library label
-  - lib:photoapp-server GitHub label (new)
-  - learnings/2026-XX-XX-photoapp-server-extraction.md (new) — CL9 reconciliation log
-- Out:
-  - Any change to Part 03 /api/* wire contract (CL2 internals-only)
-  - Project 02 server tree (Phase 1)
-  - Project 02-specific middleware promotions (request_id, validate, pino-http,
-    OTel) — YAGNI per CL2 until 3rd consumer
-  - Infrastructure / Terraform changes
+**Phase 0 sub-phase progress** (frozen at workstream close; canonical row in *Closed (recent — this quest arc)*):
 
-Workset:
-- Approach: 00-shared-library-extraction.md (697 lines)
-- Branch: feat/lib-extraction
-- Refactor-log: projects/project01/Part03/MetaFiles/refactor-log.md (seeded 2026-05-02)
-- Files moving from Part 03 → lib/photoapp-server/src/:
-  config.js • services/aws.js • services/photoapp.js • middleware/error.js
-  (becomes factory) • middleware/upload.js (becomes factory) • schemas.js
-  (splits → schemas/envelopes.js + schemas/rows.js)
-- Files NEW in lib/photoapp-server/src/repositories/: users.js, assets.js,
-  labels.js (CL9 SQL-from-services extraction)
-
-State: 🔄 In Progress
-
-Entry Conditions:
-- ✅ Lab status PASS (utils/lab-status 2026-05-02)
-- ✅ Class Project main clean + synced with origin/main (06c0250)
-- ✅ Part 03 regression baseline: 77 passed, 2 skipped (live-gated), 0 failed
-- ✅ No in-flight Part 03 PRs (Erik manual confirm 2026-05-02)
-- ✅ Branch feat/lib-extraction created
-- ✅ Pickup announcement in Part 03 refactor-log
-- ⏳ Slack heads-up posted (Erik action; draft prepared)
-
-Exit Conditions:
-- All 6 sub-phases ✅
-- Part 03 npm test green throughout (regression baseline maintained)
-- Part 03 live regression green (PHOTOAPP_RUN_LIVE_TESTS=1)
-- Workspace-aware Dockerfile + Gradescope packaging script working
-- lib:photoapp-server GitHub label live; PR template updated
-- DOC-FRESHNESS.md exists; CONTRIBUTING.md authored; lib README authored
-- MetaFiles/TODO.md schema established (Phase 0.5.7)
-- Fresh-clone smoke test passes (CL11)
-- Tag library-1.0.0-extraction-complete on merge
-
-Verification:
-- cd MBAi460-Group1 && rm -rf node_modules && npm install (clean state succeeds)
-- npm test --workspaces (every workspace's tests green)
-- cd projects/project01/Part03 && npm test (surface tests green)
-- cd lib/photoapp-server && npm test (lib tests green)
-- PHOTOAPP_RUN_LIVE_TESTS=1 npm test (live regression green)
-- docker build -t mbai460-server-test projects/project01/Part03/ (workspace-aware)
-- utils/cred-sweep (no leaks)
-- utils/smoke-test-aws (env intact)
-
-Resumption (per state):
-- If Planned: read Approach 00-shared-library-extraction.md end-to-end; ensure
-  pre-flight gates are still green; begin Phase 0.1.
-- If In Progress: read this Active section + recent git log on feat/lib-extraction
-  + refactor-log.md to find current sub-phase. Verify last commit's claims
-  against file state (adversarial Phase 2 stance per feedback_refresh_ritual.md).
-- If Verified at sub-phase: update tracker + continue to next sub-phase.
-- If Blocked: capture in refactor-log + surface to user.
-```
-
-**Sub-phase progress** (lifted from Plan.md § Phase 0):
-
-- [x] **Phase 0.1** — Workspace Bootstrap ✅ 2026-05-02 (commits `9b4bf47` + `38f258b`)
-- [x] **Phase 0.2** — Extract Service Core mechanically pure ✅ 2026-05-02 (commits `6b9a35c` + `2ec2f26`)
-- [x] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation) ✅ 2026-05-02 (commits `1fe272c` SQL extraction + `2c21634` characterization test + `35f508c` reconciliation log; § Phase 3)
-- [x] **Phase 0.4** — Update Part 03 to Consume the Library ✅ 2026-05-02 (commits `1092b89` server.js boot fix + boot-smoke test + `1b4d720` Dockerfile + `66c28ab` Gradescope packaging script + tarball test; § 4.4 item 4 live AWS PENDING ERIK; § Phase 4)
-- [x] **Phase 0.5** — Doc-Staleness Prevention Protocol (CL11) ✅ 2026-05-02 (commits `c235e36` DOC-FRESHNESS.md + TODO.md schema + `b765e56` CONTRIBUTING + lib README + READMEs/QUICKSTART + PR template + Part 03 touchpoints + refactor-log closeout; § Phase 5)
-- 🟡 **Phase 0.6** — Acceptance (commit `cd7f6ab` utils/freshclone-smoke; § Phase 6) — agent-side green (§ 6.1.2/3/4/6/7 + § 6.2); awaits Erik for § 6.1.1 clean install + § 6.1.5 live AWS + § 6.1.8 smoke-test-aws (lab currently spun-down) + § 6.3 branch-protection + § 6.4 tag `library-1.0.0-extraction-complete`. See Plan § Phase 0.6 for the per-item ledger.
+- [x] Phase 0.1 — Workspace Bootstrap ✅ 2026-05-02
+- [x] Phase 0.2 — Extract Service Core (mechanically pure) ✅ 2026-05-02
+- [x] Phase 0.3 — Repository Layer (CL9 bounded reconciliation) ✅ 2026-05-02
+- [x] Phase 0.4 — Update Part 03 to Consume the Library ✅ 2026-05-02
+- [x] Phase 0.5 — Doc-Staleness Prevention Protocol (CL11) ✅ 2026-05-02
+- [x] Phase 0.6 — Acceptance ✅ 2026-05-02 (agent-side; § 6.1.5 / 6.1.8 / 6.3 / 6.4 are Erik's post-merge actions per his punch list above)
 
 ---
 
@@ -171,8 +86,7 @@ Frame-compact rows derived from the Plan's Master Tracker. Each row references t
 
 | Workstream | State | Branch | Depends on | Acceptance | Approach pointer |
 |---|---|---|---|---|---|
-| **Phase 0 — Library Extraction** | 🔄 **In Progress** (Active) | `feat/lib-extraction` | NONE | `library-1.0.0-extraction-complete` tag; lib + Part 03 tests green; live regression green; fresh-clone smoke green | `Approach/00-shared-library-extraction.md` |
-| **Phase 1 — Foundation** | ⏳ Planned | `feat/p02-foundation` | Phase 0 ✅ | `make up` healthy; six-layer harness in place; lint clean; Terraform `state mv` cutover green | `Approach/01-foundation.md` |
+| **Phase 1 — Foundation** | ⏳ Planned (next pickup) | `feat/p02-foundation` | Phase 0 ✅ (agent-side closed; merge + tag `library-1.0.0-extraction-complete` are Erik's post-merge actions) | `make up` healthy; six-layer harness in place; lint clean; Terraform `state mv` cutover green | `Approach/01-foundation.md` |
 | **Phase 2 — Web Service (60/60)** | ⏳ Planned | `feat/p02-web-service` | Phase 1 ✅ | Gradescope server **60/60**; tag `gradescope-server-60-60`; contract suite + happy-path E2E green | `Approach/02-web-service.md` |
 | **Phase 3 — Client API (30/30)** | ⏳ Planned | `feat/p02-client-api` | Phase 2 ✅ | Gradescope client **30/30**; tag `gradescope-client-30-30`; integration sweep + contract conformance green | `Approach/03-client-api.md` |
 | **Phase 4 — Engineering Surface** | ⏳ Planned | `feat/p02-engineering-surface` | Phase 2 ✅ AND Phase 3 ✅ | engineering surface deliverables green; library 1.1.0 tagged; live regression green | `Approach/04-engineering-surface.md` |
@@ -191,9 +105,62 @@ The Plan's six cross-cutting threads (Testing Pyramid / Utility Building / Merma
 
 ## Closed (recent — this quest arc)
 
-Empty — execution has not started.
+### Phase 0 — Library Extraction ✅ 2026-05-02 (agent-side; Erik post-merge actions queued)
 
-When workstreams close, rows land here with the workstream name, completion date, closeout commit chain, and key milestones. Historical OrientationMap precedent for the row shape: see `projects/project01/Part03/MetaFiles/OrientationMap.md` § *Closed (recent — Class Project)*.
+**Outcome:** `@mbai460/photoapp-server@1.0.0` extracted from `projects/project01/Part03/server/` into `lib/photoapp-server/`. Part 03 successfully migrated to consume the library; npm workspaces topology established at the monorepo root. Mechanically pure (CL9) except the bounded SQL-into-repositories refactor in Phase 0.3, fully reconciled in `learnings/2026-05-02-photoapp-server-extraction.md`.
+
+**Branch:** `feat/lib-extraction` — 23 commits ahead of `main`.
+
+**Test state at close:**
+- `lib/photoapp-server` — 99 tests across 11 suites, all green (~0.5s)
+- `projects/project01/Part03` — 32 passed + 2 skipped (live-gated), 8 of 9 suites
+- `utils/freshclone-smoke` — PASS in ~3s (true zero-state install via `git clone --shared`)
+- Part 03 image (`mbai460-part03:dev`) — boots clean; `/health` 200
+- Submission tarball — self-contained; lib resolves from extracted tree without any further install
+
+**Optional Steps Built (6 of 7):** `Target-State-mbai460-photoapp-server-lib-extraction-v1.md`, `utils/lib-symlink-check`, `tests/exports-shape.test.js`, `utils/no-service-leak`, `tests/repositories/sql-characterization.test.js`, `utils/freshclone-smoke`. Retired: `utils/run-extraction-canary` (no iteration loop materialized).
+
+**Key milestones:**
+- Phase 0.1 ✅ — npm workspaces bootstrap; lib skeleton; lib-symlink-check util
+- Phase 0.2 ✅ — mechanical extraction (services, middleware factories, schemas split, config); Part 03 source updates; exports-shape lock; no-service-leak guard
+- Phase 0.3 ✅ — CL9 SQL-into-repositories bounded reconciliation; per-repo unit tests; SQL characterization test; reconciliation log
+- Phase 0.4 ✅ — server.js boot fix + boot-smoke regression test; workspace-aware Dockerfile + monorepo .dockerignore; Gradescope packaging script + tarball self-containment test
+- Phase 0.5 ✅ — DOC-FRESHNESS protocol; TODO.md Deferred Optional Steps schema; CONTRIBUTING.md; lib README full population; root README + QUICKSTART workspace-install path; PR template; Part 03 README + Approach doc touchpoints; refactor-log closeout
+- Phase 0.6 ✅ — acceptance verification commands run; freshclone-smoke green
+
+**Erik's post-merge punch list** (gates the `library-1.0.0-extraction-complete` tag): see § Active above.
+
+**Closeout commits on `feat/lib-extraction`** (oldest → newest):
+
+```
+8b5b866 chore(meta): Phase 0 pickup — refactor-log + Map Frame transition
+c86fb67 docs(viz): Target-State photoapp-server library extraction v1
+cee5cad docs(viz): v1 review-pass round 1 (split Pre-Work State diagram)
+f0a2e19 docs(viz): library-extraction review-pass round 2
+9b4bf47 chore(monorepo): introduce npm workspaces with lib/photoapp-server skeleton
+38f258b feat(utils): add lib-symlink-check + expose library package.json subpath
+d76bf22 chore(meta): close out Phase 0.1 — flip trackers
+6b9a35c refactor(part03): extract service core into @mbai460/photoapp-server (Phase 0.2)
+2ec2f26 feat(lib+utils): Phase 0.2 optionals — exports-shape + no-service-leak
+f484339 chore(meta): close out Phase 0.2 — flip trackers
+1fe272c refactor(lib): extract SQL into repositories layer (Phase 0.3 CL9)
+2c21634 test(lib): SQL characterization test (Phase 0.3 optional)
+35f508c docs(learnings): photoapp-server extraction reconciliation log
+2991412 chore(meta): close out Phase 0.3 — flip trackers
+1092b89 fix(part03): repair server.js boot graph + boot-smoke regression test
+1b4d720 feat(part03): workspace-aware Dockerfile + monorepo .dockerignore
+66c28ab feat(part03): Gradescope packaging script + tarball test
+b484d69 chore(meta): close out Phase 0.4 — flip trackers
+c235e36 docs(meta): DOC-FRESHNESS protocol + Deferred Optional Steps schema
+b765e56 docs(monorepo): doc-freshness scaffolding (CONTRIBUTING + READMEs/QUICKSTART + lib README + PR template + Part 03 touchpoints)
+858cbf3 chore(meta): close out Phase 0.5 — flip trackers
+cd7f6ab feat(utils): utils/freshclone-smoke (Phase 0.6.2 Optional)
+5d6a5af chore(meta): Phase 0.6 acceptance — agent-side green
+```
+
+**Risks / queued forward:**
+- The frontend pipeline is orthogonal to Phase 0 scope but caught a brittleness in freshclone-smoke (Part 03 SPA-fallback tests need `frontend/dist/index.html`, which is the Vite build output — gitignored). `utils/freshclone-smoke` pre-stamps a placeholder. Consider a permanent fix in Phase 1 (either check in a placeholder or make the tests provide their own).
+- Per `MetaFiles/TODO.md` § Deferred Optional Steps: `utils/run-extraction-canary` retired; `make freshclone-smoke` Makefile wrapper rolled into Phase 1.10.
 
 ---
 
