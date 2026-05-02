@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# utils/no-service-leak — pre-commit guard against re-introduction of
+# library-resident files in projects/*/server/.
+# Scans tracked files for paths that should ONLY live in lib/photoapp-server/.
+# Exits non-zero with the offending paths on detection. Runnable from any
+# directory; pre-commit hook candidate.
+#
+# Built per the Optional Utility Step in Approach 00-shared-library-extraction.md
+# § Phase 2.2. The library's whole point is that there is ONE copy of the
+# service core. Within a week of the extraction, someone will instinctively
+# `cp lib/photoapp-server/src/services/photoapp.js projects/.../server/services/photoapp.js`
+# "to debug something" and forget to delete it. This util makes that mistake
+# unmergeable.
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Library-consumer projects (current set; expanded as new consumers come
+# online — e.g., Project 02 server in Phase 1 once it adopts the workspace
+# package.json + library dep). Restricting the leak check to actual
+# consumers avoids flagging instructor-baseline files in projects that
+# haven't yet adopted the library (e.g., Project 02's pre-Phase-1
+# server tree).
+CONSUMER_PROJECT_PATHS=(
+  "projects/project01/Part03/server"
+)
+
+# File paths that should ONLY live in lib/photoapp-server/src/ for any
+# library consumer. Any match in a consumer's tree is a leak.
+LEAKED_FILES=(
+  "services/photoapp.js"
+  "services/aws.js"
+  "middleware/error.js"
+  "middleware/upload.js"
+  "schemas/envelopes.js"
+  "schemas/rows.js"
+  "schemas.js"
+  "config.js"
+)
+
+# Build the full pattern list by cross-product.
+LEAKED_PATHS=()
+for consumer in "${CONSUMER_PROJECT_PATHS[@]}"; do
+  for f in "${LEAKED_FILES[@]}"; do
+    LEAKED_PATHS+=("${consumer}/${f}")
+  done
+done
+
+# Repository-layer leak (any consumer's repositories/ dir of JS files).
+LEAKED_REPO_PATHS=()
+for consumer in "${CONSUMER_PROJECT_PATHS[@]}"; do
+  LEAKED_REPO_PATHS+=("${consumer}/repositories/*.js")
+done
+
+found=()
+
+# Collect leaks via git ls-files glob expansion.
+for pattern in "${LEAKED_PATHS[@]}" "${LEAKED_REPO_PATHS[@]}"; do
+  while IFS= read -r match; do
+    [[ -n "$match" ]] && found+=("$match")
+  done < <(git -C "$CLASS_ROOT" ls-files -- "$pattern" 2>/dev/null || true)
+done
+
+if [[ ${#found[@]} -eq 0 ]]; then
+  printf "[OK] No service-core leaks detected — library boundary intact.\n"
+  exit 0
+fi
+
+printf "\n╔══════════════════════════════════════════════════════════╗\n"
+printf "║  Service-Core Leak Detected                              ║\n"
+printf "╚══════════════════════════════════════════════════════════╝\n\n"
+printf "  The following files should ONLY live in lib/photoapp-server/src/.\n"
+printf "  They have been re-introduced in a project surface tree:\n\n"
+for path in "${found[@]}"; do
+  printf "    %s\n" "$path"
+done
+printf "\n  Hint: the library is the single source. If you need to debug,\n"
+printf "  edit lib/photoapp-server/src/ — the symlink resolves from each\n"
+printf "  consumer. Re-running this util after deleting the leaked files\n"
+printf "  should pass.\n\n"
+
+exit 1
