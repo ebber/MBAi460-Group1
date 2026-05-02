@@ -458,3 +458,65 @@ Beginning Phase 0 of the Project 02 Part 01 quest. Part 03's service core (`conf
 **Pre-flight communication:** Erik manually confirmed no in-flight Part 03 PRs (2026-05-02). Slack heads-up draft prepared.
 
 **CL9 reconciliation log entries** (the only behaviour-affecting refactor in Phase 0 — SQL-into-repositories) will land at `learnings/2026-05-XX-photoapp-server-extraction.md` as Phase 0.3 unfolds. Cross-referenced from this file when each lands.
+
+---
+
+## 2026-05-02 — Phase 0 (Library Extraction) Closeout — Part 03 → @mbai460/photoapp-server consumer
+
+Phase 0 Sub-phases 0.1–0.5 complete; Phase 0.6 acceptance pending live regression (PENDING ERIK).
+
+### What landed in this tree
+
+| Path | Status | Notes |
+|---|---|---|
+| `server/config.js` | DELETED | Now `lib/photoapp-server/src/config.js`; `server.js` consumes via `require('@mbai460/photoapp-server').config`. |
+| `server/services/aws.js` | DELETED | Now `lib/photoapp-server/src/services/aws.js`; consumed via `require('@mbai460/photoapp-server').services.aws`. |
+| `server/services/photoapp.js` | DELETED | Now `lib/photoapp-server/src/services/photoapp.js`; SQL extracted into `lib/photoapp-server/src/repositories/{users,assets,labels}.js` per CL9 (Phase 0.3). |
+| `server/middleware/error.js` | DELETED | Now `lib/photoapp-server/src/middleware/error.js`; **factory wrap (CL3)** — consume via `lib.middleware.createErrorMiddleware()` (defaults reproduce Part 03 mapping byte-for-byte). |
+| `server/middleware/upload.js` | DELETED | Now `lib/photoapp-server/src/middleware/upload.js`; factory wrap. |
+| `server/schemas.js` | DELETED | **Split** into `lib/photoapp-server/src/schemas/envelopes.js` (response shapes) + `lib/photoapp-server/src/schemas/rows.js` (DB row mappers). |
+| `server/app.js` | MODIFIED | Imports services / middleware / schemas / config from `@mbai460/photoapp-server`. |
+| `server/server.js` | MODIFIED | Imports `config` from the library (Phase 0.4 boot fix in commit `1092b89`). |
+| `server/routes/photoapp_routes.js` | MODIFIED | Imports services from the library; envelope helpers from `lib.schemas.envelopes`. |
+| `server/tests/server.test.js` | NEW (Phase 0.4) | Boot-graph smoke; closes the test gap that allowed `server.js`'s broken `./config` require to ship past `npm test` until Phase 0.4. |
+| `server/tests/aws.test.js`, `photoapp_service.test.js`, `error.test.js`, `upload.test.js`, `schemas.test.js` | MOVED | Now in `lib/photoapp-server/tests/{services,middleware,schemas}/`. |
+| `server/tests/{app,health,static,photoapp_routes,integration_routes_error,live_photoapp_integration,api_404,not_found}.test.js` | UNCHANGED | Surface-specific; stay in this tree. |
+| `package.json` | MODIFIED | Removed transitive deps (`mysql2`, AWS SDK, `multer`, `ini`, `uuid`); added `"@mbai460/photoapp-server": "*"` (workspace protocol per CL8 pre-1.1.0). |
+| `package-lock.json` | DELETED | Replaced by single root lockfile at `MBAi460-Group1/package-lock.json`. |
+| `Dockerfile` (NEW) | NEW | Workspace-aware multi-stage build (Phase 0.4 § 4.2 commit `1b4d720`). Built from monorepo root; demonstrates the install pattern Project 02 reuses in Phase 1.10. |
+| `tools/package-submission.sh` (NEW) | NEW | Gradescope packaging script (Phase 0.4 § 4.3 commit `66c28ab`). Inlines the lib at `node_modules/@mbai460/photoapp-server/`; produces a self-contained tarball whose `require('@mbai460/photoapp-server')` resolves without further install. Sibling `__tests__/package-submission.test.sh` extracts and validates. |
+
+### Behavioural reconciliation (CL9 bounded scope)
+
+Only the SQL-into-repositories refactor is a behaviour change. Reconciliation log: [`learnings/2026-05-02-photoapp-server-extraction.md`](../../../../learnings/2026-05-02-photoapp-server-extraction.md). All SQL strings, parameter binding orders, and `ORDER BY` clauses are byte-identical to this tree's pre-extraction inline SQL. Locked by `lib/photoapp-server/tests/repositories/sql-characterization.test.js` (15 assertions). Three subtleties documented in the log:
+
+1. `assets.findAll` passes `[]` as second arg explicitly (preserves Part 03 `dbConn.execute(sql, params=[])` call shape).
+2. `existsById` (validation projection) and `findById` (full projection) preserved as **two distinct SELECTs** — not DRY'd.
+3. `labels.insertOne` uses `INSERT IGNORE` + `ROUND(?)` literally in SQL.
+
+### Test-suite confirmation
+
+| Surface | Pre-extraction baseline | Post-extraction (HEAD) |
+|---|---|---|
+| Part 03 `npm test` | 77 passed, 2 skipped (live-gated) — many service-layer tests counted here pre-move | 32 passed, 2 skipped (8 of 9 suites; service-layer tests moved to lib) |
+| `lib/photoapp-server` `npm test` | n/a | 99 passed across 11 suites (services / repositories / middleware / schemas / exports-shape / sql-characterization) |
+| Combined | 77+2 | 131+2 — net +54 tests vs pre-extraction (lib gained the moved tests + 15 characterization assertions + boot-graph smoke + repository unit tests) |
+
+### Live regression (PENDING ERIK)
+
+`projects/project01/Part03/server/tests/live_photoapp_integration.test.js` gated by `PHOTOAPP_RUN_LIVE_TESTS=1`. To run when convenient:
+
+```sh
+cd projects/project01/Part03
+PHOTOAPP_RUN_LIVE_TESTS=1 npm test -- live_photoapp_integration.test.js
+```
+
+Per Approach § Phase 6 acceptance gate: live green is the strongest signal that the extraction is mechanically pure. If it fails, roll back the offending phase commit; do not forward-fix.
+
+### Cross-references
+
+- **Reconciliation log:** `learnings/2026-05-02-photoapp-server-extraction.md`
+- **Lib README:** `lib/photoapp-server/README.md`
+- **Approach (master):** `projects/project02/client/MetaFiles/Approach/00-shared-library-extraction.md`
+- **Plan + state:** `projects/project02/client/MetaFiles/Approach/Plan.md` § Phase 0; `projects/project02/client/MetaFiles/OrientationMap.md`
+- **Phase commits on `feat/lib-extraction`:** `9b4bf47` (workspace bootstrap) → `38f258b` (lib-symlink-check) → `6b9a35c` (mechanical extraction + Part 03 consumer update) → `2ec2f26` (exports-shape + no-service-leak) → `1fe272c` (SQL repos extraction) → `2c21634` (SQL characterization) → `35f508c` (reconciliation log) → `1092b89` (server.js boot fix + boot smoke) → `1b4d720` (Dockerfile) → `66c28ab` (Gradescope packaging) plus the meta-tracker close-out commits.

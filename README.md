@@ -9,13 +9,33 @@ Each lab/project part is graded separately and builds on a shared AWS environmen
 |-----------|------|
 | `docker/` | Docker image — runtime for all labs and projects |
 | `infra/` | AWS backbone: Terraform (IaC) + backbone runtime configs |
+| `lib/` | Shared libraries (npm workspaces) — internals consumed by multiple project surfaces |
 | `labs/` | Lab assignments (lab01–lab04) |
 | `projects/` | Project assignments (project01–project03) |
 | `utils/` | Operational scripts — AWS, Docker, DB tooling |
 | `setup/` | Host machine setup for the class environment |
 | `visualizations/` | Architecture and design diagrams |
-| `learnings/` | Process and methodology retrospectives — patterns, heuristics, compaction recovery |
+| `learnings/` | Process and methodology retrospectives — patterns, heuristics, reconciliation logs |
 | `MetaFiles/` | Class Project coordination: governing docs, ActionQueue, Journal |
+
+## Repo is an npm workspaces monorepo
+
+Since 2026-05-02 (Phase 0 of the Project 02 Part 01 quest), the JavaScript portions of the repo are organized as npm workspaces. The root `package.json` declares:
+
+- `lib/*` — shared libraries (currently `lib/photoapp-server` — see [`lib/photoapp-server/README.md`](lib/photoapp-server/README.md))
+- `projects/project01/Part03` — Part 03 PhotoApp web service (consumer of the lib)
+- `projects/project02/server` — Project 02 server (consumer; scaffolded in Phase 1)
+
+**One install, from the root:**
+
+```sh
+cd MBAi460-Group1
+npm install                   # installs every workspace; symlinks the lib into consumer node_modules
+```
+
+After install, the lib is reachable from any consumer via `require('@mbai460/photoapp-server')`. Lockfiles are root-only — there is exactly one `package-lock.json`.
+
+For first-time environment setup (AWS, Docker, Terraform, DB schema): see [`MetaFiles/QUICKSTART.md`](MetaFiles/QUICKSTART.md). For day-2 contribution discipline (workspace etiquette, lockfile conflicts, library-touching protocol, conventional commits): see [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Key Facts
 
@@ -27,7 +47,7 @@ Each lab/project part is graded separately and builds on a shared AWS environmen
 
 ## Getting Started
 
-See [`MetaFiles/QUICKSTART.md`](MetaFiles/QUICKSTART.md) for a complete collaborator setup walkthrough (AWS credentials, Terraform, Docker, DB schema, verification).
+See [`MetaFiles/QUICKSTART.md`](MetaFiles/QUICKSTART.md) for a complete collaborator setup walkthrough (AWS credentials, Terraform, Docker, DB schema, verification, workspace install). Then see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the day-2 contribution rules — especially the [doc-freshness protocol (CL11)](MetaFiles/DOC-FRESHNESS.md) and the library-touching label discipline (CL12).
 
 ## MetaFiles
 

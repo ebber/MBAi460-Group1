@@ -4,6 +4,8 @@ Part 03 builds the user interface for the PhotoApp API from earlier project work
 
 **Stack (decided 2026-04-26):** React + Vite frontend, Express + Node backend. Built-only dev mode (Vite build → Express serves `frontend/dist`). See `MetaFiles/refactor-log.md` 2026-04-26 for the full Q1–Q6 decision record.
 
+**Library consumer (since 2026-05-02 / Phase 0):** This server is a consumer of the shared library [`@mbai460/photoapp-server`](../../../lib/photoapp-server/README.md). The library owns services, repositories, middleware factories, schemas, and config; this tree owns the `/api/*` route layer and surface-specific tests. Editing lib code is immediately visible here via the npm-workspace symlink — no re-install needed unless `lib/photoapp-server/package.json` changes. See `MetaFiles/refactor-log.md` 2026-05-02 (closeout) for the full extraction record and [`learnings/2026-05-02-photoapp-server-extraction.md`](../../../learnings/2026-05-02-photoapp-server-extraction.md) for the CL9 reconciliation log.
+
 ## Start Here
 
 Read these in order:
@@ -42,18 +44,20 @@ Server/API collaborator:
 
 ## Run the Server
 
-From this directory:
+The repo is an npm workspaces monorepo (since 2026-05-02). Install **once at the repo root**, then operate from this directory:
 
 ```bash
-# 1. Install dependencies (first run only)
-npm install
+# 1. Install workspace deps (first run only — from MBAi460-Group1/, NOT this dir)
+( cd ../../.. && npm install )
 
-# 2. Run the test suite (Jest + supertest)
+# 2. Run the test suite (Jest + supertest) — from this dir
 npm test
 
-# 3. Start the server (Express on port 8080)
+# 3. Start the server (Express on port 8080) — from this dir
 npm start
 ```
+
+For the full first-time environment walkthrough (AWS, Docker, DB, Terraform, Node), see [`MBAi460-Group1/MetaFiles/QUICKSTART.md`](../../../MetaFiles/QUICKSTART.md). For day-2 contribution rules (workspace etiquette, library-touching protocol, conventional commits), see [`MBAi460-Group1/CONTRIBUTING.md`](../../../CONTRIBUTING.md).
 
 Expected `npm start` output:
 
