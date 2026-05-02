@@ -12,7 +12,7 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-02 — Phase 0.4 (Update Part 03 to Consume the Library) ✅ closed (commits `1092b89` server.js boot fix + boot-smoke regression test, `1b4d720` workspace-aware Dockerfile + monorepo .dockerignore, `66c28ab` Gradescope packaging script + tarball test). § 4.1 source updates retroactively credited to Phase 0.2 commit `6b9a35c`; § 4.4 smoke green (Part 03 npm test 32+2 skipped; workspace-wide npm test --workspaces green; `docker run` of `mbai460-part03:dev` boots cleanly with /health=200); item 4 (PHOTOAPP_RUN_LIVE_TESTS=1) PENDING ERIK. Lib tests 99/99 green; Part 03 canary green throughout. Phase 0.5 (Doc-Freshness Protocol — CONTRIBUTING / DOC-FRESHNESS / lib README / PR template) is the next sub-frame.
+> **Last updated:** 2026-05-02 — Phase 0.5 (Doc-Freshness Protocol) ✅ closed (commits `c235e36` DOC-FRESHNESS.md + TODO.md Deferred Optional Steps schema + `b765e56` CONTRIBUTING.md + lib README full population + root README/QUICKSTART workspace-install path + PR template + Part 03 README/Approach touchpoints + refactor-log closeout). Lib tests 99/99 green; Part 03 canary 32+2 skipped green throughout. Phase 0.6 (Acceptance — clean install + verification commands + tag library-1.0.0-extraction-complete) is the next and final sub-frame.
 
 ---
 
@@ -64,18 +64,22 @@ Position:
   Phase 0.3 ✅ (CL9 SQL-into-repositories bounded reconciliation +
   characterization test + reconciliation log), Phase 0.4 ✅ (server.js
   boot fix + workspace-aware Dockerfile + Gradescope packaging script +
-  end-to-end smoke).
-- Now: Between sub-phases — feat/lib-extraction carries 13 commits ahead
+  end-to-end smoke), Phase 0.5 ✅ (Doc-Freshness Protocol —
+  DOC-FRESHNESS.md + TODO.md schema + CONTRIBUTING + lib README +
+  README/QUICKSTART + PR template + Part 03 touchpoints).
+- Now: Between sub-phases — feat/lib-extraction carries 16 commits ahead
   of main; lib tests 99/99 green; Part 03 canary 32+2 skipped green;
   Part 03 image boots cleanly via `docker run mbai460-part03:dev` with
   /health=200; submission tarball self-contained; live AWS regression
   PENDING ERIK.
-- Next: Phase 0.5 — Doc-Freshness Protocol (CL11). MetaFiles/DOC-FRESHNESS
-  + CONTRIBUTING.md + lib/photoapp-server/README.md + PR template +
-  MetaFiles/TODO.md schema; root README + QUICKSTART refresh.
-- Down: 2 sub-phases remain — 0.5 Doc-Freshness Protocol → 0.6 Acceptance
-  + tag library-1.0.0-extraction-complete.
-- Up: Project 02 Part 01 quest.
+- Next: Phase 0.6 — Acceptance gate. Verification commands (clean
+  `rm -rf node_modules && npm install` + workspace tests + lib tests +
+  Part 03 tests + Docker build + cred-sweep + smoke-test-aws); fresh-clone
+  smoke test (Optional `utils/freshclone-smoke` strongly recommended);
+  branch-protection updates (Erik); tag `library-1.0.0-extraction-complete`.
+- Down: 1 sub-phase remains — 0.6 Acceptance + tag.
+- Up: Project 02 Part 01 quest. After Phase 0.6 closes, the workstream
+  closes and Phase 1 (Foundation) becomes the next Active Frame.
 
 Scope:
 - In:
@@ -156,7 +160,7 @@ Resumption (per state):
 - [x] **Phase 0.2** — Extract Service Core mechanically pure ✅ 2026-05-02 (commits `6b9a35c` + `2ec2f26`)
 - [x] **Phase 0.3** — Repository Layer (CL9 bounded reconciliation) ✅ 2026-05-02 (commits `1fe272c` SQL extraction + `2c21634` characterization test + `35f508c` reconciliation log; § Phase 3)
 - [x] **Phase 0.4** — Update Part 03 to Consume the Library ✅ 2026-05-02 (commits `1092b89` server.js boot fix + boot-smoke test + `1b4d720` Dockerfile + `66c28ab` Gradescope packaging script + tarball test; § 4.4 item 4 live AWS PENDING ERIK; § Phase 4)
-- [ ] **Phase 0.5** — Doc-Staleness Prevention Protocol (CL11; § Phase 5)
+- [x] **Phase 0.5** — Doc-Staleness Prevention Protocol (CL11) ✅ 2026-05-02 (commits `c235e36` DOC-FRESHNESS.md + TODO.md schema + `b765e56` CONTRIBUTING + lib README + READMEs/QUICKSTART + PR template + Part 03 touchpoints + refactor-log closeout; § Phase 5)
 - [ ] **Phase 0.6** — Acceptance + branch-protection update + tag (§ Phase 6)
 
 ---
