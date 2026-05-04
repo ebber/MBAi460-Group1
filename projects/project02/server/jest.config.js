@@ -1,9 +1,47 @@
-// Phase 1.0 placeholder. The six-layer test pyramid (unit / integration / contract /
-// smoke / happy_path / live) is wired into a multi-project layout in sub-phase 1.11
-// per Approach 01-foundation.md § Phase 11. Until then, this single config runs whatever
-// .test.js files land under tests/ in any sub-phase that adds coverage.
+// Approach 01-foundation.md § Phase 11 Task 11.1
+// Six-layer Jest multi-project configuration.
+// Each layer is independently runnable via npm run test:<layer>.
+//
+// Service-layer tests live in lib/photoapp-server/tests/ and are NOT duplicated here.
+// Project 02 surface tests cover the integration and contract surface.
 module.exports = {
-  testEnvironment: 'node',
-  testMatch: ['<rootDir>/tests/**/*.test.js'],
-  clearMocks: true,
+  projects: [
+    {
+      displayName: 'unit',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/unit/**/*.test.js'],
+      clearMocks: true,
+    },
+    {
+      displayName: 'integration',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/integration/**/*.test.js'],
+      clearMocks: true,
+    },
+    {
+      displayName: 'contract',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/contract/**/*.test.js'],
+      clearMocks: true,
+    },
+    {
+      displayName: 'smoke',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/smoke/**/*.test.js'],
+      clearMocks: true,
+    },
+    {
+      displayName: 'happy',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/happy_path/**/*.test.js'],
+      clearMocks: true,
+    },
+    {
+      displayName: 'live',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/live/**/*.test.js'],
+      globalSetup: '<rootDir>/tests/live/setup.js',
+      clearMocks: true,
+    },
+  ],
 };
