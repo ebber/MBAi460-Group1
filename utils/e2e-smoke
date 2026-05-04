@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+#
+# utils/e2e-smoke — Run the full Playwright E2E lifecycle in one command.
+#
+# What it does:
+#   1. Pre-flight: verify Part03 + frontend are set up (config, dist, deps)
+#   2. Start the Express server in the background; wait for /health
+#   3. Run the default Playwright suite (npm run e2e — non-destructive)
+#   4. Run the destructive suite (npm run e2e:destructive — wipes RDS+S3)
+#   5. Stop the server cleanly (always — trap on exit)
+#
+# Default behavior runs both suites; the destructive suite WIPES ALL ASSETS
+# from the live RDS+S3 stack. Pass --no-destructive to skip step 4.
+#
+# Runnable from any directory.
+#
+# Usage:
+#   utils/e2e-smoke                  # default + destructive (clean end-state)
+#   utils/e2e-smoke --no-destructive # default suite only (accumulates 1 degu + 1 PDF)
+#   utils/e2e-smoke --help           # this help text
+#
+# Exit: 0 on full pass; non-zero if any step fails.
+#
+# Source: 04-playwright-e2e-plan.md Phase B-sidecar / final validation cycle.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PART03_DIR="${CLASS_ROOT}/projects/project01/Part03"
+FRONTEND_DIR="${PART03_DIR}/frontend"
+
+DESTRUCTIVE=true
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-destructive) DESTRUCTIVE=false; shift ;;
+    -h|--help)
+      grep '^# ' "$0" | sed 's/^# //'
+      exit 0
+      ;;
+    *) echo "[FAIL] Unknown arg: $1" >&2; exit 1 ;;
+  esac
+done
+
+pass()    { printf "\033[32m[PASS]\033[0m %s\n" "$1"; }
+fail()    { printf "\033[31m[FAIL]\033[0m %s\n" "$1" >&2; }
+info()    { printf "\033[36m[INFO]\033[0m %s\n" "$1"; }
+section() { printf "\n\033[1m== %s ==\033[0m\n" "$1"; }
+
+# ---------------------------------------------------------------------------
+# Step 1 — Pre-flight
+# ---------------------------------------------------------------------------
+section "[1/4] Pre-flight"
+
+if [[ ! -f "${PART03_DIR}/package.json" ]]; then
+  fail "Part03/package.json not found at ${PART03_DIR}"
+  exit 1
+fi
+pass "Part03/package.json"
+
+if [[ ! -f "${FRONTEND_DIR}/playwright.config.ts" ]]; then
+  fail "frontend/playwright.config.ts not found — has Phase A bootstrap landed?"
+  exit 1
+fi
+pass "frontend/playwright.config.ts"
+
+if [[ ! -f "${FRONTEND_DIR}/dist/index.html" ]]; then
+  fail "frontend/dist/index.html not found — run 'npm run build' in ${FRONTEND_DIR} first"
+  exit 1
+fi
+pass "frontend/dist/index.html (built)"
+
+if [[ ! -f "${CLASS_ROOT}/projects/project01/client/photoapp-config.ini" ]]; then
+  fail "projects/project01/client/photoapp-config.ini missing — see QUICKSTART step 5"
+  exit 1
+fi
+pass "photoapp-config.ini in place"
+
+if [[ ! -d "${CLASS_ROOT}/node_modules/express" ]]; then
+  fail "Backend deps not installed — run 'npm install' from ${CLASS_ROOT} first"
+  exit 1
+fi
+pass "Backend node_modules (workspaces hoist)"
+
+if [[ ! -d "${FRONTEND_DIR}/node_modules/@playwright" ]]; then
+  fail "Playwright not installed — run 'npm install' from ${FRONTEND_DIR}"
+  exit 1
+fi
+pass "@playwright/test installed"
+
+# ---------------------------------------------------------------------------
+# Step 2 — Start server + wait
+# ---------------------------------------------------------------------------
+section "[2/4] Express server"
+
+if curl -sf http://localhost:8080/health >/dev/null 2>&1; then
+  fail "Port 8080 is already in use — stop the existing server first"
+  exit 1
+fi
+
+LOG="$(mktemp -t e2e-smoke.XXXXXXXX.log)"
+info "log: ${LOG}"
+
+cd "${PART03_DIR}"
+npm start > "${LOG}" 2>&1 &
+SERVER_PID=$!
+info "server PID: ${SERVER_PID}"
+
+cleanup() {
+  local rc=$?
+  printf "\n"
+  info "stopping server PID ${SERVER_PID}..."
+  kill "${SERVER_PID}" 2>/dev/null || true
+  wait "${SERVER_PID}" 2>/dev/null || true
+  if [[ ${rc} -ne 0 ]]; then
+    fail "e2e-smoke FAILED (exit ${rc}) — server log tail:"
+    tail -30 "${LOG}" >&2
+    info "full server log preserved at: ${LOG}"
+  else
+    rm -f "${LOG}"
+  fi
+  exit ${rc}
+}
+trap cleanup EXIT
+
+UP=false
+for i in {1..30}; do
+  if curl -sf http://localhost:8080/health >/dev/null 2>&1; then
+    pass "server up after ${i}s"
+    UP=true
+    break
+  fi
+  sleep 1
+done
+if [[ "${UP}" != "true" ]]; then
+  fail "server failed to come up in 30s"
+  exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Step 3 — Default suite
+# ---------------------------------------------------------------------------
+section "[3/4] Default suite (npm run e2e)"
+
+cd "${FRONTEND_DIR}"
+npm run e2e
+pass "default suite green"
+
+# ---------------------------------------------------------------------------
+# Step 4 — Destructive suite (optional)
+# ---------------------------------------------------------------------------
+if ${DESTRUCTIVE}; then
+  section "[4/4] Destructive suite (npm run e2e:destructive)"
+  info "this will WIPE all assets from the live RDS+S3 stack"
+  npm run e2e:destructive
+  pass "destructive suite green — stack wiped clean"
+else
+  section "[4/4] Destructive suite SKIPPED (--no-destructive)"
+  info "stack now has accumulated test data (~1 degu + 1 PDF)"
+  info "run 'utils/e2e-smoke' (without flag) to clean up"
+fi
+
+# ---------------------------------------------------------------------------
+# Done
+# ---------------------------------------------------------------------------
+section "Done"
+pass "e2e-smoke OK"

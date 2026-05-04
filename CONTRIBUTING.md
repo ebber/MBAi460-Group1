@@ -217,6 +217,7 @@ Approach docs surface "Optional Test / Utility / Visualization Steps" — work t
 | Doc-freshness rule | [`MetaFiles/DOC-FRESHNESS.md`](MetaFiles/DOC-FRESHNESS.md) |
 | Active Project 02 quest | [`projects/project02/client/MetaFiles/OrientationMap.md`](projects/project02/client/MetaFiles/OrientationMap.md) |
 | TODO queue | [`MetaFiles/TODO.md`](MetaFiles/TODO.md) |
+| Full E2E smoke (Part 03 UI + live AWS, single command) | `utils/e2e-smoke` |
 | Reconciliation logs | `learnings/` |
 
 If you can't find what you need from this list: open an issue, surface in PR review, or queue a doc TODO. Folklore is the failure mode this whole stack exists to prevent.
