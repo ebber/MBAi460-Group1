@@ -25,10 +25,10 @@
 | 5 | Plan progress updates | A- | 0🚩 0⚠️ 1💡 2✨ |
 | 6 | Test quality | B+ | 0🚩 1⚠️ 1💡 2✨ |
 | 7 | Commit hygiene | A- | 0🚩 1⚠️ 0💡 2✨ |
-| 8 | Cross-cutting thread engagement | B+ | 0🚩 1⚠️ 1💡 2✨ |
+| 8 | Cross-cutting thread engagement | B+ | 0🚩 2⚠️ 2💡 3✨ |
 | 9 | Strengths to amplify | A | n/a |
 
-**Aggregate severity counts:** 4🚩 · 8⚠️ · 4💡 · 14✨
+**Aggregate severity counts:** 4🚩 · 9⚠️ · 5💡 · 15✨ (Dim 8 expanded 2026-05-04 with Optional-Steps engagement audit findings — see § Reviewer corrections)
 
 ## Dimension findings
 
@@ -115,6 +115,9 @@ Findings:
 - 💡 **Thread C (visualizations) could have shipped one or two more.** The Approach Phase 5 Optional Mermaid (error class mapping) is "strongly recommended" and the test material that justifies it (`error_middleware.test.js`) is already exemplary — a Mermaid would be ten minutes of work for a substantial PR-review communication win. Queued in refactor-log § 1.5–1.11; reasonable, but the case for *building* was strong.
 - ✨ **CL9 library-touching protocol executed correctly** for the variadic `successResponse` change (`5581051` lib/photoapp-server/src/schemas/envelopes.js diff). Bounded change, both consumers updated in lockstep, library tests expanded from 3 → 8, refactor-log § 1.5–1.11 § decision 2 captures the rationale. This is exactly the pattern Phase 0.3's reconciliation log set up.
 - ✨ **Optional Steps routing decisions are explicit** in the refactor-log — every sub-phase closeout has an "Optional Steps routing" subsection that says ✅/📋/⏭️ per item with rationale. Builds the durable record the criteria file describes.
+- ✨ **Extended the Optional Steps Registry with self-authored entries** (added 2026-05-04 main-context audit). Branch's Plan.md at `685b501` shows the Phase 1 Optionals section gained two ✅ entries that weren't in the original registry: `Target-State-project02-foundation-consumer-bootstrap-v1.md` (a Mermaid that fit the bootstrap work better than the registry's named candidates `foundation-architecture` / `inheritance-map`) and `library_resolution.test.js` (a permanent CI guard for the workspace symlink, replacing a deleted `/__bootcheck` smoke route's CI value). The "registry is additive — author the entry alongside the artifact" pattern is exactly the protocol-spirit move the criteria file (§ Dim 8 Registry hygiene) prescribes — and Pranav arrived at it without explicit prompting. **Worth amplifying as a default working pattern**: when you build an Optional that doesn't fit the registry's named candidates, *add the entry* with ✅ + one-sentence rationale rather than building outside the registry — `projects/project02/client/MetaFiles/Approach/Plan.md:553-560` (`685b501`).
+- ⚠️ **Phase 1 Optionals: 2 of 3 named entries silent-skipped.** The registry-named `Target-State-project02-foundation-architecture-v1.md` and `Target-State-project02-inheritance-map-v1.md` remain `[ ] ⏳` on this branch despite Phase 1 having landed. **Silent-skip is the worst-of-four routings (criteria § Dim 8) — it hides the decision.** A `⏭️ Skipped — superseded by foundation-consumer-bootstrap-v1.md which covers the same architectural surface` would have closed both entries with one line. Note: the fix is **route, not delete** (criteria § Dim 8 "registry hygiene rule") — the entries should remain as durable record + flip status, not be erased — `Plan.md:553-560` (`685b501`).
+- 💡 **Aggregate engagement: ~21% of in-scope Optionals (3 of 14: Phase 1 + Phase 2)** routed-with-explicit-decision (2 ✅ self-added + 1 📋 queued). The 2 silent-skipped Phase 1 entries + 11 silent-skipped Phase 2 entries are the 79% gap. Engagement was real and protocol-spirit positive; the gap is also real and the system-first reading is "Optional-Steps routing is one click harder than tracker-discipline; the registry's location at Plan.md:537 is a long way from the contributor's working surface." Routing UX worth a process-retro item.
 
 ### 9. Strengths to amplify — Grade A
 

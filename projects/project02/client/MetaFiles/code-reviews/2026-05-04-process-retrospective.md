@@ -134,6 +134,25 @@ This addition is small (~3 sentences); cost-benefit is high for large-scope disp
 
 ---
 
+### [2026-05-04 / Step 2 follow-on] Optional-Steps Registry engagement audit — registry hygiene rule clarified
+
+Erik question 2026-05-04: rough percent of Optional Steps the collaborators executed. Main-context audit against Plan.md § Optional Steps Registry produced:
+
+- **Branch A (Pranav)**: ~21% engagement — 3 of 14 in-scope Optionals (Phase 1 + Phase 2). 2 ✅ self-added entries (foundation-consumer-bootstrap viz + library_resolution test) + 1 📋 queued (make doctor extension). 11 of 11 Phase 2 entries silent-skipped. 2 of 3 Phase 1 entries silent-skipped.
+- **Branch B (Andrew)**: ~0% engagement — 0 of 17 in-scope Optionals (Phase 2 + Phase 3). All entries `[ ] ⏳ awaiting routing` — branch's Plan.md identical to main.
+
+**Three findings the audit surfaced:**
+
+1. **"Route, don't delete"** — the registry is a durable enumeration of considered alternatives. When silent-skip findings appear, the protocol-conformant fix is `⏭️ Skipped — <reason>` or `🚫 Retired — <reason>`, NOT erasure of the entry. **Registry entries should NEVER be deleted as a shortcut around a silent-skip finding** — the entries themselves are durable record. Codified into criteria § Dim 8 Registry hygiene rule on 2026-05-04 (this turn) so future reviews + future contributors inherit the framing.
+
+2. **Pranav's "extend the registry with self-authored entries"** is the protocol-spirit move worth amplifying. He authored 2 ✅ entries on the Phase 1 Optionals section that weren't in the original Approach-surfaced list (foundation-consumer-bootstrap viz + library_resolution test). Both fit the bootstrap work better than the registry's named candidates. **The registry is meant to be additive — a growing record of Optional engagement, not a fixed enumeration.** Codified into criteria § Dim 8 alongside the route-don't-delete rule on 2026-05-04.
+
+3. **System-side observation: routing UX cost is real.** Pranav engaged with tracker discipline strongly (Plan checkboxes, refactor-log) but only ~21% of Optional Steps. Andrew engaged with neither. Same Approach, two interpretations, neither at 100% — **suggests the Optional-Steps Execution Protocol (Plan.md § ~157) is one click harder than tracker-discipline; the registry's location at Plan.md:537+ is far from the contributor's working surface**. Process-retro recommendation: surface the registry's location + routing protocol from a per-phase Documentation Touchpoint in each Approach doc, OR lift the routing UI into the OrientationMap (alongside Active section).
+
+**Pattern reinforcement of system-first framing:** same shape as the tracker-discipline finding from earlier in this retro. Two collaborators, same protocol, radically different engagement. The corrective is BOTH a personal habit shift AND a system-side improvement — the personal recommendation lands in each branch's Dim 8 ⚠️/💡; the system-side change lands as a process-retro recommendation. Validates `feedback_system_first_framing.md` at a second instance — the memory's pattern hold across this quest's surfaces.
+
+---
+
 ### [2026-05-04 / Step 0] Lab spin-up scope clarification
 
 Erik's directive evolution from Phase 0 ("don't change AWS") to catch-and-merge ("drop into a sub-frame of spinning the lab back up if down") clarifies the lab-up boundary: **standard utility-driven spin-up via `utils/lab-up` is in-scope when AWS state is the gate**, distinct from "discretionary AWS changes during a long run" which remains out-of-scope. The mutation_gating discipline still applies (intent + scope + recovery path before invoking) but the gate is explicit.

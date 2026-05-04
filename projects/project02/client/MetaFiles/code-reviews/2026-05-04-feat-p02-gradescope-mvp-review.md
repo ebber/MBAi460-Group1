@@ -17,10 +17,10 @@
 | 5 | Plan progress updates | D+ | 0🚩 3⚠️ 1💡 0✨ |
 | 6 | Test quality | C+ | 0🚩 2⚠️ 2💡 2✨ |
 | 7 | Commit hygiene | A | 0🚩 0⚠️ 1💡 4✨ |
-| 8 | Cross-cutting thread engagement | C- | 0🚩 4⚠️ 1💡 1✨ |
+| 8 | Cross-cutting thread engagement | C- | 0🚩 5⚠️ 1💡 1✨ |
 | 9 | Strengths to amplify | A | — 7✨ |
 
-**Severity totals across review:** 0 🚩 / 18 ⚠️ / 12 💡 / 22 ✨.
+**Severity totals across review:** 0 🚩 / 19 ⚠️ / 12 💡 / 22 ✨ (Dim 8 expanded 2026-05-04 with Optional-Steps Registry engagement audit).
 
 ---
 
@@ -118,7 +118,8 @@ Findings:
 - ⚠️ Mermaid thread engagement: zero. `Target-State-project02-upload-transaction-v1.md` is a strongly-recommended Phase 2 viz for exactly the multi-AWS-transaction-with-rollback work this branch did. The viz value is *highest* before authoring; this branch authored without it — `MBAi460-Group1/visualizations/` (no new files)
 - ⚠️ Doc-Freshness thread (CL11): zero engagement. PR template would ask "did this PR change anything onboarding-affecting?" — it materially did (the route shapes the client now expects, the body shape post_image now requires). No `projects/project02/server/README.md`, no QUICKSTART touch, no client/README. Branch B's commits would benefit a future fresh-clone reader by 30 seconds of skim — instead, the reader has to read the commit log to discover the spec contract — onboarding-facing inventory listed at `Plan.md:498-507`
 - 💡 Optional Steps Registry routing: Phase 2 / Phase 3 Optional Steps (e.g., `tools/gradescope-preview`, `tests/contract/spec_envelope_table.test.js`, `tools/route-scaffold.sh`, `tools/run-client-suite`, `tests/contract/test_tuple_shape_compatibility.py`) were not routed to ✅/📋/⏭️/🚫 by this branch. The protocol (`Plan.md:181-191`) requires explicit routing per Optional Step. A blanket "skipped, deadline-shaped" entry covering all of them would have closed the gap — `Plan.md:560-580` Optional Steps Registry rows
-- ✨ Dual Gradescope Tarball thread: implicit engagement via the package.json `dependencies` (line 11-19) being kept *flat* — no `@mbai460/photoapp-server` dep means no inlining is needed for the submission tarball. This is a real strategic win: for the deadline shot, the tarball-build pipeline reduces to "tar `*.js + *.ini`" with zero workspace-resolve concerns. Whether intentional or incidental, it makes the submission step trivial — `projects/project02/server/package.json:11-19` (`60f760d`)
+- ✨ Dual Gradescope Tarball thread: implicit engagement via the package.json `dependencies` (line 11-19) being kept *flat* — no `@mbai460/photoapp-server` dep means no inlining is needed for the submission tarball. This is a real strategic win: for the deadline shot, the tarball-build pipeline reduces to "tar `*.js + *.ini`" with zero workspace-resolve concerns. Whether intentional or incidental, it makes the submission step trivial — `projects/project02/server/package.json:11-19` (`60f760d`).
+- ⚠️ **Optional Steps Registry: 0% engagement of 17 in-scope entries** (added 2026-05-04 main-context audit). Branch B's Plan.md is **untouched** — Plan.md Optional Steps Registry on `e3d9a58` is identical to `main`. All 11 Phase 2 entries + all 6 Phase 3 entries (the branch's claimed scope across Phase 2 + Phase 3 work) sit at `[ ] ⏳ awaiting routing`. Per criteria § Dim 8 Registry hygiene rule: **silent-skip is the worst-of-four routings**; the fix is **route, not delete** — the Registry is a durable enumeration of considered alternatives, not a contributor scratchpad. A blanket `⏭️ Skipped — deadline-shaped MVP path; revisit when Phase 1 Foundation + Phase 2 acceptance lands` covering the in-scope rows would have closed the gap with 17 lines of routing — and would have *increased* the registry's value as a record of "what was considered, by whom, and decided what." Registry entries should never be deleted as a shortcut around silent-skip findings; the protocol-conformant move is to flip status with one-sentence rationale — `projects/project02/client/MetaFiles/Approach/Plan.md:559-580` (Branch B baseline = `d2e039c` baseline; no flips).
 
 ### 9. Strengths to amplify — Grade A
 

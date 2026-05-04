@@ -70,6 +70,12 @@ Atomic commits with clear narratives? Subject lines informative under ~72 chars?
 
 Did the branch touch + update the six cross-cutting threads — **Testing Pyramid / Utility Building / Mermaid Visualizations / Library-Touching Governance / Doc-Freshness / Dual Gradescope Tarball**? Especially: were Optional Steps engaged with explicit intent (built / queued in TODO / skipped with reason) or invisibly skipped? The threads are easy to forget when heads-down on a single phase; engagement is a quality signal.
 
+**Registry hygiene rule — "route, don't delete":** the Optional Steps Registry in `Plan.md` is a **durable enumeration** of considered alternatives surfaced by the Approach docs. Each entry deserves explicit routing — `✅ Built` / `📋 Queued in TODO` / `⏭️ Skipped with reason` / `🚫 Retired (built consideration; decided not to pursue)`. **Deletion is NOT a routing option.** A reviewer evaluating cross-cutting engagement should never see entries removed from the registry as a shortcut around silent-skip findings — the entries themselves are durable record. If a contributor genuinely believes an Optional Step has become irrelevant, the answer is `🚫 Retired` with a one-sentence reason, not erasure.
+
+**Extending the registry — protocol-spirit guidance:** when a contributor authors a contextually relevant Optional artifact that doesn't appear in the Approach-surfaced list (e.g., a different Mermaid that fits the work better than the registry's named candidates), the right move is to **add the entry to the registry with `✅ Built` status + a one-sentence rationale**, not to silently build outside the registry. The registry is meant to be additive — a growing record of Optional engagement, not a fixed enumeration.
+
+**Silent-skip is the worst-of-four routings** because it hides the decision; the receiving reviewer can't tell if the Optional was assessed-and-rejected or just forgotten. A `⏭️ Skipped — out of scope for this branch's deadline-mode work` is **always** better than leaving the entry unflipped. The cost is one line.
+
 ### 9. Strengths to amplify
 
 **Explicit positive feedback.** What did this branch do well that's worth doubling down on in future work? Patterns or decisions that constitute an emerging working style worth amplifying? Decisions that surprised the reviewer in a good way?
