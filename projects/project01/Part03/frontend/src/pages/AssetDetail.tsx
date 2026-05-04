@@ -77,6 +77,7 @@ function PhotoBranch({
           <img
             src={previewSrc}
             alt={asset.localname}
+            data-testid="asset-preview"
             className="w-full rounded-md border border-line"
           />
         ) : (
@@ -105,7 +106,7 @@ function PhotoBranch({
                 className="flex items-center justify-between rounded-md border border-line bg-paper-2 px-3 py-2"
               >
                 <span className="text-sm text-ink">{l.label}</span>
-                <span className={pillClasses}>{l.confidence}%</span>
+                <span className={pillClasses} data-testid="label-confidence">{l.confidence}%</span>
               </li>
             ))}
           </ul>

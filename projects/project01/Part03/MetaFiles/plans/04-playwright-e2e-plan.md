@@ -512,7 +512,7 @@ git commit -m "feat(part03): e2e routing-and-auth.spec — L1/L2/L3 (Phase B.1)"
 **Files:**
 - Create: `Part03/frontend/e2e/specs/library-happy-path.spec.ts`
 
-- [ ] **Step B.2.1:** Write the spec.
+- [x] **Step B.2.1:** ✅ 2026-05-04 — `library-happy-path.spec.ts` written. Selectors aligned to existing testids: `[data-testid^="asset-card-"]` (starts-with — matches per-id pattern); `[data-testid="label-overflow"]` (existing); newly-added `[data-testid="card-label"]`, `[data-testid="label-confidence"]`, `[data-testid="asset-preview"]`. Serial mode + defensive count-before/count-after assertion (R1.3 + R1.4 fixes from review).
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -587,7 +587,7 @@ test.describe('Library happy path (U1 + LIB3 + A1 + A3)', () => {
 
 **Selector dependencies:** this spec relies on `data-testid` attributes (`asset-card`, `card-label`, `card-label-overflow`, `label-confidence`, `asset-preview`). Verify these exist in the rendered components before running — if any are missing, EITHER (a) add them to the source components (small surface change, justified for E2E observability) OR (b) refactor the spec to use accessible selectors (`getByRole`, `getByText`). Default to (a) for stability; flag any missing testid as part of the task.
 
-- [ ] **Step B.2.2:** Inspect components for `data-testid` presence.
+- [x] **Step B.2.2:** ✅ 2026-05-04 — inspected. Existing: `data-testid={asset-card-${assetid}}` + `data-kind={asset.kind}` (AssetCard:54-55), `data-testid="label-overflow"` (AssetCard:88), `data-testid="labels-list"` (AssetDetail:99), `data-testid="asset-detail-photo"` (AssetDetail:72). Added 3 minimal one-line testids: `card-label` (AssetCard label spans), `asset-preview` (AssetDetail img), `label-confidence` (AssetDetail confidence span). Vitest 74/74 still pass post-additions.
 
 ```bash
 grep -rn "data-testid" Part03/frontend/src/components/AssetCard.tsx \
@@ -597,7 +597,7 @@ grep -rn "data-testid" Part03/frontend/src/components/AssetCard.tsx \
 
 If missing, add minimal `data-testid` attributes to the components. Each addition is a one-line change; commit them with the spec.
 
-- [ ] **Step B.2.3:** Run the spec.
+- [x] **Step B.2.3:** ✅ 2026-05-04 — 4/4 passed (9.4s total): U1 4.1s, LIB3 958ms, A1 937ms, A3 2.8s. Live Rekognition labels confirmed sorted DESC; preview URL pattern `/api/images/:id/file` confirmed.
 
 ```bash
 cd Part03/frontend
