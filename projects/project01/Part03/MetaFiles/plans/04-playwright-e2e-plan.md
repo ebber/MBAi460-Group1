@@ -130,9 +130,9 @@ git commit -m "chore(part03): activate Playwright E2E workstream in OrientationM
 - Modify: `Part03/frontend/package-lock.json` (auto)
 - Modify: `Part03/MetaFiles/install-log.md` (new entry)
 
-- [ ] **Step A.1.1:** Ask Erik for npm install permission (one-time, gets auto for the session per Q5).
+- [x] **Step A.1.1:** ✅ 2026-05-04 — permission asked + granted ("Permission to run NPM install!"). Q5 auto-approval active for remainder of session.
 
-- [ ] **Step A.1.2:** Install Playwright.
+- [x] **Step A.1.2:** ✅ 2026-05-04 — `npm install -D @playwright/test` clean exit. Version 1.59.1 added to devDeps.
 
 ```bash
 cd ~/Documents/Lab/tempDir/MBAi460-Group1/projects/project01/Part03/frontend
@@ -141,7 +141,7 @@ npm install -D @playwright/test
 
 Expected: `@playwright/test` appears in `devDependencies`; lockfile updated; `node_modules/@playwright/test/` exists.
 
-- [ ] **Step A.1.3:** Install chromium binary.
+- [x] **Step A.1.3:** ✅ 2026-05-04 — `npx playwright install chromium` clean exit. Chromium-1217 + headless-shell + ffmpeg downloaded to `~/Library/Caches/ms-playwright/`. `npx playwright --version` → `Version 1.59.1`.
 
 ```bash
 npx playwright install chromium
@@ -149,18 +149,7 @@ npx playwright install chromium
 
 Expected: chromium downloads to `~/Library/Caches/ms-playwright/chromium-*/` (~150 MB). Confirm with `npx playwright --version` printing a version string.
 
-- [ ] **Step A.1.4:** Append install-log entry.
-
-Append to `Part03/MetaFiles/install-log.md`:
-
-```markdown
-### 2026-05-04 — Phase A Task A.1 (`feat/p01p03-playwright-e2e`)
-
-| Action | Working dir | Package | Why |
-|---|---|---|---|
-| `npm install -D @playwright/test` | `Part03/frontend/` | `@playwright/test@^1.x` | E2E test framework (Tier 1 Playwright workstream Phase A) |
-| `npx playwright install chromium` | `Part03/frontend/` | chromium binary (~150 MB) | Required for first run; not committed |
-```
+- [x] **Step A.1.4:** ✅ 2026-05-04 — install-log appended in 3 verbose entries matching prior format conventions: (a) P.1 backend `npm install` workspaces hoist, (b) P.1 frontend `npm install` + `npm run build`, (c) Phase A.1 `@playwright/test` + chromium.
 
 - [ ] **Step A.1.5:** Commit.
 

@@ -187,3 +187,45 @@ Used by future agents (and any human reviewer) to understand the dependency chai
   - `src/App.tsx` — `<Routes>` with stub routes for the Q10 surface: `/` redirects to `/library`; `/library`, `/upload`, `/asset/:id`, `/login`, `/register`, `/profile`, `/help`, `*` (404) all render. NO auth guards. Default route is `/library`.
   - `src/__tests__/App.test.tsx` — 5 routing tests (wordmark on every route, default redirect, /login public, /upload public, 404 fallback).
 - **Verification:** `npm test` — 2 files / 7 tests passed (2 Zustand + 5 routing). `npm run build` clean (`vite v5.4.21`; `dist/assets/index-CQa54pmN.js` 162.73 kB / 53.05 kB gzipped — bundle grew ~20 kB for react-router-dom).
+
+## 2026-05-04 — Phase A pre-flight P.1 fix: backend `npm install` (Part03)
+
+- **Source:** `04-playwright-e2e-plan.md` Phase A pre-flight P.1 — surfaced `Cannot find module 'express'` blocking server boot. tempDir checkout had no `node_modules`. Plan anticipated this would only need a symlink refresh; reality was a full backend install needed.
+- **Working directory:** `MBAi460-Group1/projects/project01/Part03/`
+- **Command:** `npm install`
+- **Exit code:** `0`
+- **Packages installed:** 536 added; 539 audited.
+- **Notable behavior:** Phase 0 made the repo an npm workspaces monorepo — all deps hoist to `MBAi460-Group1/node_modules/` (77 MB), NOT `Part03/node_modules/`. The `@mbai460/photoapp-server -> ../../lib/photoapp-server` symlink correctly created at root.
+- **Vulnerabilities:** 1 moderate (transitive).
+- **Deprecation warnings (4):** `inflight@1.0.6`, `glob@7.2.3`, `glob@10.5.0`, `uuid@9.0.1` — all transitive.
+- **Verification:** `npm start` → `**Web service running, listening on port 8080...`** confirms Express + lib/photoapp-server resolution working.
+
+---
+
+## 2026-05-04 — Phase A pre-flight P.1 fix: frontend `npm install` + `npm run build` (Part03/frontend)
+
+- **Source:** `04-playwright-e2e-plan.md` Phase A pre-flight P.1 — `GET /` returned 500 (`ENOENT` on `frontend/dist/index.html`); frontend never installed/built in tempDir.
+- **Working directory:** `MBAi460-Group1/projects/project01/Part03/frontend/`
+- **Command:** `npm install` then `npm run build`
+- **Exit code:** `0` / `0`
+- **node_modules size:** 188 MB.
+- **Build output:** `dist/index.html` 0.40 KB; `dist/assets/index-Cl9kik91.css` 16.18 KB (4.19 KB gzip); `dist/assets/index-bJuLY8m8.js` 214.16 KB (65.97 KB gzip). 1770 modules transformed in 761ms.
+- **Vulnerabilities:** 2 moderate (unchanged from earlier baseline).
+- **Verification:** Re-running `npm start` from Part03 confirmed `GET /` 200, `GET /api/ping` returns `{user_count:3, s3_object_count:14}`, `GET /api/images` returns asset list.
+- **Note:** frontend is NOT in the workspace array (root package.json `workspaces: ["lib/*", "projects/project01/Part03", "projects/project02/server"]`); its node_modules lives locally.
+
+---
+
+## 2026-05-04 — Phase A.1 install: `@playwright/test` + chromium (Part03/frontend)
+
+- **Source:** `04-playwright-e2e-plan.md` Phase A Task A.1 — Tier 1 Future-State Playwright E2E workstream bootstrap.
+- **Working directory:** `MBAi460-Group1/projects/project01/Part03/frontend/`
+- **Commands:**
+  - `npm install -D @playwright/test`
+  - `npx playwright install chromium`
+- **Exit codes:** `0` / `0`
+- **Packages installed (direct deps):** `@playwright/test@^1.59.1` (devDep).
+- **Browser binaries downloaded:** chromium-1217 + chromium-headless-shell 1217 + ffmpeg-1011 (~92 MB headless shell + chromium full + ffmpeg). Cached at `~/Library/Caches/ms-playwright/` — NOT committed.
+- **Vulnerabilities:** 2 moderate (unchanged).
+- **Verification:** `npx playwright --version` → `Version 1.59.1`.
+- **Branch:** `feat/p01p03-playwright-e2e`.
