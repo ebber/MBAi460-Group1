@@ -326,6 +326,11 @@ def get_images(userid = None):
 #
 # post_image
 #
+@retry(stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=30),
+        retry=retry_if_exception_type((ConnectionError, Timeout)),
+        reraise=True
+      )
 def post_image(userid, local_filename):
   """
   Uploads an image to S3 with a unique name, allowing the same local
@@ -354,12 +359,11 @@ def post_image(userid, local_filename):
       image_data = base64.b64encode(f.read()).decode('utf-8')
 
     body = {
-      'userid': userid,
+      'local_filename': os.path.basename(local_filename),
       'data': image_data,
-      'filename': os.path.basename(local_filename),
     }
 
-    url = WEB_SERVICE_URL + "/image"
+    url = WEB_SERVICE_URL + f"/image/{userid}"
     response = requests.post(url, json=body)
 
     if response.status_code == 200:
@@ -421,12 +425,13 @@ def get_image(assetid, local_filename = None):
 
     if response.status_code == 200:
       body = response.json()
-      save_as = local_filename if local_filename else body['localname']
+      save_as = local_filename if local_filename else body['local_filename']
       with open(save_as, 'wb') as f:
         f.write(base64.b64decode(body['data']))
       return save_as
-    elif response.status_code == 404:
-      raise ValueError("no such assetid")
+    elif response.status_code == 400:
+      body = response.json()
+      raise ValueError(body['message'])
     elif response.status_code == 500:
       body = response.json()
       raise HTTPError(f"status code {response.status_code}: {body['message']}")
@@ -478,14 +483,15 @@ def get_image_labels(assetid):
   """
 
   try:
-    url = WEB_SERVICE_URL + f"/image/{assetid}/labels"
+    url = WEB_SERVICE_URL + f"/image_labels/{assetid}"
     response = requests.get(url)
 
     if response.status_code == 200:
       body = response.json()
       return [(row['label'], row['confidence']) for row in body['data']]
-    elif response.status_code == 404:
-      raise ValueError("no such assetid")
+    elif response.status_code == 400:
+      body = response.json()
+      raise ValueError(body['message'])
     elif response.status_code == 500:
       body = response.json()
       raise HTTPError(f"status code {response.status_code}: {body['message']}")
@@ -539,7 +545,7 @@ def get_images_with_label(label):
   """
 
   try:
-    url = WEB_SERVICE_URL + f"/images/search?label={requests.utils.quote(label)}"
+    url = WEB_SERVICE_URL + f"/images_with_label/{requests.utils.quote(label, safe='')}"
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -564,6 +570,11 @@ def get_images_with_label(label):
 #
 # delete_images
 #
+@retry(stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=30),
+        retry=retry_if_exception_type((ConnectionError, Timeout)),
+        reraise=True
+      )
 def delete_images():
   """
   Delete all images and associated labels from the database and
