@@ -5,7 +5,7 @@
 > **Complements (does not replace)** plan documents: plans are specs (stable); this Map is execution state (mutable).
 > **Lifecycle:** This Map is grounded in the current Part 03 session. When the session/workstream-context closes, Erik will guide archival.
 > **Compass relationship:** there is NO Compass section in this Map. The lite Compass (`← Back / ● Now / → Next / ⬆ Up`) is in-chat only, printed at the end of in-conversation responses during active execution, and is derived on-the-fly from this Map's Active section. The Map is the authoritative durable state; the Compass is its ephemeral conversational echo. Compaction loses the Compass (convenience), not the Map (authority).
-> **Last updated:** 2026-05-04 — Future-State Playwright E2E activated (surfaced from Pending → Active); Phase 04 plan written + self-approved + committed `8f17d76` on branch `feat/p01p03-playwright-e2e`. Prior update 2026-04-27.
+> **Last updated:** 2026-05-04 — Future-State Playwright E2E DEV-COMPLETE: moved Active → Closed. 16 tests (15 default + 1 destructive) + `utils/e2e-smoke` shipped; 12 of 15 human-walk rows automated. Phase E (CI) deferred. Branch `feat/p01p03-playwright-e2e` ready for PR. Prior update 2026-04-27.
 
 ---
 
@@ -24,15 +24,11 @@
 
 ## Active
 
-**Future-State Playwright E2E** | 🔄 In progress (Phase A bootstrap) | `Part03/MetaFiles/plans/04-playwright-e2e-plan.md` | branch `feat/p01p03-playwright-e2e` (commit `8f17d76`).
+**No workstream actively engaged 2026-05-04 — between workstreams.**
 
-Activated 2026-05-04 (surfaced from Pending). Targets 12 of 15 unticked browser-based human-walk rows in `MetaFiles/HumanTestInstructions/Human-Feature-Test-Suite.md`. 3 rows (LIB1 perf, LIB2 responsive, A11Y1 a11y) explicitly deferred to other workstreams — see plan §"Test scope reminder".
+Tier 1 Future-State Playwright E2E closed 2026-05-04 (see **Closed (recent)** below). Branch `feat/p01p03-playwright-e2e` ready for PR against `main`. Phase E (CI/GHA workflow) deferred per Erik 2026-05-04 — VCS scope-out; queued in `MetaFiles/TODO.md` for future activation.
 
-Phase A pre-flight (P.1) confirmed live: `/health` 200, `/api/ping` returns `{user_count: 3, s3_object_count: 14}`, `/api/images` returns asset list. Required dependencies installed: backend `npm install` (workspaces hoist to root); frontend `npm install` + `npm run build` (188 MB node_modules, 214 KB bundle). Config files copied in from an external reference (gitignored — not committed; this checkout is now self-sufficient).
-
-**Sequencing:** Phase A → B → B-sidecar (destructive) → C → D → E (CI) → F (DOC-FRESHNESS + PR open). Erik reviews at phase boundaries.
-
-**Other Tier 1 candidates remain queued in Pending** (Form Library, Library Polish, Sweep-for-drift) — engaged after this workstream closes.
+**Next workstream candidates** remain in Pending (Form Library, Library Polish, Sweep-for-drift, Production Hardening, etc.). Tier 1 reduced to 2 remaining (Form Library + Library Polish).
 
 ---
 
@@ -47,7 +43,6 @@ Phase A pre-flight (P.1) confirmed live: `/health` 200, `/api/ping` returns `{us
 | Future-State Chat | ⏳ Queued | `Future-State-chat-workstream.md` | |
 | Future-State Command Palette (⌘K) | ⏳ Queued | `Future-State-command-palette-workstream.md` | |
 | Future-State Documents + Textract (OCR) | ⏳ Queued | `Future-State-documents-and-textract-workstream.md` | Q9 — placeholder shipped in MVP |
-| ~~Future-State Playwright E2E~~ | 🔄 **MOVED TO ACTIVE 2026-05-04** | `Part03/MetaFiles/plans/04-playwright-e2e-plan.md` | See Active section above |
 | Future-State Production Hardening | ⏳ Queued | `Future-State-production-hardening-workstream.md` | RDS lockdown, S3 ACL tighten, VPC scoping |
 | Future-State shadcn Primitive Migration | ⏳ Queued | `Future-State-shadcn-primitive-migration-workstream.md` | Descoped 2026-04-27 R1 from MVP; could revisit |
 | Future-State Tweaks Panel | ⏳ Queued | `Future-State-tweaks-panel-workstream.md` | |
@@ -62,6 +57,7 @@ Phase A pre-flight (P.1) confirmed live: `/health` 200, `/api/ping` returns `{us
 
 | Workstream | State | Closeout | Notes |
 |---|---|---|---|
+| Future-State Playwright E2E (Tier 1) | ✅ DEV-COMPLETE 2026-05-04 | `feat/p01p03-playwright-e2e` (commits `8f17d76`...closeout); PR against `main` pending | 16 Playwright tests across 5 specs (15 default + 1 destructive) + `utils/e2e-smoke` single-command lifecycle. 12 of 15 human-walk rows automated; 3 deferred (LIB1/LIB2/A11Y1 → Production Hardening). Phase E (CI) deferred per Erik 2026-05-04 — VCS scope-out; queued in `MetaFiles/TODO.md`. Surfaced 2 new TODO items during execution: `[API/Library Polish] DELETE /api/images/:id` + `[CI/Future-State] Phase E GHA workflow`. |
 | Outstanding Integrations workstream | ✅ COMPLETE 2026-04-27 | sub-A `1c4d2aa` (16 commits) + sub-B `324e855` (9 commits) + sub-D `a365807` + sub-E `eeb4be2` + this commit Action 3 | All 4 active sub-workstreams closed; sub-C moved to Class Project queue. Sub-A: Andrew MVP audit + Accelerators + 6 NEW Future-State docs + 9 TODOs. Sub-B: 23-row contract audit + 1 drift fix + type tightening (post-remediation: 22 ✅ / 0 🚩 / 1 ⏳). Sub-D: viz update queued for Erik external. Sub-E: 14-workstream priority recommendation in Future-State-roadmap.md (Tier 1: Playwright E2E + Form Library + Library Polish). |
 | Project 01 Part 03 — UI MVP (workstream 01) | ✅ DEV-COMPLETE 2026-04-27 | `378c8f3` (closeout) + `8f29463` (CLI-5 polish post-closeout) | Collaborator acceptance walk in flight |
 | Project 01 Part 03 — Server Foundation (workstream 02) | ✅ Closed prior | `dbe05d3` + `080456f` (SPA hotfix) | |

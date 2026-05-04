@@ -79,7 +79,7 @@ This section captures the output of Outstanding Integrations sub-workstream E (F
 
 | # | Doc | Priority | Source |
 |---|---|---|---|
-| 1 | `Future-State-playwright-e2e-workstream.md` | 🔥 **HIGH** | Self-flagged in doc; closes E2E gap; cheapest infrastructure improvement post-MVP |
+| 1 | `Future-State-playwright-e2e-workstream.md` | ✅ **DONE 2026-05-04** | Tier 1 closeout; 12 of 15 human-walk rows automated; `utils/e2e-smoke` ships single-command lifecycle. Phase E (CI) deferred. Branch `feat/p01p03-playwright-e2e` ready for PR. |
 | 2 | `Future-State-library-polish-workstream.md` | **HIGH** | Sub-A Q-Phase4-1 ruling; user-visible value; ~15-row audit cluster |
 | 3 | `Future-State-form-library-workstream.md` | **HIGH** | Sub-A Q-Phase4-1 ruling; foundation for auth + admin screens |
 | 4 | `Future-State-auth-and-account-management-workstream.md` | STANDARD | Implicit; foundation for chat + admin + sharing + real /me |
@@ -117,9 +117,9 @@ This section captures the output of Outstanding Integrations sub-workstream E (F
 
 **Tier 1 — Cheap wins first (start here):**
 
-1. **Playwright E2E** — already 🔥 HIGH per the doc; depends only on stable MVP (we have); cheapest test infrastructure investment; protects all subsequent Future-State work from regressions. Estimated wall: 1-3 days for happy-path coverage.
+1. ~~**Playwright E2E**~~ — ✅ **LANDED 2026-05-04**. 12 of 15 human-walk rows automated; `utils/e2e-smoke` single-command lifecycle. Phase E (CI/GHA) deferred per Erik 2026-05-04 (queued in `MetaFiles/TODO.md`).
 2. **Form Library** — HIGH; bounded scope; foundation for the auth + admin screens that follow. Adopt RHF + Zod; build PasswordField/NumberField/Textarea/Select primitives; migrate existing forms. Estimated wall: 2-4 days.
-3. **Library Polish** — HIGH; user-visible value; some items need new server endpoints (PATCH /api/images/:id, DELETE /api/images/:id, cursor pagination, signed thumbnails) so coordinate with backend.
+3. **Library Polish** — HIGH; user-visible value; some items need new server endpoints (PATCH /api/images/:id, DELETE /api/images/:id, cursor pagination, signed thumbnails) so coordinate with backend. **Note:** `DELETE /api/images/:id` was surfaced as a real gap during the Playwright E2E workstream (per-test cleanup discipline) and is now explicitly tracked in `MetaFiles/TODO.md`.
 
 **Tier 2 — Foundational (moderate priority, key dependencies):**
 
