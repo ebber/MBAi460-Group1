@@ -82,8 +82,8 @@ At Phase F, tick the 12 covered rows in `Human-Feature-Test-Suite.md` with a foo
 | Plan + branch | ✅ | `8f17d76` | 2026-05-04 | Plan committed after 2 adversarial self-reviews + 13 inline fixes |
 | Phase A — Bootstrap | ✅ | `3aa9bd2`→`b7729d4`→`632a9c4`→`8cdf893`→`8366e7d`→(this) | 2026-05-04 | Sanity passes 454ms; default+destructive projects gated correctly; pdfkit ESM/CJS interop works (R1.1 averted) |
 | Phase B — Happy path (default) | ✅ | `6a47fb5`→`38af149`→(this) | 2026-05-04 | 8/8 passed (10.5s); 7 of 12 covered human-walk rows ticked (L1, L2, L3, LIB3, U1, A1, A3 — LIB4/U2/U3/U4/A2 land in C+D) |
-| Phase D — Error surfaces | ✅ | (this commit) | 2026-05-04 | 4/4 passed (2.8s); resequenced first per Erik 2026-05-04 — non-mutating, low risk |
-| Phase C — Document branch | 🔄 | (next) | — | U3 PDF upload + LIB4 doc card + A2 PDF detail |
+| Phase D — Error surfaces | ✅ | `9fade3c` | 2026-05-04 | 4/4 passed (2.8s); resequenced first — non-mutating |
+| Phase C — Document branch | ✅ | (this commit) | 2026-05-04 | 3/3 passed (6.2s); zero source changes (all testids existed) |
 | Phase B-sidecar — Destructive deleteAll | ⏳ | — | — | Opt-in only; runs LAST per resequenced order (D → C → B-sidecar) |
 | Phase E — CI (non-destructive) | ⏳ | — | — | GitHub Actions workflow |
 | Phase F — DOC-FRESHNESS closeout + PR | ⏳ | — | — | Workstream status flip + Human-Walk footnotes + OrientationMap + Roadmap + PR open |
@@ -749,7 +749,7 @@ git commit -m "chore(part03): close out Phase B-sidecar — flip tracker (Phase 
 **Files:**
 - Create: `Part03/frontend/e2e/specs/document-upload.spec.ts`
 
-- [ ] **Step C.1.1:** Write the spec.
+- [x] **Step C.1.1:** ✅ 2026-05-04 — `document-upload.spec.ts` written. Serial mode + count-before/count-after pattern (matches B's discipline). Selectors used: `[data-testid^="asset-card-"][data-kind="document"]` for doc cards; `ocr-placeholder` for the "OCR coming soon" text (lives at both card + detail level — distinct elements, both asserted); `pdf-embed` for the PDF preview.
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -796,9 +796,9 @@ test.describe('Document branch (U3 + A2 + LIB4)', () => {
 
 **Selector dependency:** spec assumes `data-kind="document"` attribute on AssetCard for kind discrimination. Verify in `AssetCard.tsx` before running — add if missing (one-line change). Same for `data-testid="pdf-preview"` if neither `<embed>` nor `<object>` is used; inspect `AssetDetail.tsx` PDF rendering path.
 
-- [ ] **Step C.1.2:** Inspect components for required attributes; add if missing.
+- [x] **Step C.1.2:** ✅ 2026-05-04 — inspected. **No source changes needed**. Existing testids cover everything: `asset-detail-document` (line 130), `pdf-embed` (136), `document-download` (146), `document-no-preview` (152), `ocr-placeholder` (card line 100 + detail line 159). `data-kind="document"` already on AssetCard wrapper.
 
-- [ ] **Step C.1.3:** Run the spec.
+- [x] **Step C.1.3:** ✅ 2026-05-04 — 3/3 passed in 6.2s. U3 1.8s, LIB4 2.0s, A2 1.8s.
 
 ```bash
 cd Part03/frontend
