@@ -250,7 +250,7 @@ Acceptance: 01-foundation.md § Phase 12 — make up healthy + test pyramid harn
 Approach pointer: 01-foundation.md (very large; read carefully)
 ```
 
-- [ ] **Phase 1.0** — Phase 0 of foundation: Consume library (foundation Phase 0)
+- [x] **Phase 1.0** — Phase 0 of foundation: Consume library (foundation Phase 0) ✅ 2026-05-04 — `feat/p02-foundation` branched from `main`; `projects/project02/server/{package.json, jest.config.js, .eslintrc.cjs, .prettierrc, app.js, server.js, README.md, tests/unit/library_resolution.test.js}` landed; assignment-template starter moved under `_assignment-template/` (preserved for Phase 2 wire-contract reference); `npm install` from monorepo root resolves `@mbai460/photoapp-server` symlink (hoisted to root `node_modules/`); `/__bootcheck` smoke round-trip green then route deleted; permanent 5-line library_resolution test replaces its CI value (2/2 passed); Part 03 tests stay green (32 passed, 2 skipped); `utils/cred-sweep` reports no new credential patterns introduced by this branch (pre-existing project03 lab-passwords baseline unchanged); QUICKSTART updated with "Working on Project 02" subsection (CL11). Lab live-AWS gates (`utils/validate-db`, `utils/smoke-test-aws --mode live`) deferred — lab spun-down, non-blocking for sub-phase 1.0 acceptance.
 - [ ] **Phase 1.1** — docker-compose + LocalStack
 - [ ] **Phase 1.2** — Terraform module refactor (rds/, s3/, iam/, cloudwatch/ skeleton)
 - [ ] **Phase 1.3** — pino + pino-http structured logging
@@ -545,7 +545,10 @@ Each row references the Approach doc section so the executing agent can read the
 
 - [ ] ⏳ **VIZ** `Target-State-project02-foundation-architecture-v1.md` (architecture overview before authoring)
 - [ ] ⏳ **VIZ** `Target-State-project02-inheritance-map-v1.md` (one-page Phase 0 inheritance map)
-- [ ] ⏳ Items embedded in `01-foundation.md` Phases (read the Approach doc to enumerate; this Plan tracks at workstream-level)
+- [x] ✅ **VIZ** `Target-State-project02-foundation-consumer-bootstrap-v1.md` (Built 2026-05-04 sub-phase 1.0; depicts library-consumer bootstrap with DI seams forward-referenced for sub-phases 1.3–1.7; per Erik's "mermaid visualizations confirm architectural decisions" directive)
+- [x] ✅ **TEST** `projects/project02/server/tests/unit/library_resolution.test.js` (Built 2026-05-04 sub-phase 1.0; permanent 5-line CI guard for the workspace symlink; replaces the deleted `/__bootcheck` smoke route's CI value; 2/2 green)
+- [ ] 📋 **UTIL** `make doctor` extension (Queued — sub-phase 1.10's Makefile + compose orchestration is the natural home; `make doctor` itself doesn't exist yet so the extension is premature in 1.0)
+- [ ] ⏳ Other items embedded in `01-foundation.md` Phases (read the Approach doc to enumerate; this Plan tracks at workstream-level)
 
 ### Phase 2 — Web Service Optionals
 

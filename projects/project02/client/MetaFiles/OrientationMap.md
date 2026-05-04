@@ -12,24 +12,24 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-02 — **Phase 0 ✅ closed (agent-side); workstream moved to Closed.** All six sub-phases complete; 23 commits on `feat/lib-extraction`; lib 99/99 + Part 03 32+2 skipped green; freshclone-smoke ~3s green. Erik post-merge actions: spin lab + run live AWS regression (gates the tag), update GitHub branch protection + create `lib:photoapp-server` label, tag merge commit `library-1.0.0-extraction-complete`. **Active section reverted to "between workstreams"** per OrientationMap protocol; Phase 1 (Foundation) is the next pickup once Phase 0 is merged.
+> **Last updated:** 2026-05-04 — **Phase 1 (Foundation) 🔄 picked up** on branch `feat/p02-foundation` (off `main` post Phase 0 merge — 156 commits + `library-1.0.0-extraction-complete` tag now on `origin/main`). Pickup announced in `MetaFiles/refactor-log.md`; baseline tests green from monorepo root (lib 99/99 + Part 03 32+2 skipped); placeholder `frontend/dist/index.html` stamped locally to clear the SPA-fallback gap noted in Phase 0's risks. Beginning sub-phase 1.0 (= Approach Phase 0 "Consume Library & Extend").
 
 ---
 
 ## Frame Position (where this Map sits)
 
 ```
-- Back:  Phase 0 (Library Extraction) ✅ closed agent-side 2026-05-02 across 23 commits
-         on feat/lib-extraction (lib 1.0.0 extracted; Part 03 consumer migrated;
-         CL9 SQL repos + characterization; doc-freshness protocol live;
-         freshclone-smoke green). Phase 0 row in Closed section.
-- Now:   Between workstreams. Awaiting Erik to push feat/lib-extraction, run live
-         AWS regression + smoke-test-aws (lab spin-up first), update GitHub branch
-         protection + lib:photoapp-server label, merge, and tag
-         library-1.0.0-extraction-complete on the merge commit.
-- Next:  Phase 1 (Foundation) — the next pickup once Phase 0 is merged. Branched
-         off feat/p02-foundation from main; consumes the now-stable @mbai460/photoapp-server.
-- Down:  (empty — between sub-frames)
+- Back:  Phase 0 (Library Extraction) ✅ merged to main with tag
+         library-1.0.0-extraction-complete (Erik landed it; 156 commits fast-forwarded
+         from origin on this clone 2026-05-04).
+- Now:   Phase 1 (Foundation) 🔄 in progress on feat/p02-foundation. Sub-phase 1.0
+         (Approach Phase 0 — Consume Library & Extend) is the active sub-frame;
+         workspace consumer wiring + smoke-boot are next.
+- Next:  Sub-phases 1.1 → 1.12 in dependency order per Approach 01-foundation.md
+         (which itself enumerates Approach Phases 0 → 13). Push after each sub-phase
+         per Erik's directive — surface merge conflicts early.
+- Down:  Sub-phase 1.0 (Approach Phase 0): bootstrap server/package.json, smoke
+         app.js + server.js, prove library symlink resolves, README touchpoints.
 - Up:    Lab session arc
 ```
 
@@ -52,9 +52,47 @@ Map status symbols mapped to Frame `State` semantics (per `Approach/Proposed_Exe
 
 ## Active
 
-**Between workstreams.** Phase 0 ✅ closed agent-side 2026-05-02 (see *Closed (recent — this quest arc)* for the row + commit chain). Phase 1 (Foundation) is the next pickup once Erik merges `feat/lib-extraction` and tags `library-1.0.0-extraction-complete` on the merge commit.
+### Phase 1 — Foundation 🔄 In Progress
 
-**To pick up Phase 1:** read `Approach/01-foundation.md` end-to-end, verify pre-flight gates (root `main` carries the merged Phase 0 work; `npm install` from root resolves the workspace; `npm test --workspaces` green; `utils/lab-status` PASS), then branch `feat/p02-foundation` from `main` and follow `Plan.md` § Phase 1 Master Tracker. The Active section flips to a Phase 1 Frame instance at that point.
+```
+Purpose: Stand up Project 02's server tree as a consumer of @mbai460/photoapp-server;
+         add Project 02-specific scaffolding (pino, pino-http, request_id, validate,
+         opossum breakers, mysql pool, OpenAPI stub, AppError hierarchy, full test
+         pyramid harness, Terraform module refactor, docker-compose, ESLint/Prettier).
+Position:
+  Back: Phase 0 ✅ merged to main with library-1.0.0-extraction-complete tag
+  Now:  Sub-phase 1.0 (Approach Phase 0 — Consume Library & Extend); workspace
+        consumer wiring + smoke-boot
+  Next: Sub-phase 1.1 (Approach Phase 1 — Repo Skeleton & Tooling Bootstrap)
+  Down: Sub-phase 1.0 internals — package.json + jest.config.js + .eslintrc +
+        .prettierrc + smoke app.js/server.js (prove library symlink) + README
+        touchpoints (CL11)
+  Up:   Project 02 Part 01 quest
+State: 🔄 In Progress
+Branch: feat/p02-foundation (off main; Erik's directive: push after each sub-phase)
+Dependency: Phase 0 ✅
+Acceptance: 01-foundation.md § Phase 12 — make up healthy + test pyramid harness in
+            place + Terraform refactor non-destructive + lint clean
+Approach pointer: Approach/01-foundation.md (Phases 0–13 enumerate sub-phases 1.0–1.12)
+Verification (sub-phase 1.0):
+- cd MBAi460-Group1 && npm install (clean) succeeds
+- cd projects/project02/server && node -e "require('@mbai460/photoapp-server')" exits 0
+- smoke /__bootcheck round-trips successfully (then route deleted)
+- Part 03 tests stay green (npm test from Part 03)
+- No source copied from Part 03 into projects/project02/server/
+Pre-existing assignment-template files (api_*.js, app.js, config.js, helper.js) at
+projects/project02/server/ are Project 02 starter code — preserve via move to
+_assignment-template/ before fresh consumer wiring lands.
+```
+
+**Sub-phase progress (sub-phase 1.0 = Approach Phase 0):**
+
+- [x] 1.0.1 — Verify shared library + backbone ✅ 2026-05-04 (preconditions all checked off in Approach doc; library 1.0.0 + workspace topology + CONTRIBUTING + DOC-FRESHNESS protocol all live on `main`)
+- [x] 1.0.2 — Bootstrap Project 02 as workspace consumer ✅ 2026-05-04 (assignment-template starter moved under `_assignment-template/` to preserve wire-contract reference; new `package.json` + `jest.config.js` + `.eslintrc.cjs` + `.prettierrc` written; `npm install` from root resolves `@mbai460/photoapp-server` via hoisted root symlink; `node -e "require('@mbai460/photoapp-server')"` returns the documented 5-key exports map)
+- [x] 1.0.3 — Construct smoke app.js + server.js ✅ 2026-05-04 (`/__bootcheck` round-trip on PORT=18080 returns `{"message":"success","data":{"ok":true}}`; library currently uses Part 03's `{message, data}` envelope shape — Project 02's variadic promotion is queued for Approach Phase 8 / Plan sub-phase 1.8; smoke route deleted post-verification)
+- [x] 1.0.4 — Reuse shared infrastructure references ✅ 2026-05-04 (server `README.md` documents shared `photoapp-config.ini` path at `projects/project01/client/photoapp-config.ini` + canonical ops-tools table; `utils/validate-db` and `utils/smoke-test-aws --mode live` deferred — lab spun-down per `Plan.md` § Phase 0.6 deferred items pattern; non-blocking)
+- [x] 1.0.5 — Acceptance for sub-phase 1.0 ✅ 2026-05-04 (`npm install` clean; `node -e "require(...)"` exits 0; smoke green then route deleted; Part 03 32+2 skipped green; project02-server 2/2 green via `library_resolution.test.js`; no Part 03 source copied; `cred-sweep` reports zero new patterns vs `main`)
+- [x] 1.0.6 — Documentation touchpoint (CL11) ✅ 2026-05-04 (project02 server `README.md` created; root `README.md` "Repository Structure" already mentions `projects/project02/server` post Phase 0.5; `MetaFiles/QUICKSTART.md` extended with "Working on Project 02" subsection mirroring the Part 03 verify path; project02 client `README.md` deferred to workstream 03 per Approach 0.6 wording)
 
 **Erik's post-merge punch list (gates the Phase 0 tag):**
 
