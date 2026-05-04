@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+# utils/aws-probe — read-only probe of live AWS lab state
+#
+# Composes three read-only state inspections into one diagnostic view:
+#   1. Terraform tracked resources (what IaC says should exist)
+#   2. AWS RDS instance state (what AWS actually has — running / stopped / missing)
+#   3. utils/smoke-test-aws --mode live (health probe)
+#
+# Then prints a recommended next action based on what was found.
+#
+# Mutation: NONE. Pure read-only. Safe to run any time.
+#
+# Why a separate utility (vs running the three things by hand):
+#   - The three signals interact: terraform-state vs AWS-state divergence
+#     is the diagnostic of interest, not either signal alone.
+#   - "Recommended next action" requires synthesizing all three; each
+#     run-by-hand pass leaves the synthesis in the contributor's head.
+#   - Lab spin-up / tear-down sequences need this probe at multiple
+#     points (before, during, after) — the utility makes each invocation
+#     cheap.
+#
+# Unix philosophy: probes via composition (sub-util smoke-test-aws +
+# direct aws-cli + direct terraform). Single job: probe + recommend.
+#
+# Usage: utils/aws-probe
+# Exit:  0 always (informational; state is in stdout). Errors from
+#        sub-tools surface as visible PASS/FAIL lines, not non-zero exit.
+
+set -uo pipefail
+# Note: -e intentionally NOT set — sub-commands may fail (RDS missing,
+# terraform uninitialized) and we want the probe to continue + report.
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+TERRAFORM_DIR="${CLASS_ROOT}/infra/terraform"
+
+export AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-${CLASS_ROOT}/secrets/aws-credentials}"
+export AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-${CLASS_ROOT}/secrets/aws-config}"
+export AWS_PROFILE="${AWS_PROFILE:-Claude-Conjurer}"
+
+require_cmd() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "[FAIL] Required command not found: $1" >&2; exit 1
+  fi
+}
+require_cmd aws
+
+echo "╔═══════════════════════════════════════════════════════════════╗"
+echo "║              AWS Lab Probe — read-only state                  ║"
+echo "║  Profile: ${AWS_PROFILE}"
+echo "║  Terraform: ${TERRAFORM_DIR}"
+echo "╚═══════════════════════════════════════════════════════════════╝"
+
+# ---------------------------------------------------------------------------
+# 1. Terraform tracked resources
+# ---------------------------------------------------------------------------
+echo ""
+echo "== Terraform tracked resources =="
+if [ ! -d "${TERRAFORM_DIR}" ]; then
+  echo "  [WARN] Terraform dir not found at ${TERRAFORM_DIR}"
+  TF_RESOURCES=""
+else
+  TF_RESOURCES="$(cd "${TERRAFORM_DIR}" && terraform state list 2>/dev/null || true)"
+  if [ -z "${TF_RESOURCES}" ]; then
+    echo "  [WARN] terraform state list returned empty (state may be uninitialized or destroyed)"
+  else
+    echo "${TF_RESOURCES}" | sed 's/^/  /' | head -30
+    TF_COUNT=$(echo "${TF_RESOURCES}" | wc -l | tr -d ' ')
+    echo ""
+    echo "  Total tracked: ${TF_COUNT} resources"
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# 2. AWS RDS instance state
+# ---------------------------------------------------------------------------
+echo ""
+echo "== AWS RDS instance state (what AWS actually has) =="
+RDS_OUT="$(aws rds describe-db-instances \
+  --query 'DBInstances[*].{Id:DBInstanceIdentifier,Status:DBInstanceStatus,Endpoint:Endpoint.Address,Public:PubliclyAccessible}' \
+  --output table 2>&1 || true)"
+echo "${RDS_OUT}" | sed 's/^/  /'
+
+# Capture status for the recommendation logic
+RDS_STATUS="$(aws rds describe-db-instances \
+  --query 'DBInstances[0].DBInstanceStatus' \
+  --output text 2>/dev/null || echo "UNKNOWN")"
+RDS_ID="$(aws rds describe-db-instances \
+  --query 'DBInstances[0].DBInstanceIdentifier' \
+  --output text 2>/dev/null || echo "")"
+
+# ---------------------------------------------------------------------------
+# 3. Live smoke (delegates to existing utility)
+# ---------------------------------------------------------------------------
+echo ""
+echo "== Live AWS smoke (delegates to utils/smoke-test-aws --mode live) =="
+SMOKE_OUT="$("${SCRIPT_DIR}/smoke-test-aws" --mode live 2>&1 || true)"
+echo "${SMOKE_OUT}" | tail -20 | sed 's/^/  /'
+
+# Pull the pass/fail tally for the recommendation
+SMOKE_TALLY="$(echo "${SMOKE_OUT}" | grep -E "Mode:.*Checks" | tail -1 || echo "Mode: live | unknown")"
+
+# ---------------------------------------------------------------------------
+# Recommended next action
+# ---------------------------------------------------------------------------
+echo ""
+echo "╔═══════════════════════════════════════════════════════════════╗"
+echo "║                   Recommended next action                     ║"
+echo "╚═══════════════════════════════════════════════════════════════╝"
+
+case "${RDS_STATUS}" in
+  available)
+    echo "  RDS is AVAILABLE."
+    if echo "${SMOKE_OUT}" | grep -q "Passed: 10"; then
+      echo "  Smoke tally: 10/10 PASS — lab is healthy + live."
+      echo ""
+      echo "  → Lab is ready. Run live regression:"
+      echo "      PHOTOAPP_RUN_LIVE_TESTS=1 cd projects/project01/Part03 && npm test"
+    else
+      echo "  Smoke tally: ${SMOKE_TALLY}"
+      echo ""
+      echo "  → RDS is up but smoke is partial. Likely culprits:"
+      echo "      - S3 ACL drift   → check 'aws s3api get-bucket-acl'"
+      echo "      - SG inbound     → terraform plan to see drift"
+      echo "      - Schema empty   → utils/rebuild-db + utils/validate-db"
+    fi
+    ;;
+  stopped)
+    echo "  RDS is STOPPED. To resume (single-command; no terraform needed):"
+    echo ""
+    echo "      aws rds start-db-instance --db-instance-identifier ${RDS_ID}"
+    echo ""
+    echo "  Wait ~5 min for status: stopped → starting → available."
+    echo "  Re-run 'utils/aws-probe' to confirm."
+    ;;
+  starting)
+    echo "  RDS is STARTING. Wait ~3-5 min then re-run 'utils/aws-probe' to confirm available."
+    ;;
+  stopping)
+    echo "  RDS is STOPPING. Wait until 'stopped', then 'aws rds start-db-instance' to resume."
+    ;;
+  ""|None|UNKNOWN)
+    if [ -z "${TF_RESOURCES}" ]; then
+      echo "  RDS is MISSING and Terraform tracks NOTHING."
+      echo "  → Likely: AWS profile / region wrong, OR Terraform state empty."
+      echo "      Check: AWS_PROFILE='${AWS_PROFILE}', AWS region in secrets/aws-config"
+    else
+      echo "  RDS is MISSING but Terraform tracks ${TF_COUNT:-0} resources."
+      echo "  → Resources were destroyed outside Terraform OR profile mismatch."
+      echo "      To recreate: cd ${TERRAFORM_DIR} && terraform plan -out=lab-up.tfplan"
+      echo "                   review plan, then terraform apply lab-up.tfplan && rm lab-up.tfplan"
+    fi
+    ;;
+  *)
+    echo "  RDS state: ${RDS_STATUS} (unrecognized)"
+    echo "  → Review describe-db-instances output above."
+    ;;
+esac
+
+echo ""
