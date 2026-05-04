@@ -111,32 +111,51 @@ Curate-and-pick is more work than sequential merge, but the alternative ships ei
 ### What this strategy looks like in practice
 
 1. Create a clean integration branch from `main` (`merge/collab-reconciliation`). All work happens here until verified, then a single `--no-ff` merge to `main`.
-2. Cherry-pick Branch A's Foundation commits (e6923d3..2e88078) onto the integration branch in order. Verify after each.
-3. **Skip `685b501` from Branch A.** Document the skip in the merge-execution log + commit message.
+2. **Cherry-pick Branch A's Foundation commits *code-only* (e6923d3..2e88078) onto the integration branch in order.** Per Erik's 2026-05-04 directive ("merge the code in, update the approach/plan ourselves; don't merge plan/approach files like code"): each cherry-pick gets the tracker files (Plan.md, OrientationMap files, refactor-log) restored to their pre-cherry-pick state, leaving only code changes. Pranav's tracker edits are preserved in Branch A's git history as the input to Step 5's "compare what we checked off vs what was checked off" comparison; we just don't carry them forward as merged commits.
+3. **Skip `685b501` from Branch A.** Document the skip in the chunk-3-prep commit message. Reason verified main-context: 685b501's diff is byte-identical baseline restoration of `api_*.js`, mislabeled "implement"; replaced by Chunk 3's port from Branch B's spec-correct logic.
 4. **Port Branch B's PDF-spec-correct route handlers into Branch A's `routes/` structure**, consuming the lib's `services.photoapp.*` instead of `helper.js`. This is reconciliation work, not raw cherry-pick — it requires writing/editing route handlers that:
    - Live at `projects/project02/server/routes/_internal/<handler>.js` (or wherever Branch A's structure puts them)
    - Use spec-correct paths (`POST /image/:userid`, `GET /image_labels/:assetid`, `GET /images_with_label/:label`, etc.)
    - Consume `services.photoapp.uploadImage / downloadImage / etc.` from the lib
    - Use the validate middleware + error middleware factory for 400s + sentinel errors
    - Resolve the bucketkey-shape divergence in favor of the lib's pattern (`${username}/${uuidv4()}-${localname}` per `lib/photoapp-server/src/services/photoapp.js`)
-5. Cherry-pick Branch B's Python client commits (`acc4063` + `e3d9a58`). These should be conflict-free — they touch `projects/project02/client/` which Branch A didn't.
+5. Cherry-pick Branch B's Python client commits **code-only** (`acc4063` + `e3d9a58`). These should be conflict-free — they touch `projects/project02/client/` which Branch A didn't.
 6. Run the full verification battery (Step 4 of the quest) including lab spin-up sub-frame.
-7. Update Plan + Map per Step 5 reconciliation against actual landed state.
+7. **Step 5 reconciliation owns tracker authoring.** Update Plan + Map atomically against on-disk reality from the merged work, not by merging contributor tracker claims. Pranav's tracker claims (visible at `git show 685b501:projects/project02/client/MetaFiles/Approach/Plan.md`) are consulted as one input to a "what we checked off vs what was checked off" comparison; the on-disk file state at the integration branch is the authoritative truth.
 8. Author the missing route tests (the Foundation pyramid was scaffolded but route-specific tests didn't ship in either branch — they need to land here for the merge to be acceptable).
 9. Single `--no-ff` merge of `merge/collab-reconciliation` → `main`.
 
+**State verifications (2026-05-04 main-context, before Step 3 entry):**
+
+- ✅ **`app.js` at `2e88078` (last Foundation commit before 685b501): 57 lines; NO `/v1/*` routes mounted.** Only `/healthz` + `/readyz` + 404 + error middleware. The Foundation cherry-picks land a clean app.js with **no route-spec drift inherited**; routes come purely via Chunk 3's port from Branch B's spec-correct logic. Ideal handoff — no un-mounting required.
+- 🟡 **AWS lab status: NOT healthy.** `utils/smoke-test-aws --mode live` returns 3/10 PASS as of 2026-05-04 (RDS missing, S3 ACLs absent, security group inbound rule missing). Erik's "I just got the lab unblocked (I think)" 2026-05-04 was hopeful; verification confirms the unblock didn't translate to actual `terraform apply`. **Lab spin-up via `utils/lab-up` is the Step 4 sub-frame trigger** (Chunk 6); non-blocking for Chunks 1–5 which are code-only / docker-compose / unit-test work. If `utils/lab-up` fails when invoked → drop into troubleshooting sub-frame per Erik directive, do NOT proceed to push-readiness with lab gates unresolved.
+
 ### Chunking plan (input to Step 3 execution)
+
+The cherry-pick mechanic per Chunks 1, 5 (code-only filter pattern):
+
+```sh
+git cherry-pick --no-commit <orig-sha>
+# Restore tracker / approach / plan / map / refactor-log files to their pre-cherry-pick state
+git restore --staged --worktree \
+  projects/project02/client/MetaFiles/Approach/Plan.md \
+  projects/project02/legacy_PlanningOrientationMap.md \
+  projects/project02/MetaFiles/refactor-log.md \
+  projects/project01/Part03/MetaFiles/refactor-log.md
+# Commit code-only delta with a message that references the original commit + flags the deferral
+git commit -m "..."
+```
 
 | # | Chunk | Test gate at chunk close |
 |---|---|---|
-| 1 | Create `merge/collab-reconciliation` from `main`; cherry-pick A's Foundation commits in order (e6923d3 → 6347c95 → 78fb7db → 7a5131c → 5581051 → 2e88078) | `npm test --workspaces` green; `cd projects/project02/server && npm test` green (test pyramid passes); `npm install` clean; `utils/lib-symlink-check` clean |
-| 2 | **Skip A's `685b501`.** Authorize the skip in the chunk's commit message body. | (no test change; skip == omission) |
-| 3 | Port B's route handlers (`api_*.js` logic) into A's `routes/` structure, consuming the lib + middleware factories + validate. Resolve bucketkey-shape to lib's pattern. Author route-specific tests (unit + integration via `aws-sdk-client-mock`). | `npm test` green at workspace; route-handler tests green; OpenAPI contract tests green |
-| 4 | Cherry-pick B's Python client commits (`acc4063` + `e3d9a58`). Adjust if needed for the routes' new shapes. | `cd projects/project02/client && pytest -m "not live"` green |
-| 5 | Final consolidation pass: ensure no duplicate dependencies, lockfile clean, app.js mount order correct, all Plan/Map references updated | `npm test --workspaces`; `utils/freshclone-smoke`; `docker build` per Phase 1.10 if applicable |
-| 6 | Step 4 of the quest — full E2E verification including `utils/lab-up` sub-frame if AWS lab is down | All Step 4 gates green per `MergeOrientationMap.md` Step 4 checklist |
-| 7 | Step 5 reconciliation pass on Plan + Map | atomic substep updates land |
-| 8 | Steps 6–8 of the quest (review writing if anything new surfaced; push-readiness; merge to main) | full push-readiness battery |
+| 1 | Create `merge/collab-reconciliation` from `main`; cherry-pick A's Foundation commits **code-only** in order (e6923d3 → 6347c95 → 78fb7db → 7a5131c → 5581051 → 2e88078) per the mechanic above. Watch for Plan.md rename conflicts (predecessor renamed to `legacy_PlanningOrientationMap.md` in commit `dddd713`; git rename-following SHOULD handle, but if it doesn't, treat as expected friction and resolve via the restore step). | `npm test --workspaces` green; `cd projects/project02/server && npm test` green (Pranav's pyramid: 64 passed / 13 skipped per Step 2 verification); `npm install` clean; `utils/lib-symlink-check` clean |
+| 2 | **Skip A's `685b501`.** Documented in Chunk 3's commit message body (no separate empty commit). | (no test change; skip == omission documented in Chunk 3's commit) |
+| 3 | Port B's route handlers into A's `routes/_internal/` structure, consuming the lib + middleware factories + validate. Resolve bucketkey-shape to lib's pattern. Author route-specific tests (unit + integration via `aws-sdk-client-mock` — lab not required for either layer). | `npm test` green at workspace; route-handler tests green; OpenAPI contract tests green; lib regression check green (104/104 carries from Chunk 1) |
+| 4 | Cherry-pick B's Python client commits **code-only** (`acc4063` + `e3d9a58`). Adjust if needed for the routes' new shapes. | **Test gate split by lab availability:** (a) syntactic — `cd projects/project02/client && python -c "import photoapp; import tests"` succeeds (no import / parse errors); (b) integration tests — `pytest -m "not live"` deferred to Chunk 6, because B's tests are integration-shaped (require running server via docker-compose OR the actual AWS lab). The minimum syntactic gate at Chunk 4 close validates the cherry-pick landed cleanly; the integration gate folds into Chunk 6's full E2E. |
+| 5 | Final consolidation pass: ensure no duplicate dependencies, lockfile clean, `app.js` mount order correct (404 fallback after `/v1/*` mounts; error middleware last), all Plan/Map references updated as part of Step 5 reconciliation. | `npm test --workspaces`; `utils/freshclone-smoke`; `docker build` per Phase 1.10 if applicable; lockfile rebuild if conflicts surface (`rm -rf node_modules package-lock.json && npm install` per CONTRIBUTING.md) |
+| 6 | Step 4 of the quest — full E2E verification including `utils/lab-up` sub-frame. **Lab is currently DOWN per Step-3-prep verification 2026-05-04** (3/10 smoke-test-aws PASS); spin-up is non-optional for Chunk 6. If `utils/lab-up` fails (terraform apply errors / IAM gates / billing) → drop into troubleshooting sub-frame per Erik directive; do NOT proceed to push-readiness with lab gates unresolved. Once lab healthy, run: `PHOTOAPP_RUN_LIVE_TESTS=1 cd projects/project01/Part03 && npm test`; `PHOTOAPP_RUN_LIVE_TESTS=1 cd projects/project02/server && npm test`; `cd projects/project02/client && pytest` (full battery including B's integration tests deferred from Chunk 4); `utils/smoke-test-aws --mode live` 10/10. | All Step 4 gates per `MergeOrientationMap.md` Step 4 checklist; lab healthy at 10/10 |
+| 7 | Step 5 reconciliation pass on Plan + Map. **Authoring tracker entries from scratch** against on-disk evidence per Erik's "merge the code, then update approach/plan ourselves" directive. Consult Pranav's tracker claims at `git show 685b501:projects/project02/client/MetaFiles/Approach/Plan.md` as one input + cite divergences in the comparison file's "what we checked off vs what was checked off" thread (Step 6 process retro material). | atomic substep updates land; `MergeOrientationMap.md` reflects on-the-ground reality; Plan.md Phase 1 Master Tracker checkboxes routed (✅ for verified-landed, 🌗 for partial, 📋 for queued, ⏭️ for skipped-with-reason) |
+| 8 | Steps 6–8 of the quest (review writing if anything new surfaced; push-readiness; merge to main) | full push-readiness battery (workspace tests green; freshclone-smoke green; docker build green; cred-sweep delta clean; working tree clean) |
 
 ### Why not sequential merge
 

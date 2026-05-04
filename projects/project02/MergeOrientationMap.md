@@ -248,9 +248,10 @@ See `projects/project02/legacy_PlanningOrientationMap.md` § *Closed (recent —
 
 Step 0 pre-flight findings flagged for Step-N visibility:
 
-- **AWS lab spun-down** (`utils/smoke-test-aws --mode live` returned 3/10 on 2026-05-04). Same state as 2026-05-02. Step 4 sub-frame trigger; not blocking now.
-- **Branch divergence on architectural philosophy.** Branch A (Approach-aligned full Foundation) vs Branch B (surgical PDF-spec MVP on instructor baseline). Step 2c strategy decision will hinge on this. Default lean noted as integration-branch + curated reconciliation (F catalog).
-- **Three guaranteed merge conflicts** if sequential merge attempted: `package-lock.json`, `projects/project02/server/app.js`, `projects/project02/server/package.json`. Strategy choice in 2c should account for these.
+- **AWS lab still spun-down (re-verified 2026-05-04 pre-Step-3).** `utils/smoke-test-aws --mode live` returns 3/10 PASS — RDS missing, S3 ACLs absent, security group inbound rule missing. Erik's "I just got the lab unblocked (I think)" 2026-05-04 was hopeful; verification confirms the unblock didn't translate to actual `terraform apply`. **Lab spin-up via `utils/lab-up` is the Chunk 6 gate trigger** (mapped to Step 4 of this quest); non-blocking for Chunks 1–5. If `utils/lab-up` fails when invoked → troubleshooting sub-frame per Erik 2026-05-04 directive.
+- **Branch divergence on architectural philosophy.** Branch A (Approach-aligned full Foundation) vs Branch B (surgical PDF-spec MVP on instructor baseline). Step 2c strategy: CURATE-AND-PICK (resolved). Chunking plan operational adjustment (code-only cherry-picks; tracker authoring at Step 5) integrated into the comparison file 2026-05-04.
+- **app.js at `2e88078` (last Foundation commit before 685b501): 57 lines; NO `/v1/*` routes mounted** (verified 2026-05-04 main-context). Foundation cherry-picks land a clean app.js with no route-spec drift inherited; routes come purely via Chunk 3's port from Branch B. Ideal handoff confirmed.
+- **Three guaranteed merge conflicts** if sequential merge attempted: `package-lock.json`, `projects/project02/server/app.js`, `projects/project02/server/package.json`. CURATE-AND-PICK strategy avoids these by chunking around them.
 
 Reserved for in-flight findings the executing agent surfaces during Steps 1–11 (e.g., bugs caught during merge, scope-expansion candidates, optional-step routing decisions, conflict-resolution design notes). See `Approach/Plan.md` § *Optional Steps Registry* for the canonical Optional-Steps tracking surface; small queues for cross-cutting findings will surface here when they emerge.
 
