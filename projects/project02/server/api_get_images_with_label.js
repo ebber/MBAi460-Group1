@@ -1,5 +1,5 @@
 //
-// API function: GET /images/search?label=X
+// API function: GET /images_with_label/:label
 //
 // Case-insensitive search for images that contain a given label (partial match ok).
 // Returns: { message, data: [{assetid, label, confidence}] } ordered by assetid, label asc
@@ -9,12 +9,12 @@ const { get_dbConn } = require('./helper.js');
 const pRetry = (...args) => import('p-retry').then(({default: pRetry}) => pRetry(...args));
 
 
-exports.get_images_search = async (request, response) => {
+exports.get_images_with_label = async (request, response) => {
 
-  const label = request.query.label;
+  const label = request.params.label;
 
   if (!label) {
-    return response.status(400).json({ "message": "missing required query param: label", "data": [] });
+    return response.status(400).json({ "message": "missing required URL parameter: label", "data": [] });
   }
 
   async function try_search() {
@@ -40,7 +40,7 @@ exports.get_images_search = async (request, response) => {
   }
 
   try {
-    console.log("**Call to GET /images/search...");
+    console.log("**Call to GET /images_with_label/:label...");
     let rows = await pRetry(() => try_search(), {retries: 2});
 
     response.json({ "message": "success", "data": rows });

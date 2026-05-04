@@ -16,12 +16,13 @@ const path = require('path');
 exports.post_image = async (request, response) => {
 
   try {
-    console.log("**Call to POST /image...");
+    console.log("**Call to POST /image/:userid...");
 
-    const { userid, data, filename } = request.body;
+    const userid = request.params.userid;
+    const { data, local_filename } = request.body;
 
-    if (userid === undefined || data === undefined || filename === undefined) {
-      return response.status(400).json({ "message": "missing required fields: userid, data, filename" });
+    if (data === undefined || local_filename === undefined) {
+      return response.status(400).json({ "message": "missing required body fields: local_filename, data", "assetid": -1 });
     }
 
     //
@@ -34,7 +35,7 @@ exports.post_image = async (request, response) => {
         `SELECT userid FROM users WHERE userid = ?`, [userid]
       );
       if (rows.length === 0) {
-        return response.status(400).json({ "message": "no such userid" });
+        return response.status(400).json({ "message": "no such userid", "assetid": -1 });
       }
     }
     finally {
@@ -49,7 +50,7 @@ exports.post_image = async (request, response) => {
     //
     // generate a unique key for S3 (uuid + original extension):
     //
-    const ext = path.extname(filename) || '.jpg';
+    const ext = path.extname(local_filename) || '.jpg';
     const bucketkey = uuidv4() + ext;
     const bucketName = get_bucket_name();
     const bucket = get_bucket();
@@ -89,7 +90,7 @@ exports.post_image = async (request, response) => {
 
       let [result] = await dbConn2.execute(
         `INSERT INTO assets(userid, localname, bucketkey) VALUES (?, ?, ?)`,
-        [userid, filename, bucketkey]
+        [userid, local_filename, bucketkey]
       );
       assetid = result.insertId;
 
@@ -112,6 +113,6 @@ exports.post_image = async (request, response) => {
   catch (err) {
     console.log("ERROR:");
     console.log(err.message);
-    response.status(500).json({ "message": err.message });
+    response.status(500).json({ "message": err.message, "assetid": -1 });
   }
 };
