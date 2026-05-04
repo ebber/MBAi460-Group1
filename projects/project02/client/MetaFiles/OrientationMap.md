@@ -12,7 +12,7 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-04 — Sub-phases 1.0 + 1.9 ✅ landed on `feat/p02-foundation` (commits `e6923d3` + `6347c95`); Approach Phase 2 partial landing in third commit pending below — Express skeleton with `/healthz`, 404 fallback, inline error terminator stub, app_export + healthz tests (6/6 server tests green). Forward-deps to Phase 3 (pino, request_id, logging) + Phase 5 (error factory) + Phase 7 (closePool) are explicitly named in `app.js` comments so the next sub-phase landing each piece has clean insertion points. All workspace tests + lint green: lib 99/99 · Part 03 32+2 skipped · project02-server 6/6 · `make lint` clean. **Push to origin still blocked** — Pranav lacks write access to `ebber/MBAi460-Group1`; all commits sit local.
+> **Last updated:** 2026-05-04 — Sub-phases 1.0 + 1.9 + 1.3 + 1.4 ✅ on `feat/p02-foundation` across four commits (`e6923d3` consume-library + `6347c95` tooling kit + `78fb7db` Phase 2 partial Express skeleton + Phase 3 observability commit pending below). `app.js` now wires request_id → pino-http logging → json body → /healthz → 404 → inline error terminator. server.js runs pino-pretty in dev with proper SIGTERM drain. Smoke-verified end-to-end (X-Request-Id round-trip, per-request log lines, pretty-print startup). Workspace tests: lib 99/99 · Part 03 32+2 skipped · project02-server 16/16 · `make lint` clean. **Push to origin still blocked** — all four commits local.
 
 ---
 

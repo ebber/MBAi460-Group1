@@ -71,3 +71,21 @@ This log tracks intentional changes made during Project 02 Part 01's multi-tier 
 - 📋 **Queued** — TEST `tests/unit/mount_order.test.js` (Phase 2 Optional). Same rationale — Express router stack introspection against an unmounted skeleton tests nothing useful.
 
 **Push posture:** still blocked. Three commits stack on `feat/p02-foundation` (`e6923d3` sub-phase 1.0 + `6347c95` sub-phase 1.9 + this Phase 2 partial commit) — local until origin write access is granted.
+
+### 2026-05-04 — Sub-phases 1.3 + 1.4 close (Approach Phase 3 — Observability)
+
+**Outcome:** structured logging is live end-to-end. `server/observability/pino.js` is the single logger instance; `server/middleware/request_id.js` populates `req.id` per request; `server/middleware/logging.js` wires `pino-http` with `genReqId: req => req.id` so every per-request log line carries the same X-Request-Id sent back to the caller. `app.js` mounts request_id → logging → json → /healthz → 404 → error. `server.js` boots through the pino logger; SIGTERM drains cleanly. Smoke-verified by hand: `PORT=18081 node server.js` + curl + SIGTERM exhibits pretty-printed startup, per-request log lines containing the response's X-Request-Id, and the warn-level "draining…" log on shutdown. Test count: 16/16 (was 6).
+
+**Decisions:**
+
+1. **`globals` version pin corrected from `^15.16.0` → `^17.6.0`.** The 15.16.0 pin landed in the `6347c95` sub-phase 1.9 commit but `npm install` for it had silently fallen through (`globals@15.x` doesn't actually exist on npm — current line is 14.x → 16.x → 17.x). The Phase 3 reinstall surfaced the bad pin via `ETARGET No matching version found for globals@^15.16.0`. Pin updated; install green. The earlier "added 169 packages" output was misleading — it didn't include the project02-server's globals dep, which got silently skipped. Flagging here so a future bisect through commits 6347c95 → e6923d3 doesn't get confused — running `npm install` on those revs requires `--legacy-peer-deps` or this version correction.
+2. **OpenTelemetry stub written without pulling `@opentelemetry/sdk-node`.** Approach Task 3.4 explicitly defers real SDK wiring to workstream 04. The stub exposes a no-op `trace.startSpan` API that satisfies the contract callers can rely on; replacing the file in workstream 04 doesn't require changing call sites.
+3. **`server.js` graceful shutdown landed *partially* in this commit** even though Approach prescribes full pool integration in Phase 7. The pino + SIGTERM portion is independent of the pool (it just doesn't call `closePool()` yet). Worth landing now so we don't accidentally regress when Phase 7 lands. The Phase 7 commit will edit one line: import `closePool` and call it in the close handler.
+4. **`pino-pretty` is a dev dep, not a runtime.** Production stdout → CloudWatch wants raw JSON. The transport is conditional on `NODE_ENV !== 'production'`; pino-pretty never ships into a prod container.
+5. **Request-id read from lowercase `x-request-id`** (not `X-Request-Id`) — Express normalises headers to lowercase before storing in `req.headers`. The spec response header stays `X-Request-Id` for human readability + curl-friendliness; case-insensitivity holds either way per RFC 7230.
+
+**Optional Steps routing (cadence: per-phase batch):**
+
+- N/A — Approach Phase 3 has no Optional Steps tagged.
+
+**Push posture:** still blocked. Four commits stack on `feat/p02-foundation` (`e6923d3` + `6347c95` + `78fb7db` + this commit) — local until origin write access is granted.
