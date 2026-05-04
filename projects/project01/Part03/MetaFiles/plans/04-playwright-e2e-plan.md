@@ -351,7 +351,7 @@ git commit -m "feat(part03): e2e fixture infrastructure — degu.jpg + pdfkit se
 **Files:**
 - Create: `Part03/frontend/e2e/specs/sanity.spec.ts`
 
-- [ ] **Step A.4.1:** Write the sanity spec.
+- [x] **Step A.4.1:** ✅ 2026-05-04 — `e2e/specs/sanity.spec.ts` written; uses `getByText(/MBAi\s*460/)` (regex per R1.2 fix from adversarial review).
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -367,7 +367,7 @@ test.describe('Sanity', () => {
 
 The wordmark text "MBAi 460" is asserted in `Human-Feature-Test-Suite.md` L1 expectations + appears in `frontend/src/components/TopBar.tsx`. If the selector misses, fall back to `getByRole('banner')` or inspect TopBar's rendered text — do NOT loosen to a partial match without flagging.
 
-- [ ] **Step A.4.2:** Run sanity spec — confirm Express is up first.
+- [x] **Step A.4.2:** ✅ 2026-05-04 — sanity spec passed in 615ms (total run 2.1s); 1/1 passed; no retries needed. globalSetup logged: PDF generated, oversized blob (51 MB) generated, RUN_ID emitted. **Adversarial review R1.1 risk (pdfkit CJS/ESM interop) averted** — default-import form worked without fallback.
 
 In Terminal A:
 
