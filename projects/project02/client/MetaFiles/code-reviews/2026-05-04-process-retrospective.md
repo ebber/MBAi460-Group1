@@ -92,6 +92,48 @@ Without commit body context or out-of-band signal from Pranav, the trigger is un
 
 ---
 
+### [2026-05-04 / Step 2 verification gate] Tests run against both branches; subagents had not — gap caught by Erik's smell-check question
+
+After Step 2 closed but before Step 3 entry, Erik asked whether main-agent had reviewed the subagent-authored review files for smells, and whether the subagents had run any test suites. Honest answer: **no, not thoroughly**. Three narrow checks (one attribution spot-check, one Andrew recommendations re-read, one bucketkey grep) — not a structural verification pass.
+
+The smell-check pass surfaced:
+
+**Subagents did not run any tests.** Confirmed via grep on both review files: zero `npm test` / `Test Suites:` / `Tests:` markers. The reviews evaluated test-code quality (test design, mock levels, coverage choices) but never test-execution quality. My brief to the subagents didn't include test-running; tool access existed.
+
+**Pranav review citation accuracy: 2 of 4 spot-checks errored.** Already-known: `_assignment-template/` source attribution. Newly-found: `app.js:132` / `app.js:122` cited as mount points; actual file is 65 lines; correct lines are 51 / 47. Substance verified across both errors (off-spec routes exist; baseline-restore is the diff); only specific citations were wrong.
+
+**Andrew review citation accuracy: 4 of 4 spot-checks accurate.** Citations precise; substance verified.
+
+**Pattern: depth-vs-breadth in subagent dispatch quality.** Both Pranav-review citation errors landed on the large branch (91 files / +7,261 lines); Andrew-review (10 files / +400 lines) had 4/4 accurate citations. Plausible mechanism: subagents on large surfaces sample / infer specific citations; subagents on small surfaces read the whole branch and cite from direct read.
+
+**Implication for future subagent dispatches:** for large-scope audits, **plan a main-context citation-spot-check pass as structural follow-up, not optional**. Adds to system-plane Focus 1 mining (audit-before-author still wins; main-context verification of subagent claims is a non-optional adjacent step at scale).
+
+**Verification gate B run results** (tmp clones; full npm install + test runs):
+
+| Branch | lib/photoapp-server | Part 03 | project02/server |
+|---|---|---|---|
+| `feat/p02-foundation` @ `685b501` | **104/104 passed / 11 suites** ✓ (was 99 on main; +5 from Pranav's CL9 envelope-helper variadic change — verified) | 28 passed / 4 failed / 2 skipped — see note below | **64 passed / 13 skipped / 15 suites** ✓ (Pranav's full pyramid runs; the 13 skipped are stale placeholders the review flagged at line 84 — `tests/smoke/smoke.test.js:13-15` etc.) |
+| `feat/p02-gradescope-mvp` @ `e3d9a58` | **99/99 passed / 11 suites** ✓ (untouched; matches main) | 28 passed / 4 failed / 2 skipped — see note below | empty (Andrew's branch added package.json but no test files — matches review Dim 6 finding) |
+
+**Note on the Part 03 4-failure count:** these are NOT regressions introduced by either branch. They're the same SPA-fallback tests (`api_404.test.js`, `not_found.test.js`, `static.test.js`) that depend on `frontend/dist/index.html` — a Vite build artifact that's gitignored and not present in fresh clones. `utils/freshclone-smoke` pre-stamps a placeholder to work around this gap (added 2026-05-02 during Phase 0.6). Branch verifications above did NOT pre-stamp; the 4 failures appear in BOTH branches AND in main-without-build-artifacts. **Inherited system gap, not a branch-specific issue.**
+
+System-side observation: this gap was identified during Phase 0.6 freshclone-smoke validation but not permanently fixed. Either (a) the placeholder `frontend/dist/index.html` should be checked into git (one-line file), or (b) the SPA-fallback tests should provide their own placeholder via Jest setup, or (c) the test files should skip when the build artifact is absent. The freshclone-smoke workaround is not a permanent solution — it works for that one util but bites every other downstream verification (like this catch-and-merge gate). **Worth a TODO routed to MetaFiles/TODO.md.**
+
+**This subsection's findings reinforce three memory candidates already flagged in this retro:**
+1. `feedback_subagent_prompt_template.md` — gains "main-context citation-spot-check is non-optional structural follow-up for large-scope audits" content
+2. `feedback_disk_offload_during_execution.md` — the verification gate's "tests-as-disk-grounded-verification-of-subagent-claims" pattern is another instance
+3. `feedback_system_first_framing.md` — the frontend/dist gap is yet another deviation that traces to system gap (placeholder unchecked) rather than executor error; the system-first frame routes the fix correctly
+
+**Subagent prompt template — minimal upgrade for the next dispatch:**
+
+When dispatching a subagent for an audit-style task at scale (>5 files / >500 lines diff), include in the brief:
+
+> "Cite specific files / line numbers / SHAs precisely. After authoring the review, do a self-spot-check pass: pick 3 high-stakes citations (e.g., 🚩 findings) and re-verify against the source via `git show <sha>:<path>` or `wc -l <file>` before submitting. If any citation is approximated rather than verified, flag inline (`(line approx)`) so the main-agent reviewer knows where to focus the cross-check."
+
+This addition is small (~3 sentences); cost-benefit is high for large-scope dispatches. Promotion to formal `feedback_subagent_prompt_template.md` deferred until 2-3 more dispatches confirm the pattern works.
+
+---
+
 ### [2026-05-04 / Step 0] Lab spin-up scope clarification
 
 Erik's directive evolution from Phase 0 ("don't change AWS") to catch-and-merge ("drop into a sub-frame of spinning the lab back up if down") clarifies the lab-up boundary: **standard utility-driven spin-up via `utils/lab-up` is in-scope when AWS state is the gate**, distinct from "discretionary AWS changes during a long run" which remains out-of-scope. The mutation_gating discipline still applies (intent + scope + recovery path before invoking) but the gate is explicit.
