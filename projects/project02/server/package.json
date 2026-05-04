@@ -1,0 +1,26 @@
+{
+  "name": "project02-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Project 02 Part 01 web server — consumer of @mbai460/photoapp-server. Spec-compliant /v1 routes (Gradescope 60/60) + engineering /v2 surface (Phase 4). Layered architecture: route → controller → library service → repository.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest --passWithNoTests"
+  },
+  "license": "ISC",
+  "engines": {
+    "node": ">=24.x",
+    "npm": ">=11.x"
+  },
+  "dependencies": {
+    "@mbai460/photoapp-server": "*",
+    "express": "^5.2.1",
+    "ini": "^6.0.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
+  }
+}
