@@ -81,8 +81,8 @@ At Phase F, tick the 12 covered rows in `Human-Feature-Test-Suite.md` with a foo
 |---|---|---|---|---|
 | Plan + branch | ✅ | `8f17d76` | 2026-05-04 | Plan committed after 2 adversarial self-reviews + 13 inline fixes |
 | Phase A — Bootstrap | ✅ | `3aa9bd2`→`b7729d4`→`632a9c4`→`8cdf893`→`8366e7d`→(this) | 2026-05-04 | Sanity passes 454ms; default+destructive projects gated correctly; pdfkit ESM/CJS interop works (R1.1 averted) |
-| Phase B — Happy path (default) | 🔄 | (next) | — | L1-L3 + LIB3 + U1 + A1 + A3 — awaiting phase-boundary review |
-| Phase B-sidecar — Destructive deleteAll | ⏳ | — | — | Opt-in only |
+| Phase B — Happy path (default) | ✅ | `6a47fb5`→`38af149`→(this) | 2026-05-04 | 8/8 passed (10.5s); 7 of 12 covered human-walk rows ticked (L1, L2, L3, LIB3, U1, A1, A3 — LIB4/U2/U3/U4/A2 land in C+D) |
+| Phase B-sidecar — Destructive deleteAll | 🔄 | (next) | — | Opt-in only — awaiting phase-boundary review |
 | Phase C — Document branch | ⏳ | — | — | LIB4 + U3 + A2 |
 | Phase D — Error surfaces | ⏳ | — | — | U2 + U4 + missing-file + 404 |
 | Phase E — CI (non-destructive) | ⏳ | — | — | GitHub Actions workflow |
@@ -619,7 +619,7 @@ git commit -m "feat(part03): e2e library-happy-path.spec — U1/LIB3/A1/A3 + tes
 
 ### Task B.3: Phase B close-out gate
 
-- [ ] **Step B.3.1:** Run full default suite.
+- [x] **Step B.3.1:** ✅ 2026-05-04 — full default suite: 8/8 passed in 10.5s. (4 happy-path + 3 routing + 1 sanity).
 
 ```bash
 cd Part03/frontend
@@ -628,9 +628,9 @@ npm run e2e
 
 Expected: 8 passed total (1 sanity + 3 routing + 4 happy-path).
 
-- [ ] **Step B.3.2:** Update Master Tracker — flip Phase B row.
+- [x] **Step B.3.2:** ✅ 2026-05-04 — Master Tracker: Phase B ✅; Phase B-sidecar 🔄 awaiting boundary review.
 
-- [ ] **Step B.3.3:** Commit tracker flip.
+- [x] **Step B.3.3:** ✅ 2026-05-04 — committed (this commit).
 
 ```bash
 git add Part03/MetaFiles/plans/04-playwright-e2e-plan.md
