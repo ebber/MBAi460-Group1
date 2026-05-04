@@ -173,7 +173,7 @@ Resumption (per state):
 ## Sub-phase progress (the 11 steps)
 
 - [x] **Step 0** — Pre-flight ✅ 2026-05-04 — main + tag intact, working tree clean, both collaborator branches discovered + first-pass characterized (`feat/p02-foundation` @ `685b501` by **pranavvaranasi1254**; `feat/p02-gradescope-mvp` @ `e3d9a58` by **andrew-apple**), Docker dev env up, AWS lab spun-down (Step 4 sub-frame trigger queued), `utils/freshclone-smoke` against `main` PASS ~3-4s (base stable post-Phase-0 merge), `projects/project02/MetaFiles/refactor-log.md` quest-open entry authored.
-- 🔄 **Step 1** — Assessment scaffolding — `projects/project02/client/MetaFiles/code-reviews/00-assessment-criteria.md` drafted 2026-05-04; awaiting Erik checkpoint per Mermaid-checkpoint pattern (Choice 1 from Session Operating Principles); flips to ✅ on sign-off, then Step 2a entry
+- [x] **Step 1** — Assessment scaffolding ✅ 2026-05-04 — `projects/project02/client/MetaFiles/code-reviews/00-assessment-criteria.md` (290+ lines: 9 dimensions / academic grade scale / 4-tier severity / evidence rubric / per-branch + comparison + retrospective templates / depth-where-merited clause); Erik checkpoint sign-off received per Choice-1 Mermaid-checkpoint pattern
 - [ ] **Step 2** — Assess branches:
   - [ ] **Step 2a** — Parallel subagent audits (audit-before-author shape per system-plane reflection)
   - [ ] **Step 2b** — Branch-vs-branch comparison (main context synthesis)
