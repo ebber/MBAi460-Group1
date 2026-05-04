@@ -20,11 +20,15 @@
 //     - /v1 router at root (spec routes)                           → workstream 02
 const express = require('express');
 const { middleware } = require('@mbai460/photoapp-server');
+const config = require('./config.js');
 
 const requestId = require('./middleware/request_id');
 const logging = require('./middleware/logging');
 const { statusCodeMap, errorShapeFor } = require('./middleware/error_config');
 const logger = require('./observability/pino');
+
+// Configure AWS to read credentials from our photoapp config file.
+process.env.AWS_SHARED_CREDENTIALS_FILE = config.photoapp_config_filename;
 
 const app = express();
 
@@ -32,13 +36,20 @@ app.use(requestId);
 app.use(logging);
 app.use(express.json({ strict: false, limit: '50mb' }));
 
-// Health endpoints — outside any version namespace (F2 convention).
+// Health endpoints — outside any version namespace.
 app.get('/healthz', (_req, res) => res.status(200).json({ status: 'live' }));
 app.get('/readyz', require('./routes/_internal/readyz'));
 
-// /v2 (when ENABLE_V2_ROUTES=1) and /v1 at root mount HERE — deferred to the
-// route-implementation workstreams. Until then, every non-health request
-// falls through to the 404 below.
+// PhotoApp API routes (Gradescope-graded, no prefix).
+app.get('/ping', require('./api_get_ping.js').get_ping);
+app.get('/users', require('./api_get_users.js').get_users);
+app.get('/images', require('./api_get_images.js').get_images);
+app.post('/image', require('./api_post_image.js').post_image);
+// /images/search MUST be before /image/:assetid to avoid routing conflict.
+app.get('/images/search', require('./api_get_images_search.js').get_images_search);
+app.get('/image/:assetid', require('./api_get_image.js').get_image);
+app.get('/image/:assetid/labels', require('./api_get_image_labels.js').get_image_labels);
+app.delete('/images', require('./api_delete_images.js').delete_images);
 
 // 404 fallback — must precede the error middleware terminator.
 app.use((req, res) => {
@@ -49,9 +60,6 @@ app.use((req, res) => {
 });
 
 // Error middleware — library factory with Project 02's mount-prefix-aware DI config.
-// statusCodeMap: /v1 → spec codes (D7); /v2 → REST-correct codes.
-// errorShapeFor: uses req.errorShape when set by route controllers (workstream 02);
-//                falls back to generic error envelope during Foundation.
 app.use(middleware.createErrorMiddleware({ statusCodeMap, errorShapeFor, logger }));
 
 module.exports = app;
