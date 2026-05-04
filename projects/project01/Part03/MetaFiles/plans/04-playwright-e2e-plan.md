@@ -433,7 +433,7 @@ git commit -m "chore(part03): close out Phase A — flip tracker (Phase A.5)"
 **Files:**
 - Create: `Part03/frontend/e2e/specs/routing-and-auth.spec.ts`
 
-- [ ] **Step B.1.1:** Write the spec.
+- [x] **Step B.1.1:** ✅ 2026-05-04 — `routing-and-auth.spec.ts` written. Source-inspection confirmed `useUIStore` NOT exposed on window → used **behavioral fallback for L2** (assert `/library` URL after submit; LoginScreen.tsx:34 navigates after setMockAuth). LoginScreen has proper `htmlFor`/`id` form linkage so `getByLabel` works.
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -490,7 +490,7 @@ test('L2 — Login page reachable; submit produces visible auth state', async ({
 
 Decide which version applies during execution by inspecting `frontend/src/stores/ui.ts` for window exposure; default to behavioral if uncertain.
 
-- [ ] **Step B.1.2:** Run the spec — confirm 3 passed.
+- [x] **Step B.1.2:** ✅ 2026-05-04 — 3/3 passed (1.1s total): L1 248ms, L2 156ms, L3 168ms.
 
 ```bash
 cd Part03/frontend
