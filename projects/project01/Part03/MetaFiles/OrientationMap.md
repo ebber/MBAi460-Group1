@@ -28,7 +28,7 @@
 
 Activated 2026-05-04 (surfaced from Pending). Targets 12 of 15 unticked browser-based human-walk rows in `MetaFiles/HumanTestInstructions/Human-Feature-Test-Suite.md`. 3 rows (LIB1 perf, LIB2 responsive, A11Y1 a11y) explicitly deferred to other workstreams — see plan §"Test scope reminder".
 
-Phase A pre-flight (P.1) confirmed live: `/health` 200, `/api/ping` returns `{user_count: 3, s3_object_count: 14}`, `/api/images` returns asset list. Required dependencies installed: backend `npm install` (workspaces hoist to root); frontend `npm install` + `npm run build` (188 MB node_modules, 214 KB bundle). Config files copied from sibling `mbai460-client/MBAi460-Group1/` checkout (gitignored — no commit leak).
+Phase A pre-flight (P.1) confirmed live: `/health` 200, `/api/ping` returns `{user_count: 3, s3_object_count: 14}`, `/api/images` returns asset list. Required dependencies installed: backend `npm install` (workspaces hoist to root); frontend `npm install` + `npm run build` (188 MB node_modules, 214 KB bundle). Config files copied in from an external reference (gitignored — not committed; this checkout is now self-sufficient).
 
 **Sequencing:** Phase A → B → B-sidecar (destructive) → C → D → E (CI) → F (DOC-FRESHNESS + PR open). Erik reviews at phase boundaries.
 

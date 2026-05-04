@@ -96,7 +96,7 @@ At Phase F, tick the 12 covered rows in `Human-Feature-Test-Suite.md` with a foo
 
 ### Pre-flight: confirm `npm start` works on this branch
 
-- [x] **Step P.1:** ✅ 2026-05-04 — three attempts: #1 failed (no node_modules → `npm install` resolved via workspace hoist to root); #2 failed (frontend dist + photoapp-config.ini missing → frontend `npm install` + `npm run build` + config copied from sibling `mbai460-client/MBAi460-Group1/`); #3 ALL GREEN — `/` 200, `/health` 200, `/api/ping` `{user_count:3, s3_object_count:14}`, `/api/images` returns asset list with at least assetid 1001.
+- [x] **Step P.1:** ✅ 2026-05-04 — three attempts: #1 failed (no node_modules → `npm install` resolved via workspace hoist to root); #2 failed (frontend dist + photoapp-config.ini missing → frontend `npm install` + `npm run build` + config copied in from an external reference); #3 ALL GREEN — `/` 200, `/health` 200, `/api/ping` `{user_count:3, s3_object_count:14}`, `/api/images` returns asset list with at least assetid 1001.
 
 ```bash
 curl -sf http://localhost:8080/                    # SPA HTML
