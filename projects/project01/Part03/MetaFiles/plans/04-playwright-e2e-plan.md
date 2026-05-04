@@ -85,8 +85,8 @@ At Phase F, tick the 12 covered rows in `Human-Feature-Test-Suite.md` with a foo
 | Phase D — Error surfaces | ✅ | `9fade3c` | 2026-05-04 | 4/4 passed (2.8s); resequenced first — non-mutating |
 | Phase C — Document branch | ✅ | `102b888` | 2026-05-04 | 3/3 passed (6.2s); zero source changes (all testids existed) |
 | Phase B-sidecar — Destructive deleteAll | ✅ | (this commit) | 2026-05-04 | 1/1 passed (3.5s); 20 → 0 wipe verified; race-condition fix landed |
-| Phase E — CI (non-destructive) | ⏳ | — | — | GitHub Actions workflow |
-| Phase F — DOC-FRESHNESS closeout + PR | ⏳ | — | — | Workstream status flip + Human-Walk footnotes + OrientationMap + Roadmap + PR open |
+| Phase E — CI (non-destructive) | 🚫 DEFERRED | — | 2026-05-04 | VCS out of scope per Erik; queued in `MetaFiles/TODO.md` `[CI/Future-State]` row |
+| Phase F — DOC-FRESHNESS closeout + PR | ✅ | `19ba471` (F.1-F.5) + (this commit) F.6 | 2026-05-04 | All 5 surfaces propagated; 2 memories promoted; final cycle re-verified; PR body staged |
 
 ---
 
