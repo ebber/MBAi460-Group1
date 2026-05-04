@@ -164,7 +164,7 @@ git commit -m "feat(part03): install @playwright/test devDep (Phase A.1)"
 - Create: `Part03/frontend/playwright.config.ts`
 - Modify: `Part03/frontend/package.json` (scripts)
 
-- [ ] **Step A.2.1:** Create `playwright.config.ts`.
+- [x] **Step A.2.1:** ✅ 2026-05-04 — `playwright.config.ts` created at `Part03/frontend/playwright.config.ts` with two projects (default + destructive), serial execution, baseURL :8080, trace+video on failure, globalSetup pointing at `./e2e/fixtures/setup.ts`.
 
 ```typescript
 import { defineConfig } from '@playwright/test';
@@ -202,7 +202,7 @@ Key choices:
 - `fullyParallel: false` + `workers: 1` — serial execution (live RDS+S3 means concurrent tests would conflict on shared state).
 - Two projects gate destructive specs by filename (`destructive-*.spec.ts`); CI runs only `--project=default`.
 
-- [ ] **Step A.2.2:** Add npm scripts to `Part03/frontend/package.json`.
+- [x] **Step A.2.2:** ✅ 2026-05-04 — added 4 scripts: `e2e` (default project), `e2e:destructive` (destructive project), `e2e:all`, `e2e:install` (chromium binary refresh).
 
 ```json
 {
