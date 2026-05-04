@@ -114,17 +114,22 @@ Scope:
 
 Workset:
 - Branches:
-  - feat/p02-foundation @ 685b501 — 7 commits, 91 files (+7261/-582);
-    full Phase 1 Foundation + 8 routes; lib-consumer wiring; full test pyramid
-  - feat/p02-gradescope-mvp @ e3d9a58 — 7 commits, 10 files (+400/-160);
-    surgical PDF-spec corrections to instructor-baseline api_*.js; Python client
-    + tests touched
+  - feat/p02-foundation @ 685b501 — author: pranavvaranasi1254 (Pranav Varanasi);
+    7 commits, 91 files (+7261/-582); full Phase 1 Foundation + 8 routes;
+    lib-consumer wiring; full test pyramid
+  - feat/p02-gradescope-mvp @ e3d9a58 — author: andrew-apple (Andrew Apple);
+    7 commits, 10 files (+400/-160); surgical PDF-spec corrections to
+    instructor-baseline api_*.js; Python client + tests touched
 - Pre-flight diagnostics in Step 0 message thread (commit topology, churn,
   overlap files: package-lock.json + projects/project02/server/{app.js,package.json})
-- Coordination context: collaborators knew about each other but unsure if they
-  coordinated scope; both started from d2e039c (same baseline)
-- Lab state: Docker dev env operational; AWS lab spun-down (RDS missing, S3
-  ACLs absent — same state as 2 days ago; Step 4 sub-frame trigger)
+- Coordination context: collaborators knew about each other but did NOT
+  coordinate scope (per Erik 2026-05-04); both started from d2e039c (same
+  baseline). Architectural divergence is structural, not just content.
+- Quest-open record: projects/project02/MetaFiles/refactor-log.md § 2026-05-04
+- Assessment contract: projects/project02/client/MetaFiles/code-reviews/00-assessment-criteria.md
+- Lab state: Docker dev env operational (utils/lab-status PASS); freshclone-smoke
+  against main PASS ~3-4s; AWS lab spun-down (RDS missing, S3 ACLs absent —
+  same state as 2 days ago; Step 4 sub-frame trigger via utils/lab-up)
 
 State: 🔄 In Progress
 
@@ -167,8 +172,8 @@ Resumption (per state):
 
 ## Sub-phase progress (the 11 steps)
 
-- [x] **Step 0** — Pre-flight ✅ 2026-05-04 — main + tag intact, working tree clean, both collaborator branches discovered + first-pass characterized, Docker dev env up, AWS lab spun-down (Step 4 sub-frame trigger queued)
-- [ ] **Step 1** — Assessment scaffolding (`projects/project02/client/MetaFiles/code-reviews/00-assessment-criteria.md` + Erik checkpoint)
+- [x] **Step 0** — Pre-flight ✅ 2026-05-04 — main + tag intact, working tree clean, both collaborator branches discovered + first-pass characterized (`feat/p02-foundation` @ `685b501` by **pranavvaranasi1254**; `feat/p02-gradescope-mvp` @ `e3d9a58` by **andrew-apple**), Docker dev env up, AWS lab spun-down (Step 4 sub-frame trigger queued), `utils/freshclone-smoke` against `main` PASS ~3-4s (base stable post-Phase-0 merge), `projects/project02/MetaFiles/refactor-log.md` quest-open entry authored.
+- 🔄 **Step 1** — Assessment scaffolding — `projects/project02/client/MetaFiles/code-reviews/00-assessment-criteria.md` drafted 2026-05-04; awaiting Erik checkpoint per Mermaid-checkpoint pattern (Choice 1 from Session Operating Principles); flips to ✅ on sign-off, then Step 2a entry
 - [ ] **Step 2** — Assess branches:
   - [ ] **Step 2a** — Parallel subagent audits (audit-before-author shape per system-plane reflection)
   - [ ] **Step 2b** — Branch-vs-branch comparison (main context synthesis)
