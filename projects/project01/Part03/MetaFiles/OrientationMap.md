@@ -5,7 +5,7 @@
 > **Complements (does not replace)** plan documents: plans are specs (stable); this Map is execution state (mutable).
 > **Lifecycle:** This Map is grounded in the current Part 03 session. When the session/workstream-context closes, Erik will guide archival.
 > **Compass relationship:** there is NO Compass section in this Map. The lite Compass (`← Back / ● Now / → Next / ⬆ Up`) is in-chat only, printed at the end of in-conversation responses during active execution, and is derived on-the-fly from this Map's Active section. The Map is the authoritative durable state; the Compass is its ephemeral conversational echo. Compaction loses the Compass (convenience), not the Map (authority).
-> **Last updated:** 2026-04-27 — created at lab-root, relocated to Part 03 per Q1; sub-workstream C relocated to Class Project queue per Q3; status legend added (R1); Compass section removed (R3 — kept in-chat only).
+> **Last updated:** 2026-05-04 — Future-State Playwright E2E activated (surfaced from Pending → Active); Phase 04 plan written + self-approved + committed `8f17d76` on branch `feat/p01p03-playwright-e2e`. Prior update 2026-04-27.
 
 ---
 
@@ -24,19 +24,15 @@
 
 ## Active
 
-**No workstream actively engaged 2026-04-27 — between workstreams.**
+**Future-State Playwright E2E** | 🔄 In progress (Phase A bootstrap) | `Part03/MetaFiles/plans/04-playwright-e2e-plan.md` | branch `feat/p01p03-playwright-e2e` (commit `8f17d76`).
 
-Outstanding Integrations workstream closed today (sub-A + sub-B + sub-D + sub-E all ✅; sub-C relocated to Class Project queue). See **Closed (recent)** below for the closeout entry + commit chain.
+Activated 2026-05-04 (surfaced from Pending). Targets 12 of 15 unticked browser-based human-walk rows in `MetaFiles/HumanTestInstructions/Human-Feature-Test-Suite.md`. 3 rows (LIB1 perf, LIB2 responsive, A11Y1 a11y) explicitly deferred to other workstreams — see plan §"Test scope reminder".
 
-**Next workstream candidates** (pick one to engage):
+Phase A pre-flight (P.1) confirmed live: `/health` 200, `/api/ping` returns `{user_count: 3, s3_object_count: 14}`, `/api/images` returns asset list. Required dependencies installed: backend `npm install` (workspaces hoist to root); frontend `npm install` + `npm run build` (188 MB node_modules, 214 KB bundle). Config files copied from sibling `mbai460-client/MBAi460-Group1/` checkout (gitignored — no commit leak).
 
-- **Sweep Class Project for drift** (queued in Pending; was already next-in-line per Map design). All-of-above scope per Q2 — doc + code + tracker drift detection.
-- **Playwright E2E** (Future-State; 🔥 HIGH per its doc + Tier 1 in sub-E's recommendation). Cheapest infrastructure win; protects all subsequent work.
-- **Form Library** (Future-State; HIGH per sub-A Q-Phase4-1 + Tier 1 in sub-E). Foundation for auth + admin screens.
-- **Library Polish** (Future-State; HIGH; Tier 1). User-visible value.
-- Or pause + transition to Project 03 / Lab 03 / something else.
+**Sequencing:** Phase A → B → B-sidecar (destructive) → C → D → E (CI) → F (DOC-FRESHNESS + PR open). Erik reviews at phase boundaries.
 
-See `Part03/MetaFiles/Approach/Future-State-roadmap.md` "Activation priority recommendation 2026-04-27 (sub-E)" for the full tiered analysis.
+**Other Tier 1 candidates remain queued in Pending** (Form Library, Library Polish, Sweep-for-drift) — engaged after this workstream closes.
 
 ---
 
@@ -51,7 +47,7 @@ See `Part03/MetaFiles/Approach/Future-State-roadmap.md` "Activation priority rec
 | Future-State Chat | ⏳ Queued | `Future-State-chat-workstream.md` | |
 | Future-State Command Palette (⌘K) | ⏳ Queued | `Future-State-command-palette-workstream.md` | |
 | Future-State Documents + Textract (OCR) | ⏳ Queued | `Future-State-documents-and-textract-workstream.md` | Q9 — placeholder shipped in MVP |
-| Future-State Playwright E2E | ⏳ Queued | `Future-State-playwright-e2e-workstream.md` | |
+| ~~Future-State Playwright E2E~~ | 🔄 **MOVED TO ACTIVE 2026-05-04** | `Part03/MetaFiles/plans/04-playwright-e2e-plan.md` | See Active section above |
 | Future-State Production Hardening | ⏳ Queued | `Future-State-production-hardening-workstream.md` | RDS lockdown, S3 ACL tighten, VPC scoping |
 | Future-State shadcn Primitive Migration | ⏳ Queued | `Future-State-shadcn-primitive-migration-workstream.md` | Descoped 2026-04-27 R1 from MVP; could revisit |
 | Future-State Tweaks Panel | ⏳ Queued | `Future-State-tweaks-panel-workstream.md` | |

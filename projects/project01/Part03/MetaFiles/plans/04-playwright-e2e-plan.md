@@ -79,8 +79,8 @@ At Phase F, tick the 12 covered rows in `Human-Feature-Test-Suite.md` with a foo
 
 | Phase | Status | Commits | Date | Notes |
 |---|---|---|---|---|
-| Plan + branch | 🔄 | (this commit) | 2026-05-04 | Plan-stage |
-| Phase A — Bootstrap | ⏳ | — | — | Install + config + sanity spec + fixtures |
+| Plan + branch | ✅ | `8f17d76` | 2026-05-04 | Plan committed after 2 adversarial self-reviews + 13 inline fixes |
+| Phase A — Bootstrap | 🔄 | P.1+P.2 done | 2026-05-04 | Pre-flight ✅ (`/health`/`/api/ping`/`/api/images` all 200; backend+frontend installed; config copied from sibling); OrientationMap activated; A.1 next |
 | Phase B — Happy path (default) | ⏳ | — | — | L1-L3 + LIB3 + U1 + A1 + A3 |
 | Phase B-sidecar — Destructive deleteAll | ⏳ | — | — | Opt-in only |
 | Phase C — Document branch | ⏳ | — | — | LIB4 + U3 + A2 |
@@ -96,7 +96,7 @@ At Phase F, tick the 12 covered rows in `Human-Feature-Test-Suite.md` with a foo
 
 ### Pre-flight: confirm `npm start` works on this branch
 
-- [ ] **Step P.1:** From `Part03/`, run `npm start` and confirm output `**Web service running, listening on port 8080...**`. In a second terminal, run:
+- [x] **Step P.1:** ✅ 2026-05-04 — three attempts: #1 failed (no node_modules → `npm install` resolved via workspace hoist to root); #2 failed (frontend dist + photoapp-config.ini missing → frontend `npm install` + `npm run build` + config copied from sibling `mbai460-client/MBAi460-Group1/`); #3 ALL GREEN — `/` 200, `/health` 200, `/api/ping` `{user_count:3, s3_object_count:14}`, `/api/images` returns asset list with at least assetid 1001.
 
 ```bash
 curl -sf http://localhost:8080/                    # SPA HTML
@@ -109,7 +109,7 @@ All four must succeed. Kill server with Ctrl-C.
 
 If `/api/ping` or `/api/images` fail, **STOP** — investigate before installing anything. Likely causes post-Phase 0: (a) `lib/photoapp-server` resolution (run `npm install` from `Part03/` to refresh the symlink), (b) AWS creds expired (check `projects/project01/client/photoapp-config.ini`), (c) RDS sleeping (lab unlocked but instance stopped). Do NOT proceed to Task A.1 until pre-flight passes.
 
-- [ ] **Step P.2:** Add a row to `Part03/MetaFiles/OrientationMap.md` under **Active**:
+- [x] **Step P.2:** ✅ 2026-05-04 — OrientationMap Active section replaced with Playwright E2E workstream entry; Pending row marked moved-to-active. Last-updated date refreshed.
 
 ```markdown
 **Future-State Playwright E2E** | 🔄 In progress | `Part03/MetaFiles/plans/04-playwright-e2e-plan.md` | Phase A bootstrap; targets 12 of 15 unticked human-walk rows
