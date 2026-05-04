@@ -6,7 +6,10 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 1,
-  reporter: [['list']],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never', outputFolder: 'playwright-report' }],
+  ],
   timeout: 30_000,
   expect: { timeout: 10_000 },
   use: {
