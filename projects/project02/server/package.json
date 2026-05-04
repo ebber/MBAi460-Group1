@@ -4,14 +4,34 @@
   "private": true,
   "description": "Project 02 Part 01 web server — consumer of @mbai460/photoapp-server. Spec-compliant /v1 routes (Gradescope 60/60) + engineering /v2 surface (Phase 4). Layered architecture: route → controller → library service → repository.",
   "main": "server.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "test": "jest --passWithNoTests"
+    "dev": "node --watch server.js",
+    "test": "jest --passWithNoTests",
+    "test:unit": "jest tests/unit --passWithNoTests",
+    "test:integration": "jest tests/integration --passWithNoTests",
+    "test:contract": "jest tests/contract --passWithNoTests",
+    "test:smoke": "jest tests/smoke --passWithNoTests",
+    "test:happy": "jest tests/happy_path --passWithNoTests",
+    "test:live": "PHOTOAPP_RUN_LIVE_TESTS=1 jest tests/live --passWithNoTests",
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "eslint . --fix && prettier --write .",
+    "format": "prettier --write ."
   },
   "license": "ISC",
   "engines": {
     "node": ">=24.x",
     "npm": ">=11.x"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@mbai460/photoapp-server": "*",
@@ -20,7 +40,14 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/js": "^9.36.0",
+    "eslint": "^9.36.0",
+    "globals": "^15.16.0",
     "jest": "^30.3.0",
+    "lint-staged": "^16.2.4",
+    "prettier": "^3.6.2",
     "supertest": "^7.2.2"
   }
 }

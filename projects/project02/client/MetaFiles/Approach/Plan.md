@@ -259,7 +259,7 @@ Approach pointer: 01-foundation.md (very large; read carefully)
 - [ ] **Phase 1.6** — validate middleware (zod-based)
 - [ ] **Phase 1.7** — mysql2 pool factory + opossum breakers (Project 02-specific)
 - [ ] **Phase 1.8** — OpenAPI 3.1 stub + library exports verified
-- [ ] **Phase 1.9** — ESLint / Prettier / pre-commit hooks
+- [x] **Phase 1.9** — ESLint / Prettier / pre-commit hooks ✅ 2026-05-04 (partial — pre-commit hook deferred) — landed alongside Approach Phase 1 (Repo Skeleton & Tooling Bootstrap): `.nvmrc` (24), `.gitignore`, `.editorconfig`, ESLint v9 flat config (`eslint.config.js` — `.eslintrc.cjs` was incompatible), `.prettierrc` + `.prettierignore`, `commitlint.config.cjs` (conventional-commits, smoke-verified via `echo ... | npx commitlint`). package.json now carries the scripts kit (start/dev/test:*/lint/format) + lint-staged config + devDeps (eslint, @eslint/js, globals, prettier, @commitlint/cli + config-conventional, lint-staged, jest, supertest). `make lint` + `make test` green. **Husky pre-commit/commit-msg wire-up deferred** — config files are in place; a future sub-phase wires `.husky/` so `pre-commit → lint-staged` and `commit-msg → commitlint` activate. Trade-off: contributors run `make lint` manually until then; conventional-commit messages are honor-system enforced.
 - [ ] **Phase 1.10** — docker-compose orchestration validated
 - [ ] **Phase 1.11** — six-layer test pyramid harness (unit / integration / contract / smoke / happy-path / live)
 - [ ] **Phase 1.12** — Terraform `state mv` cutover from `MBAi460-Group1/infra/terraform/` to module form

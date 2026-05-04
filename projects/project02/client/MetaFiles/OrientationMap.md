@@ -12,7 +12,7 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-04 — **Phase 1 (Foundation) 🔄 picked up** on branch `feat/p02-foundation` (off `main` post Phase 0 merge — 156 commits + `library-1.0.0-extraction-complete` tag now on `origin/main`). Pickup announced in `MetaFiles/refactor-log.md`; baseline tests green from monorepo root (lib 99/99 + Part 03 32+2 skipped); placeholder `frontend/dist/index.html` stamped locally to clear the SPA-fallback gap noted in Phase 0's risks. Beginning sub-phase 1.0 (= Approach Phase 0 "Consume Library & Extend").
+> **Last updated:** 2026-05-04 — Sub-phases 1.0 + 1.9 ✅ landed on `feat/p02-foundation` across two commits (`e6923d3` consume-library bootstrap; tooling bootstrap commit pending below). Active sub-frame is now Approach Phase 2 (Express App Skeleton — mount order, /healthz/readyz, error middleware DI). All workspace tests + lint green: lib 99/99 · Part 03 32+2 skipped · project02-server 2/2 · `make lint` clean. **Push to origin still blocked** — Pranav lacks write access to `ebber/MBAi460-Group1`; both commits sit local. Erik must add him as a collaborator OR a fork must be configured before push surfaces these on origin.
 
 ---
 
@@ -93,6 +93,14 @@ _assignment-template/ before fresh consumer wiring lands.
 - [x] 1.0.4 — Reuse shared infrastructure references ✅ 2026-05-04 (server `README.md` documents shared `photoapp-config.ini` path at `projects/project01/client/photoapp-config.ini` + canonical ops-tools table; `utils/validate-db` and `utils/smoke-test-aws --mode live` deferred — lab spun-down per `Plan.md` § Phase 0.6 deferred items pattern; non-blocking)
 - [x] 1.0.5 — Acceptance for sub-phase 1.0 ✅ 2026-05-04 (`npm install` clean; `node -e "require(...)"` exits 0; smoke green then route deleted; Part 03 32+2 skipped green; project02-server 2/2 green via `library_resolution.test.js`; no Part 03 source copied; `cred-sweep` reports zero new patterns vs `main`)
 - [x] 1.0.6 — Documentation touchpoint (CL11) ✅ 2026-05-04 (project02 server `README.md` created; root `README.md` "Repository Structure" already mentions `projects/project02/server` post Phase 0.5; `MetaFiles/QUICKSTART.md` extended with "Working on Project 02" subsection mirroring the Part 03 verify path; project02 client `README.md` deferred to workstream 03 per Approach 0.6 wording)
+
+**Sub-phase 1.9 (= Approach Phase 1 — Repo Skeleton & Tooling Bootstrap):**
+
+- [x] 1.9.1 — Pin Node version ✅ 2026-05-04 (`server/.nvmrc` → `24`; matches workspace's `engine-strict=true` requirement; Approach's `20.11.1` callout was authored pre-Phase-0-merge and is stale)
+- [x] 1.9.2 — package.json full shape ✅ 2026-05-04 (scripts: start/dev/test/test:unit/test:integration/test:contract/test:smoke/test:happy/test:live/lint/lint:fix/format; devDeps: @commitlint/cli + config-conventional, @eslint/js, eslint, globals, jest, lint-staged, prettier, supertest; deferred to later phases: nodemon (replaced by `node --watch`), pino-pretty + openapi-types + chai-openapi-response-validator + aws-sdk-client-mock + husky)
+- [x] 1.9.3 — Lint + format + commitlint config ✅ 2026-05-04 (`eslint.config.js` flat config — ESLint v9 dropped `.eslintrc.cjs`; `.prettierrc` + `.prettierignore`; `.editorconfig`; `commitlint.config.cjs`; `.gitignore`; `no-console` rule allows warn/error so server.js startup signal works pre-pino; `console.log` in server.js switched to `console.warn`; **husky wire-up deferred** — configs in place, contributors honor-system until husky lands in a later sub-phase)
+- [ ] 1.9.4 — Python tooling (pyproject.toml in `client/`) — DEFERRED to Approach Phase 3 / Plan sub-phase Phase 3 Client API workstream pickup (out of `feat/p02-foundation` scope; Phase 1 of foundation here only handles server-side tooling — Python tooling more naturally lands when client work begins)
+- [x] 1.9.5 — Makefile ✅ 2026-05-04 (`projects/project02/Makefile` with help/install/test/test-* /lint/format/clean live now; `up`/`down`/`submit-server`/`submit-client` are visible-stub targets that print "wired in Approach Phase 10/13" and exit 1 — exposes the future surface without faking it)
 
 **Erik's post-merge punch list (gates the Phase 0 tag):**
 

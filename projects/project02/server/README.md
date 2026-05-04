@@ -51,26 +51,30 @@ The library's `config.js` accepts a path; Project 02's `app.js` (Phase 2) passes
 
 The shared lab backbone owns these utilities — invoke them, do not re-implement:
 
-| Tool | Purpose |
-|---|---|
-| `utils/run-sql` | Execute a SQL file against RDS through the shared Docker image |
-| `utils/validate-db` | 26-check schema + seed validator |
-| `utils/rebuild-db` | Idempotent rebuild from canonical DDL |
-| `utils/smoke-test-aws` | 10-check live AWS verification (`--mode live` for full path) |
-| `utils/cred-sweep` | Staged-content secret scanner (pre-commit hook) |
-| `utils/aws-inventory` | TF vs. MANUAL drift report |
-| `utils/lab-up` / `utils/lab-down` / `utils/lab-status` | Lab Terraform spin-up + spin-down |
-| `utils/docker-up` / `utils/docker-down` / `utils/docker-status` | Docker Desktop / Colima helpers |
-| `utils/rotate-access-keys` / `utils/rotate-passwords` | Credential rotation |
+| Tool                                                            | Purpose                                                        |
+| --------------------------------------------------------------- | -------------------------------------------------------------- |
+| `utils/run-sql`                                                 | Execute a SQL file against RDS through the shared Docker image |
+| `utils/validate-db`                                             | 26-check schema + seed validator                               |
+| `utils/rebuild-db`                                              | Idempotent rebuild from canonical DDL                          |
+| `utils/smoke-test-aws`                                          | 10-check live AWS verification (`--mode live` for full path)   |
+| `utils/cred-sweep`                                              | Staged-content secret scanner (pre-commit hook)                |
+| `utils/aws-inventory`                                           | TF vs. MANUAL drift report                                     |
+| `utils/lab-up` / `utils/lab-down` / `utils/lab-status`          | Lab Terraform spin-up + spin-down                              |
+| `utils/docker-up` / `utils/docker-down` / `utils/docker-status` | Docker Desktop / Colima helpers                                |
+| `utils/rotate-access-keys` / `utils/rotate-passwords`           | Credential rotation                                            |
 
 ## Layout
 
 ```
 projects/project02/server/
-├── package.json            — workspace consumer manifest
-├── jest.config.js          — Phase 1.0 placeholder (six-layer pyramid lands in 1.11)
-├── .eslintrc.cjs           — minimal lint config (full kit lands in Approach Phase 1)
-├── .prettierrc
+├── package.json            — workspace consumer manifest + lint-staged config
+├── .nvmrc                  — Node version pin (24)
+├── eslint.config.js        — flat config (ESLint v9+); no-console allows warn/error
+├── .prettierrc / .prettierignore
+├── .editorconfig
+├── .gitignore              — server-tree-local ignores (node_modules, *-config.ini)
+├── commitlint.config.cjs   — conventional-commits enforcement (husky wire-up deferred)
+├── jest.config.js          — sub-phase 1.0 placeholder (six-layer pyramid lands in 1.11)
 ├── app.js                  — Express app (sub-phase 1.0 shell; phases 2–5 expand)
 ├── server.js               — listen() entrypoint; pool.end() on SIGTERM (Phase 7+)
 ├── tests/

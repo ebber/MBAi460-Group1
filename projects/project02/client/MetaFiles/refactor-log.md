@@ -33,3 +33,23 @@ This log tracks intentional changes made during Project 02 Part 01's multi-tier 
 - 📋 **Queued** — UTIL `make doctor` extension. Phase 0.4 + 0.5 verification commands (`validate-db`, `smoke-test-aws`, `cred-sweep`, library symlink probe) compose well, but `make doctor` itself doesn't exist yet (Phase −1 didn't ship it). Queue under Plan sub-phase 1.10 (Makefile + compose orchestration) — natural home for the consolidated doctor command.
 
 **Push posture:** per Erik's directive ("git push at end of each phase to surface merge conflicts early"), pushing `feat/p02-foundation` to `origin` immediately after this commit lands.
+
+### 2026-05-04 — Sub-phase 1.9 close (Approach Phase 1 — Repo Skeleton & Tooling Bootstrap)
+
+**Outcome:** `projects/project02/server/` carries the full lint/format/commitlint configuration kit. `make lint` + `make test` from `projects/project02/` both exit 0; commitlint smoke-verified to accept conventional messages and reject non-conformant ones.
+
+**Decisions:**
+
+1. **ESLint v9 flat config (`eslint.config.js`)** instead of `.eslintrc.cjs`. ESLint v9 removed legacy config support — the deprecation message during the first lint run made this concrete: "From ESLint v9.0.0, the default configuration file is now eslint.config.js." Rewrote as flat config with `@eslint/js` + `globals` packages.
+2. **Node 24, not 20.11.1.** The Approach's `.nvmrc` value (`20.11.1`) was authored before the Phase 0 monorepo extraction landed on `main`. Post-extraction, the root + library + Part 03 all pin Node 24.x with `engine-strict=true`. Sub-phase 1.0's `npm install` failure (`EBADENGINE`) on Pranav's installed Node 22 is the proof — sticking with the Approach's stale value would have re-broken the install. `.nvmrc` set to `24`. The Approach text should be revised next time the Approach is touched; flagging here for future passes.
+3. **Husky wire-up deferred.** The Approach Phase 1 Task 1.3 checklist includes husky pre-commit + commit-msg hooks. Configs are in place (`commitlint.config.cjs`, `lint-staged` block in `package.json`, ESLint + Prettier scripts) but `.husky/` is not initialised. Reasoning: husky activation rewrites `core.hooksPath` for the whole clone, which silently affects every repo on Erik's machine if he pulls and runs `npm install` — felt scope-heavy for a tooling sub-phase under push-blocked conditions. A future sub-phase can `npx husky init && npx husky add .husky/pre-commit "cd projects/project02/server && npx lint-staged" && npx husky add .husky/commit-msg "cd projects/project02/server && npx commitlint --edit \$1"` once Erik's clone gates are clear. Until then: `make lint` is the manual gate; conventional-commit messages are honor-system.
+4. **`node --watch` instead of nodemon.** Node 24 has built-in watch mode. Saves a transitive dep + the `nodemon.json` config surface for one less moving piece.
+5. **`pyproject.toml` deferred to Approach Phase 3 / client workstream.** Phase 1 of the Approach mixes server + client tooling. Splitting them here scopes `feat/p02-foundation` to server-side. Python tooling lands when client work begins (Plan workstream Phase 3 — client API rewrite).
+6. **Makefile stubs are visible, not silent.** `make up` / `make down` / `make submit-*` print a "wired in Approach Phase X" message and exit 1. A contributor running `make up` today gets a clear message instead of a confusing missing-`docker-compose.yml` error from a pretend-real implementation.
+7. **Prettier reformatted server/README.md** on first run (table column padding). Accepted; the change is non-semantic.
+
+**Optional Steps routing (cadence: per-phase batch):**
+
+- N/A in Approach Phase 1 — no Optional Mermaid / TEST steps in Tasks 1.1–1.5 specifically.
+
+**Push posture:** still blocked — Pranav lacks write access to `ebber/MBAi460-Group1`. Both commits (`e6923d3` sub-phase 1.0 + this commit) sit local on `feat/p02-foundation`. Resolution required before pushing surfaces them on origin.
