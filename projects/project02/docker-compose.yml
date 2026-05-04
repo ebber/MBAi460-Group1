@@ -1,0 +1,122 @@
+# Project 02 local dev topology — Approach 01-foundation.md § Phase 10 Task 10.1.
+#
+# Four services on one network:
+#   mysql      — MySQL 8.4 init'd with infra/migrations/01-schema.sql
+#   localstack — LocalStack 3 (S3 + IAM only; Rekognition mocked at SDK level)
+#   server     — Project 02 Node.js service (hot-reload bind-mount)
+#   client     — Python client stub (bind-mount; Dockerfile lands in Phase 3)
+#
+# Usage:
+#   make up          # bring up + tail logs
+#   make down        # stop + remove containers/volumes
+#
+# One-time setup: copy client/photoapp-config.ini.example → client/photoapp-config.ini
+# and adjust bucket_name if desired.
+
+services:
+
+  # ── MySQL 8.4 ───────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: photoapp_root_local
+      MYSQL_DATABASE:      photoapp
+      MYSQL_USER:          photoapp
+      MYSQL_PASSWORD:      photoapp_local
+    ports:
+      - "3307:3306"   # 3307 on host avoids collision with a locally running MySQL
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./infra/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "photoapp", "-pphotoapp_local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - photoapp
+
+  # ── LocalStack 3 (S3 + IAM) ─────────────────────────────────────────────────
+  localstack:
+    image: localstack/localstack:3
+    environment:
+      SERVICES:              s3,iam
+      AWS_DEFAULT_REGION:    us-east-1
+      AWS_ACCESS_KEY_ID:     test
+      AWS_SECRET_ACCESS_KEY: test
+      # DEBUG=1              # uncomment for LocalStack verbose logs
+    ports:
+      - "4566:4566"
+    volumes:
+      - localstack_data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - photoapp
+
+  # ── Server (Node.js 24) ──────────────────────────────────────────────────────
+  server:
+    build:
+      context: ../..          # monorepo root — required for workspace-aware npm ci
+      dockerfile: projects/project02/server/Dockerfile
+    environment:
+      NODE_ENV:             development
+      PORT:                 8080
+      LOG_LEVEL:            debug
+      # LocalStack S3 endpoint — seam between local (LocalStack) and prod (real AWS).
+      AWS_ENDPOINT_URL:     http://localstack:4566
+      AWS_DEFAULT_REGION:   us-east-1
+      AWS_ACCESS_KEY_ID:    test
+      AWS_SECRET_ACCESS_KEY: test
+      # Pool config override — resolves to client/photoapp-config.ini (mounted below).
+      PHOTOAPP_CONFIG_PATH: /app/projects/project02/client/photoapp-config.ini
+    ports:
+      - "8080:8080"
+    volumes:
+      # Hot-reload: bind-mount source directories over the built image layers.
+      - ./server:/app/projects/project02/server
+      - ./client:/app/projects/project02/client
+    depends_on:
+      mysql:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    networks:
+      - photoapp
+    # Override CMD to start with nodemon for hot-reload.
+    # Falls back to `node server.js` if nodemon isn't installed.
+    command: >
+      sh -c "if command -v npx > /dev/null 2>&1; then
+               npx --yes nodemon server.js;
+             else
+               node server.js;
+             fi"
+
+  # ── Client (Python 3 — placeholder until Phase 3) ────────────────────────────
+  # Dockerfile at client/Dockerfile is provided by the assignment image; it
+  # lands in Phase 3. Uncomment once that image is available.
+  #
+  # client:
+  #   build:
+  #     context: .
+  #     dockerfile: client/Dockerfile
+  #   volumes:
+  #     - ./client:/app/client
+  #   depends_on:
+  #     server:
+  #       condition: service_started
+  #   networks:
+  #     - photoapp
+
+volumes:
+  mysql_data:
+  localstack_data:
+
+networks:
+  photoapp:
+    driver: bridge

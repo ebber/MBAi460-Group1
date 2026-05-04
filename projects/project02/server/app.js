@@ -1,5 +1,6 @@
 // Approach 01-foundation.md § Phase 2 (Express skeleton) + Phase 3 (observability)
-//                           + Phase 5 (error middleware via library factory).
+//                           + Phase 5 (error middleware via library factory)
+//                           + Phase 4 (readyz probe).
 //
 // Mount order (D11/D12 from 00-overview-and-conventions.md): when /v2 and /v1
 // land, /v2 mounts FIRST so /v2/images/:assetid doesn't shadow /v1's
@@ -10,11 +11,11 @@
 //     - pino-http logging (uses req.id for genReqId)               [Phase 3.3]
 //     - express.json() body parser
 //     - GET /healthz (liveness; outside version namespace)         [Phase 2]
+//     - GET /readyz  (RDS + S3 readiness probe)                    [Phase 4]
 //     - 404 fallback                                               [Phase 2]
 //     - error middleware via library factory + Project 02 DI       [Phase 5]
 //
 //   DEFERRED:
-//     - GET /readyz (RDS + S3 probes)                              → Phase 4/7 (needs pool)
 //     - /v2 router (engineering surface)                           → workstream 04
 //     - /v1 router at root (spec routes)                           → workstream 02
 const express = require('express');
@@ -31,11 +32,12 @@ app.use(requestId);
 app.use(logging);
 app.use(express.json({ strict: false, limit: '50mb' }));
 
-// Health endpoints — outside any version namespace.
+// Health endpoints — outside any version namespace (F2 convention).
 app.get('/healthz', (_req, res) => res.status(200).json({ status: 'live' }));
+app.get('/readyz', require('./routes/_internal/readyz'));
 
 // /v2 (when ENABLE_V2_ROUTES=1) and /v1 at root mount HERE — deferred to the
-// route-implementation workstreams. Until then, every non-/healthz request
+// route-implementation workstreams. Until then, every non-health request
 // falls through to the 404 below.
 
 // 404 fallback — must precede the error middleware terminator.

@@ -1,7 +1,7 @@
-// listen() entrypoint. SIGTERM graceful shutdown + pool.end() integration land
-// in Approach Phase 7 (Plan sub-phase 1.7) once services/pool.js exists.
+// Approach 01-foundation.md § Phase 2 (entrypoint) + Phase 7 (pool shutdown).
 const app = require('./app');
 const logger = require('./observability/pino');
+const { closePool } = require('./services/pool');
 
 const port = process.env.PORT || 8080;
 
@@ -11,7 +11,8 @@ const httpServer = app.listen(port, () => {
 
 async function gracefulShutdown(signal) {
   logger.warn({ signal }, 'received shutdown signal, draining…');
-  httpServer.close(() => {
+  httpServer.close(async () => {
+    await closePool();
     process.exit(0);
   });
   // Hard-kill after 10s if connections don't drain.

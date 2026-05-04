@@ -1,0 +1,10 @@
+# terraform.tfvars.example — copy to terraform.tfvars (gitignored) and fill in.
+# Run: cd infra/envs/prod && terraform init && terraform plan
+
+aws_region  = "us-east-2"
+aws_profile = "Claude-Conjurer"
+
+bucket_name        = "photoapp-YOURNETID-prod"
+db_identifier      = "photoapp-prod"
+db_master_username = "admin"
+db_master_password = "CHANGE_ME_strong_password_here"
