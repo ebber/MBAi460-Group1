@@ -83,8 +83,8 @@ At Phase F, tick the 12 covered rows in `Human-Feature-Test-Suite.md` with a foo
 | Phase A — Bootstrap | ✅ | `3aa9bd2`→`b7729d4`→`632a9c4`→`8cdf893`→`8366e7d`→(this) | 2026-05-04 | Sanity passes 454ms; default+destructive projects gated correctly; pdfkit ESM/CJS interop works (R1.1 averted) |
 | Phase B — Happy path (default) | ✅ | `6a47fb5`→`38af149`→(this) | 2026-05-04 | 8/8 passed (10.5s); 7 of 12 covered human-walk rows ticked (L1, L2, L3, LIB3, U1, A1, A3 — LIB4/U2/U3/U4/A2 land in C+D) |
 | Phase D — Error surfaces | ✅ | `9fade3c` | 2026-05-04 | 4/4 passed (2.8s); resequenced first — non-mutating |
-| Phase C — Document branch | ✅ | (this commit) | 2026-05-04 | 3/3 passed (6.2s); zero source changes (all testids existed) |
-| Phase B-sidecar — Destructive deleteAll | ⏳ | — | — | Opt-in only; runs LAST per resequenced order (D → C → B-sidecar) |
+| Phase C — Document branch | ✅ | `102b888` | 2026-05-04 | 3/3 passed (6.2s); zero source changes (all testids existed) |
+| Phase B-sidecar — Destructive deleteAll | ✅ | (this commit) | 2026-05-04 | 1/1 passed (3.5s); 20 → 0 wipe verified; race-condition fix landed |
 | Phase E — CI (non-destructive) | ⏳ | — | — | GitHub Actions workflow |
 | Phase F — DOC-FRESHNESS closeout + PR | ⏳ | — | — | Workstream status flip + Human-Walk footnotes + OrientationMap + Roadmap + PR open |
 
@@ -648,7 +648,7 @@ git commit -m "chore(part03): close out Phase B — flip tracker (Phase B.3)"
 **Files:**
 - Create: `Part03/frontend/e2e/specs/destructive-deleteall.spec.ts`
 
-- [ ] **Step BS.1.1:** Write the spec.
+- [x] **Step BS.1.1:** ✅ 2026-05-04 — `destructive-deleteall.spec.ts` written. Two-step modal confirmation: (1) trigger button on LibraryPage opens DeleteAllConfirm modal; (2) modal requires typing "delete" to enable confirm button (DeleteAllConfirm.tsx:14 `REQUIRED_PHRASE`). Includes beforeAll console.warn banner per R2.4 fix. Async wait pattern (Promise.race for cards-or-empty-state) discovered in run #1 — race condition with React effect data load fixed in run #2.
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -703,7 +703,7 @@ test('API deleteAll → empty state', async ({ page, request }) => {
 
 Choose the variant during execution based on UI inspection; commit only one.
 
-- [ ] **Step BS.1.2:** Run the destructive project.
+- [x] **Step BS.1.2:** ✅ 2026-05-04 — destructive run #2 PASSED in 3.5s. Stack went 20 assets → 0 assets (verified via `/api/images` JSON before+after). Modal confirmation flow worked: trigger click → modal opens → fill "delete" → confirm enabled → click → wait for empty-library testid → assert 0 cards.
 
 ```bash
 cd Part03/frontend
@@ -712,7 +712,7 @@ npm run e2e:destructive
 
 Expected: 1 passed (assuming library has assets; otherwise skipped).
 
-- [ ] **Step BS.1.3:** Confirm default suite still does NOT run this spec.
+- [x] **Step BS.1.3:** ✅ 2026-05-04 — confirmed at A.5.2 close-out + during all subsequent default runs. `npm run e2e` always shows project=default, never includes destructive specs.
 
 ```bash
 npm run e2e
