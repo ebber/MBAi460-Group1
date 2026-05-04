@@ -229,3 +229,16 @@ Used by future agents (and any human reviewer) to understand the dependency chai
 - **Vulnerabilities:** 2 moderate (unchanged).
 - **Verification:** `npx playwright --version` → `Version 1.59.1`.
 - **Branch:** `feat/p01p03-playwright-e2e`.
+
+---
+
+## 2026-05-04 — Phase A.3 install: `pdfkit` + types (Part03/frontend)
+
+- **Source:** `04-playwright-e2e-plan.md` Phase A Task A.3 — runtime PDF generation in `e2e/fixtures/setup.ts` (avoids committing a binary fixture).
+- **Working directory:** `MBAi460-Group1/projects/project01/Part03/frontend/`
+- **Command:** `npm install -D pdfkit @types/pdfkit`
+- **Exit code:** `0`
+- **Packages installed (direct deps):** `pdfkit@^0.18.0`, `@types/pdfkit@^0.17.6`.
+- **Vulnerabilities:** 2 moderate (unchanged).
+- **Verification:** PDF generation tested at first sanity-spec run (Phase A.4) — see plan §A.3.3 ESM/CJS interop note.
+- **Branch:** `feat/p01p03-playwright-e2e`.

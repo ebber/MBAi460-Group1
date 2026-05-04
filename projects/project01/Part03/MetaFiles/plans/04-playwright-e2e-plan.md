@@ -237,7 +237,7 @@ git commit -m "feat(part03): playwright config + npm scripts (Phase A.2)"
 - Modify: `Part03/MetaFiles/install-log.md` (new entry)
 - Modify: `Part03/frontend/.gitignore` (or root .gitignore — exclude generated PDF + oversized blob)
 
-- [ ] **Step A.3.1:** Copy degu.jpg into the fixtures dir.
+- [x] **Step A.3.1:** ✅ 2026-05-04 — `01degu.jpg` (163 KB) copied to `Part03/frontend/e2e/fixtures/01degu.jpg`. Larger than the plan's "~50 KB" estimate; full-quality canonical Andrew fixture.
 
 ```bash
 mkdir -p Part03/frontend/e2e/fixtures
@@ -247,7 +247,7 @@ ls -la Part03/frontend/e2e/fixtures/01degu.jpg
 
 Expected: file exists, size ~20–50 KB (Andrew's degu image).
 
-- [ ] **Step A.3.2:** Install `pdfkit` devDep.
+- [x] **Step A.3.2:** ✅ 2026-05-04 — `npm install -D pdfkit @types/pdfkit` clean. pdfkit@^0.18.0, @types/pdfkit@^0.17.6.
 
 ```bash
 cd Part03/frontend
@@ -256,7 +256,7 @@ npm install -D pdfkit @types/pdfkit
 
 Expected: `pdfkit` and `@types/pdfkit` appear in devDeps; lockfile updated.
 
-- [ ] **Step A.3.3:** Create `e2e/fixtures/setup.ts` (global setup).
+- [x] **Step A.3.3:** ✅ 2026-05-04 — `e2e/fixtures/setup.ts` written exactly per plan code block (PDF gen + oversized blob gen + RUN_ID export + globalSetup default export). ESM/CJS interop verified at A.4 sanity run.
 
 > **ESM/CJS note:** `pdfkit` is a CJS module; `Part03/frontend/package.json` has `"type": "module"`. The default-import form (`import PDFDocument from 'pdfkit'`) works under modern Node + Playwright TS loader **if** TypeScript's `esModuleInterop: true` is enabled (it is — see `tsconfig.app.json`). If the import fails at runtime with "PDFDocument is not a constructor", swap to: `import PDFKit from 'pdfkit'; const PDFDocument = (PDFKit as unknown as typeof import('pdfkit'));` or use `createRequire` from `module`. Verify by running the sanity spec after creating this file — failure surfaces immediately.
 
@@ -311,7 +311,7 @@ export default async function globalSetup() {
 }
 ```
 
-- [ ] **Step A.3.4:** Add `.gitignore` entries for generated fixtures.
+- [x] **Step A.3.4:** ✅ 2026-05-04 — `e2e/fixtures/.gitignore` created with entries for `test-fixture.pdf` and `oversized.bin`.
 
 Create or modify `Part03/frontend/e2e/fixtures/.gitignore`:
 
@@ -321,7 +321,7 @@ test-fixture.pdf
 oversized.bin
 ```
 
-- [ ] **Step A.3.5:** Append install-log entry.
+- [x] **Step A.3.5:** ✅ 2026-05-04 — install-log entry appended for pdfkit + types.
 
 Append to `Part03/MetaFiles/install-log.md`:
 
