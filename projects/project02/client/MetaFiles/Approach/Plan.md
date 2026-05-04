@@ -14,7 +14,12 @@
 
 **Quest sphere:** `MBAi460-Group1/projects/project02/` — operative directory; deliverables land here (plus shared library at `MBAi460-Group1/lib/photoapp-server/`, plus Part 03 consumer updates from Phase 0).
 
-**Sibling artifact:** `MBAi460-Group1/projects/project02/client/MetaFiles/OrientationMap.md` — durable execution state (Active / Pending / Closed sections derived from this Plan's Master Tracker; updated atomically per substep close-out).
+**Sibling Maps (per-quest):** This Plan is the parent-quest spec spanning Phases 0–4. Active execution state lives in per-quest Orientation Maps at `MBAi460-Group1/projects/project02/`:
+
+- `MergeOrientationMap.md` — current quest (Catch-and-Merge, declared 2026-05-04 — reconciling collaborator branches into main)
+- `legacy_PlanningOrientationMap.md` — predecessor quest, frozen (planning + Phase 0 / Library Extraction; closed 2026-05-02 with Phase 0 merged + tagged `library-1.0.0-extraction-complete`)
+
+When a new quest opens (e.g., Phase 2 work after Catch-and-Merge closes), it gets a new Map at the project02 root; the predecessor Map either freezes with a `legacy_` prefix (if its closeout is durable historical reference) or is archived. Maps derive their Active / Pending / Closed sections from this Plan's Master Tracker; substep updates are atomic per close-out.
 
 ---
 
@@ -30,8 +35,10 @@ Purpose:
 Position:
 - Back: Project 01 Part 03 UI MVP dev-complete (collaborator UAT in flight); Outstanding
   Integrations workstream closed 2026-04-27; spin-up + git posture cleanup closed today.
-- Now: Project 02 Part 01 execution arc opening; this Plan + sibling OrientationMap
-  bootstrap the arc.
+- Now: Project 02 Part 01 execution arc opening; this Plan + sibling
+  OrientationMap (originally `OrientationMap.md`; later renamed
+  `legacy_PlanningOrientationMap.md` 2026-05-04 when the Catch-and-Merge
+  quest opened with its own MergeOrientationMap.md) bootstrap the arc.
 - Next: 5 workstreams in dependency order — Phase 0 → 1 → 2 → 3 → 4. Future-State-cicd
   deferred (out of Part 01 scope).
 - Down: Phase 0 (Library Extraction) — first sub-frame, hard precondition gate.
@@ -57,7 +64,7 @@ Scope:
 
 Workset:
 - 7 Approach docs at `MBAi460-Group1/projects/project02/client/MetaFiles/Approach/`
-- This Plan + sibling OrientationMap
+- This Plan + per-quest Maps at `projects/project02/` (currently `MergeOrientationMap.md` + frozen `legacy_PlanningOrientationMap.md`)
 - Existing infra: `MBAi460-Group1/infra/terraform/`, `MBAi460-Group1/utils/`, `MBAi460-Group1/docker/`
 - Existing schema: `MBAi460-Group1/projects/project01/create-photoapp.sql` + `create-photoapp-labels.sql`
 - Existing client config: `MBAi460-Group1/projects/project01/client/photoapp-config.ini`
@@ -69,13 +76,13 @@ State: Planned (transitions to In Progress when Phase 0 begins)
 Entry Conditions:
 - Spin-up complete (DONE 2026-05-01)
 - Approach docs read end-to-end (DONE 2026-05-01)
-- This Plan + OrientationMap.md authored and committed
+- This Plan + the predecessor `legacy_PlanningOrientationMap.md` (then named `OrientationMap.md`) authored and committed 2026-05-02
 - VCS posture agreed: feature branches per workstream; merge over rebase (per ingested
   feedback memo `feedback_preserve_parallel_collaborator_signal.md`)
 - Lab unlocked + AWS path verified + Lab is operational (DONE 2026-05-01)
 
 Exit Conditions:
-- All 5 workstreams ✅ COMPLETE in OrientationMap
+- All 5 workstreams ✅ COMPLETE in their respective per-quest Maps (each Map's Closed section carries the workstream's closeout row at quest end)
 - Both Gradescope tags landed: `gradescope-server-60-60` + `gradescope-client-30-30`
 - Library 1.0.0 (Phase 0 acceptance) + 1.1.0 (Phase 4 promotions) tagged in
   `lib/photoapp-server/CHANGELOG.md`
@@ -96,11 +103,13 @@ Verification:
 
 Resumption:
 - If Planned: enter Phase 0 (Library Extraction); branch `feat/lib-extraction` from `main`
-- If In Progress: read OrientationMap.md Active section + recent git log + Approach doc
-  for the in-flight phase's task list. Verify last commit's claims against file state
-  (per `feedback_refresh_ritual.md` adversarial Phase 2 stance).
-- If Verified at workstream level: tag the commit + update OrientationMap to Closed +
-  close out the workstream's Documentation touchpoint.
+- If In Progress: read the **currently-active per-quest Map** at `projects/project02/`
+  (`MergeOrientationMap.md` as of 2026-05-04; future quests get their own Map at the
+  same root) — Active section + recent git log + Approach doc for the in-flight phase's
+  task list. Verify last commit's claims against file state (per
+  `feedback_refresh_ritual.md` adversarial Phase 2 stance).
+- If Verified at workstream level: tag the commit + update the active per-quest Map
+  to Closed + close out the workstream's Documentation touchpoint.
 - If Blocked: capture in `MetaFiles/refactor-log.md` with the specific blocker;
   surface to the user.
 ```
@@ -115,7 +124,7 @@ The plan is designed for **multi-Claude collaboration via git VCS**: feature bra
 
 1. **Read this Plan top-down** (you are here).
 2. **Read `00-overview-and-conventions.md`** (the Approach umbrella).
-3. **Read `OrientationMap.md`** (sibling to this Plan, one level up) — see which workstream is Active vs Pending.
+3. **Read the currently-active per-quest Orientation Map** at `projects/project02/` (sibling root level). As of 2026-05-04: `MergeOrientationMap.md` (Catch-and-Merge in flight). Predecessor `legacy_PlanningOrientationMap.md` is frozen — read it only for historical context on Phase 0. The active Map's Active / Pending / Closed sections show which workstream is in flight vs queued.
 4. **Pick an unclaimed workstream** whose dependencies are met:
    - Phase 0 (Library Extraction) — no dependency
    - Phase 1 (Foundation) — depends on Phase 0 ✅
@@ -140,11 +149,11 @@ The plan is designed for **multi-Claude collaboration via git VCS**: feature bra
    - Phase 4 → `04-engineering-surface.md`
 8. **Execute the Approach doc's phases in order.** Each Approach doc is a TDD checklist; follow it as written.
 9. **At each Optional Step callout** in the Approach: surface to your session's user per the *Optional Steps Execution Protocol* below; route per their direction; record the routing in this Plan's Optional Steps Registry checkbox.
-10. **At each phase close:** commit per the Approach's *Suggested Commit Points*; update `OrientationMap.md` Active section atomically (per `feedback_atomic_substep_updates.md`); confirm tests stay green.
+10. **At each phase close:** commit per the Approach's *Suggested Commit Points*; update the currently-active per-quest Map's Active section atomically (per `feedback_atomic_substep_updates.md`); confirm tests stay green.
 11. **At workstream acceptance:**
     - Open a PR / merge to `main` with `git merge --no-ff feat/<workstream-name>` (per `feedback_preserve_parallel_collaborator_signal.md` — preserve parallel-collaborator signal; merge commit message names actor + work).
     - Tag if applicable (`library-1.0.0-extraction-complete`, `gradescope-server-60-60`, `gradescope-client-30-30`).
-    - Move the workstream from Active → Closed (recent) in `OrientationMap.md`.
+    - Move the workstream from Active → Closed (recent) in the currently-active per-quest Map (e.g., `MergeOrientationMap.md` for Catch-and-Merge).
 12. **If blocked or surprised:** capture in `MetaFiles/refactor-log.md` + surface to user. Don't paper over.
 
 ### VCS posture (working assumption pending formal codification)
@@ -648,7 +657,7 @@ Workstream-level milestones:
 - [ ] **Phase 3 acceptance** — Gradescope client **30/30**; tag `gradescope-client-30-30`; integration sweep green against compose; contract conformance green; `tests.py` exercises every function.
 - [ ] **Phase 4 acceptance** — engineering surface deliverables green (per `04-engineering-surface.md` § Phase 12); library 1.1.0 tagged with promoted features; both consumers strict-pinned to 1.1.0; live regression (server v1 + v2 + client v1 + v2) green when opted in.
 
-**Final arc acceptance:** all five workstreams ✅ in OrientationMap; both Gradescope tags landed; library 1.0.0 → 1.1.0 transition recorded in `lib/photoapp-server/CHANGELOG.md`; Optional Steps Registry resolved (every entry routed to ✅ / 📋 / ⏭️ / 🚫); no Part 03 regression; `MetaFiles/refactor-log.md` carries the full execution-arc record.
+**Final arc acceptance:** all five workstreams ✅ in their per-quest Maps' Closed sections; both Gradescope tags landed; library 1.0.0 → 1.1.0 transition recorded in `lib/photoapp-server/CHANGELOG.md`; Optional Steps Registry resolved (every entry routed to ✅ / 📋 / ⏭️ / 🚫); no Part 03 regression; `MetaFiles/refactor-log.md` carries the full execution-arc record.
 
 ---
 
@@ -685,7 +694,7 @@ Until that workstream lands, the *local equivalents* documented in `Future-State
 
 - **Authored:** 2026-05-01 during Project 02 Part 01 quest opening.
 - **Source:** `00-overview-and-conventions.md` + `00-shared-library-extraction.md` + `01-foundation.md` + `02-web-service.md` + `03-client-api.md` + `04-engineering-surface.md` + `Future-State-cicd.md` (all in this directory).
-- **Sibling artifact:** `MBAi460-Group1/projects/project02/client/MetaFiles/OrientationMap.md` (to be authored next; derives Active section from this Plan's Master Tracker).
+- **Sibling artifact (per-quest):** Active state lives in `MBAi460-Group1/projects/project02/<Map>.md` — `MergeOrientationMap.md` for the current Catch-and-Merge quest; `legacy_PlanningOrientationMap.md` for the closed planning + Phase 0 quest. Each Map derives Active / Pending / Closed sections from this Plan's Master Tracker.
 - **Plan-vs-Approach posture:** lightweight orchestration; per-step content stays in the Approach docs.
 - **VCS posture:** feature branches per workstream; merge over rebase (per `feedback_preserve_parallel_collaborator_signal.md`); formal Lab VCS strategy decision queued at `MBAi460-Group1/MetaFiles/TODO.md`.
 - **Frame integration:** top-of-plan Frame block + per-workstream Frame-shaped tracker entries (experimental; mining what works at SD-5 per Focus 2 of `claude-workspace/scratch/system-plane-notes.md`).

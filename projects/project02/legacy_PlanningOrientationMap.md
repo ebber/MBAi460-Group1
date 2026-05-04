@@ -1,4 +1,21 @@
-# Orientation Map — Project 02 Part 01
+# LEGACY — Planning + Phase 0 Orientation Map (Project 02 Part 01)
+
+> **STATUS — 2026-05-04 — frozen.** This Map served the **planning + Phase 0 (Library Extraction)** arc of the Project 02 Part 01 quest. It reached its natural pause point ("between workstreams") on 2026-05-02 with Phase 0 closed agent-side and Erik's post-merge actions queued. The pause-point state itself was the Map doing its job — it got the Executor cleanly to a closeout boundary.
+>
+> **Active execution moved to a new quest** on 2026-05-04: `projects/project02/MergeOrientationMap.md` — the Catch-and-Merge quest reconciling two collaborator branches (`feat/p02-foundation` + `feat/p02-gradescope-mvp`) before downstream work resumes.
+>
+> **Why kept on disk and not deleted:**
+> - The Phase 0 closeout row in *Closed (recent — this quest arc)* is the primary durable record of what landed during the planning + Phase 0 arc; future cold-pickup readers reach for it.
+> - The Frame Position + Active-instance Frame for Phase 0 is good reference shape for future workstream Frames.
+> - `git log --follow` traces the move; this stub-headed file makes the legacy status visible at-a-glance without requiring the reader to inspect git history.
+>
+> **For current active state**, read `projects/project02/MergeOrientationMap.md`.
+>
+> **Predecessor location:** `projects/project02/client/MetaFiles/OrientationMap.md` (relocated to root + renamed `legacy_PlanningOrientationMap.md` 2026-05-04 in the same commit that established the new Catch-and-Merge Map).
+
+---
+
+# Orientation Map — Project 02 Part 01 (planning + Phase 0 arc)
 
 > **For:** Post-compaction orientation + cross-workstream navigation. Read this **first** when resuming after a context break (per `claude-workspace/memory/feedback_refresh_ritual.md` Phase 2 — Map is the structured starting hypothesis to verify, not the ground truth itself).
 >

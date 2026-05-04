@@ -518,5 +518,5 @@ Per Approach § Phase 6 acceptance gate: live green is the strongest signal that
 - **Reconciliation log:** `learnings/2026-05-02-photoapp-server-extraction.md`
 - **Lib README:** `lib/photoapp-server/README.md`
 - **Approach (master):** `projects/project02/client/MetaFiles/Approach/00-shared-library-extraction.md`
-- **Plan + state:** `projects/project02/client/MetaFiles/Approach/Plan.md` § Phase 0; `projects/project02/client/MetaFiles/OrientationMap.md`
+- **Plan + state:** `projects/project02/client/MetaFiles/Approach/Plan.md` § Phase 0; `projects/project02/legacy_PlanningOrientationMap.md` (predecessor Map; relocated + renamed 2026-05-04 when the Catch-and-Merge quest opened with `projects/project02/MergeOrientationMap.md`)
 - **Phase commits on `feat/lib-extraction`:** `9b4bf47` (workspace bootstrap) → `38f258b` (lib-symlink-check) → `6b9a35c` (mechanical extraction + Part 03 consumer update) → `2ec2f26` (exports-shape + no-service-leak) → `1fe272c` (SQL repos extraction) → `2c21634` (SQL characterization) → `35f508c` (reconciliation log) → `1092b89` (server.js boot fix + boot smoke) → `1b4d720` (Dockerfile) → `66c28ab` (Gradescope packaging) plus the meta-tracker close-out commits.
