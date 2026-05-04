@@ -53,3 +53,21 @@ This log tracks intentional changes made during Project 02 Part 01's multi-tier 
 - N/A in Approach Phase 1 — no Optional Mermaid / TEST steps in Tasks 1.1–1.5 specifically.
 
 **Push posture:** still blocked — Pranav lacks write access to `ebber/MBAi460-Group1`. Both commits (`e6923d3` sub-phase 1.0 + this commit) sit local on `feat/p02-foundation`. Resolution required before pushing surfaces them on origin.
+
+### 2026-05-04 — Approach Phase 2 partial close (Express App Skeleton)
+
+**Outcome:** `app.js` is now closer to its production shape — body parser, `/healthz`, 404 fallback, and an inline error terminator stub are live. `tests/unit/app_export.test.js` and `tests/unit/healthz.test.js` lock the export contract and the health/404 surface. Six server tests passing (was two).
+
+**Decisions:**
+
+1. **Phase 2 deliberately partial.** The Approach's full `app.js` shape imports from `./middleware/request_id` (Phase 3), `./middleware/logging` (Phase 3), `./middleware/error_config` (Phase 5), `./observability/pino` (Phase 3), `./services/pool` (Phase 7), `./routes/v1` + `./routes/v2` (workstream 02 + workstream 04 territory). Building `app.js` against modules that don't exist yet would fail at require-time. Iterative-build approach instead: each future phase that lands its module replaces a documented stub in `app.js`. Comments at the top of `app.js` enumerate which phase wires which line.
+2. **Inline error terminator with `console.error`** rather than the library factory. The library factory needs a `logger` injection (pino, Phase 3) and a `statusCodeMap` (Phase 5's mount-prefix-aware version). Inline stub keeps Phase 2 closeable and is replaced wholesale in Phase 5.
+3. **`/readyz` deferred to Phase 4** as the Approach prescribes — it probes RDS + S3, neither of which has a Project 02 client yet (Phase 7 + Phase 8).
+4. **Mount-order Optional Test deferred** until `/v1` + `/v2` routers are real — introspecting `app._router.stack` for an empty mount list isn't a meaningful guard. Will land alongside the route-mount commit in workstream 02.
+
+**Optional Steps routing (cadence: per-phase batch):**
+
+- 📋 **Queued** — VIZ `Target-State-project02-app-middleware-order-v1.md` (Phase 2 Optional Mermaid). Strongly tempting to build now per Erik's "mermaid for arch" directive, but the diagram's value is the *delta vs Part 03* — and that delta isn't observable until /v1 + /v2 routers are real. Queue for the route-mount commit in workstream 02 where the diagram captures actual structure.
+- 📋 **Queued** — TEST `tests/unit/mount_order.test.js` (Phase 2 Optional). Same rationale — Express router stack introspection against an unmounted skeleton tests nothing useful.
+
+**Push posture:** still blocked. Three commits stack on `feat/p02-foundation` (`e6923d3` sub-phase 1.0 + `6347c95` sub-phase 1.9 + this Phase 2 partial commit) — local until origin write access is granted.

@@ -12,7 +12,7 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-04 — Sub-phases 1.0 + 1.9 ✅ landed on `feat/p02-foundation` across two commits (`e6923d3` consume-library bootstrap; tooling bootstrap commit pending below). Active sub-frame is now Approach Phase 2 (Express App Skeleton — mount order, /healthz/readyz, error middleware DI). All workspace tests + lint green: lib 99/99 · Part 03 32+2 skipped · project02-server 2/2 · `make lint` clean. **Push to origin still blocked** — Pranav lacks write access to `ebber/MBAi460-Group1`; both commits sit local. Erik must add him as a collaborator OR a fork must be configured before push surfaces these on origin.
+> **Last updated:** 2026-05-04 — Sub-phases 1.0 + 1.9 ✅ landed on `feat/p02-foundation` (commits `e6923d3` + `6347c95`); Approach Phase 2 partial landing in third commit pending below — Express skeleton with `/healthz`, 404 fallback, inline error terminator stub, app_export + healthz tests (6/6 server tests green). Forward-deps to Phase 3 (pino, request_id, logging) + Phase 5 (error factory) + Phase 7 (closePool) are explicitly named in `app.js` comments so the next sub-phase landing each piece has clean insertion points. All workspace tests + lint green: lib 99/99 · Part 03 32+2 skipped · project02-server 6/6 · `make lint` clean. **Push to origin still blocked** — Pranav lacks write access to `ebber/MBAi460-Group1`; all commits sit local.
 
 ---
 
