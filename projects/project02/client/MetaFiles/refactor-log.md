@@ -89,3 +89,29 @@ This log tracks intentional changes made during Project 02 Part 01's multi-tier 
 - N/A — Approach Phase 3 has no Optional Steps tagged.
 
 **Push posture:** still blocked. Four commits stack on `feat/p02-foundation` (`e6923d3` + `6347c95` + `78fb7db` + this commit) — local until origin write access is granted.
+
+### 2026-05-04 — Sub-phases 1.5 + 1.6 + 1.7 + 1.8 + 1.11 close
+
+**Outcome:** Project 02 Foundation scaffolding is now feature-complete for the pure Node.js server layer. Error middleware via library DI factory, zod validation, mysql2 pool + opossum breakers, variadic envelope helpers, OpenAPI 3.1 stub, and the 6-layer Jest test pyramid are all landed. Workspace tests: lib 104/104 · Part 03 32+2 skipped · project02-server 64+13 skipped · `make lint` clean. Branch pushed to `origin/feat/p02-foundation`.
+
+**Decisions:**
+
+1. **`errorShapeFor(err, req)` uses `req.errorShape` (not `res.locals.errorShape`)** — the library's `createErrorMiddleware` factory calls `errorShapeFor(err, req)` without passing `res`. Since controllers can only convey route-family shape via `req` or `res`, and the library doesn't accept a 3-argument `errorShapeFor`, `req.errorShape` is the cleanest seam. Workstream 02 controllers set `req.errorShape = { assetid: -1 }` etc. before delegating to the service. The library would need a 1.1.0 change to pass `res` if `res.locals` is preferred — deferred until workstream 04 if there's a compelling reason.
+
+2. **CL9 library change: `successResponse({...extras})` variadic** — Phase 8 checkpoint confirmed the library's `successResponse(data)` couldn't satisfy Project 02's per-route shapes (`{M,N}`, `{assetid}`, `{userid,local_filename,data}`). Bounded library change: spread `extras` object; Part 03 callsites updated from `successResponse(data)` → `successResponse({data})` (7 occurrences); wire contract unchanged. `errorResponse(err, extras={})` also updated with optional extras spread for spec-required placeholder fields. lib envelope tests expanded from 3 → 8.
+
+3. **Phase 1.11 Python client harness deferred to workstream 03** — Task 11.5 (conftest.py, unit/integration/live pytest scaffold) requires `client/pyproject.toml` and knowledge of the client API surface. Neither exists yet; forcing it now would produce an empty harness with no grounding. Workstream 03 (client API rewrite) opens with the pytest scaffold as its Phase 1.
+
+4. **Phase 1.1 (docker-compose) + Phase 1.2 (Terraform) + Phase 1.10 + Phase 1.12 still pending** — these require Docker Desktop + Terraform + AWS backend scaffolding. They are infrastructure-heavy and unblock each other (compose depends on the Dockerfile, Terraform depends on the existing state). Deferred to the next session pass; Foundation acceptance gate (`make up` healthy) is contingent on 1.1+1.10.
+
+5. **pino.js logs during tests are visible in stdout** — Jest captures console output but pino-http writes to stdout directly. The test output includes per-request log lines from `pino-http`. This is expected behaviour (pino-pretty in non-prod); suppressing it would require setting `NODE_ENV=production` in tests or patching the transport. Deferred — acceptable noise at this scale.
+
+**Optional Steps routing (cadence: per-phase batch):**
+
+- 📋 **Queued** — VIZ `Target-State-project02-error-class-mapping-v1.md` (Phase 5 Optional Mermaid). The error class → HTTP status table is captured in test form (`error_middleware.test.js`) and in prose; the Mermaid diagram adds reviewer-facing architectural signal. Queue for the commit that wires the first route in workstream 02 where the diagram would be most useful in a PR.
+- 📋 **Queued** — VIZ `Target-State-project02-aws-factory-v1.md` (Phase 7 Optional Mermaid). Pool + breakers are live; the diagram would show the resilience boundary. Queue for workstream 02 when routes start exercising these.
+- 📋 **Queued** — VIZ `Target-State-project02-local-dev-topology-v1.md` (Phase 10 Optional Mermaid). Natural home is when docker-compose lands (Phase 1.1 / 1.10).
+- 📋 **Queued** — VIZ `Target-State-project02-test-pyramid-v1.md` (Phase 11 Optional Mermaid). Test pyramid is live; diagram would confirm the six layers in a PR. Queue for workstream 02 first route.
+- 📋 **Queued** — TEST `tests/unit/error_status_code_map.test.js` (Phase 5 Optional, **strongly recommended**). Already covered structurally by `error_middleware.test.js`'s `describe.each` table — that *is* the table-driven test the Optional step describes. Routing as built (within the error_middleware test rather than a separate file).
+
+**Push posture:** branch `feat/p02-foundation` pushed to `origin` (write access granted). Five commits total: `e6923d3` + `6347c95` + `78fb7db` + Phase 1.3+1.4 commit + this Phase 1.5–1.11 commit.

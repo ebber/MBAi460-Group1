@@ -33,7 +33,7 @@ const { successResponse, errorResponse } = lib.schemas.envelopes;
 router.get('/ping', async (req, res, next) => {
   try {
     const data = await photoapp.getPing();
-    res.json(successResponse(data));
+    res.json(successResponse({ data }));
   } catch (err) { next(err); }
 });
 
@@ -41,7 +41,7 @@ router.get('/ping', async (req, res, next) => {
 router.get('/users', async (req, res, next) => {
   try {
     const data = await photoapp.listUsers();
-    res.json(successResponse(data));
+    res.json(successResponse({ data }));
   } catch (err) { next(err); }
 });
 
@@ -56,7 +56,7 @@ router.get('/images', async (req, res, next) => {
       }
     }
     const data = await photoapp.listImages(userid);
-    res.json(successResponse(data));
+    res.json(successResponse({ data }));
   } catch (err) { next(err); }
 });
 
@@ -71,7 +71,7 @@ router.post('/images', upload.single('file'), async (req, res, next) => {
       return res.status(400).json(errorResponse('missing file'));
     }
     const data = await photoapp.uploadImage(userid, req.file);
-    res.json(successResponse(data));
+    res.json(successResponse({ data }));
   } catch (err) { next(err); }
 });
 
@@ -99,7 +99,7 @@ router.get('/images/:assetid/labels', async (req, res, next) => {
       return res.status(400).json(errorResponse('invalid assetid'));
     }
     const data = await photoapp.getImageLabels(assetid);
-    res.json(successResponse(data));
+    res.json(successResponse({ data }));
   } catch (err) { next(err); }
 });
 
@@ -111,7 +111,7 @@ router.get('/search', async (req, res, next) => {
       return res.status(400).json(errorResponse('missing required query param: label'));
     }
     const data = await photoapp.searchImages(raw.trim());
-    res.json(successResponse(data));
+    res.json(successResponse({ data }));
   } catch (err) { next(err); }
 });
 
@@ -119,7 +119,7 @@ router.get('/search', async (req, res, next) => {
 router.delete('/images', async (req, res, next) => {
   try {
     const data = await photoapp.deleteAll();
-    res.json(successResponse(data));
+    res.json(successResponse({ data }));
   } catch (err) { next(err); }
 });
 

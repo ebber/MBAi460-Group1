@@ -12,7 +12,7 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-04 — Sub-phases 1.0 + 1.9 + 1.3 + 1.4 ✅ on `feat/p02-foundation` across four commits (`e6923d3` consume-library + `6347c95` tooling kit + `78fb7db` Phase 2 partial Express skeleton + Phase 3 observability commit pending below). `app.js` now wires request_id → pino-http logging → json body → /healthz → 404 → inline error terminator. server.js runs pino-pretty in dev with proper SIGTERM drain. Smoke-verified end-to-end (X-Request-Id round-trip, per-request log lines, pretty-print startup). Workspace tests: lib 99/99 · Part 03 32+2 skipped · project02-server 16/16 · `make lint` clean. **Push to origin still blocked** — all four commits local.
+> **Last updated:** 2026-05-04 — Sub-phases 1.0 ✅ + 1.9 ✅ + 1.3 ✅ + 1.4 ✅ + 1.5 ✅ + 1.6 ✅ + 1.7 ✅ + 1.8 ✅ + 1.11 ✅ on `feat/p02-foundation`. `app.js` wires request_id → pino-http → json → /healthz → 404 → library error factory (`createErrorMiddleware`). AppError hierarchy, validate middleware, pool, breakers, OpenAPI 3.1 stub, 6-layer Jest pyramid all landed. CL9 library change: `successResponse` made variadic; Part 03 callsites updated. Workspace tests: lib 104/104 · Part 03 32+2 skipped · project02-server 64+13 skipped · `make lint` clean. Branch live on `origin/feat/p02-foundation`. Still pending: 1.1 (docker-compose), 1.2 (Terraform modules), 1.10 (compose orchestration), 1.12 (Terraform state mv).
 
 ---
 
@@ -93,6 +93,37 @@ _assignment-template/ before fresh consumer wiring lands.
 - [x] 1.0.4 — Reuse shared infrastructure references ✅ 2026-05-04 (server `README.md` documents shared `photoapp-config.ini` path at `projects/project01/client/photoapp-config.ini` + canonical ops-tools table; `utils/validate-db` and `utils/smoke-test-aws --mode live` deferred — lab spun-down per `Plan.md` § Phase 0.6 deferred items pattern; non-blocking)
 - [x] 1.0.5 — Acceptance for sub-phase 1.0 ✅ 2026-05-04 (`npm install` clean; `node -e "require(...)"` exits 0; smoke green then route deleted; Part 03 32+2 skipped green; project02-server 2/2 green via `library_resolution.test.js`; no Part 03 source copied; `cred-sweep` reports zero new patterns vs `main`)
 - [x] 1.0.6 — Documentation touchpoint (CL11) ✅ 2026-05-04 (project02 server `README.md` created; root `README.md` "Repository Structure" already mentions `projects/project02/server` post Phase 0.5; `MetaFiles/QUICKSTART.md` extended with "Working on Project 02" subsection mirroring the Part 03 verify path; project02 client `README.md` deferred to workstream 03 per Approach 0.6 wording)
+
+**Sub-phase 1.5 (= Approach Phase 5 — Error Handling Middleware):**
+
+- [x] 1.5.1 — AppError class hierarchy ✅ 2026-05-04 (`middleware/errors.js`: AppError + BadRequestError + NotFoundError + ConflictError + ServiceUnavailableError; unit tests in `tests/unit/errors.test.js` — 13 tests; instance checks + details round-trips for all 4 subclasses)
+- [x] 1.5.2 — error_config.js DI functions ✅ 2026-05-04 (`middleware/error_config.js`: `statusCodeMap(err, req)` mount-prefix-aware (D7: NotFoundError → 400 on /v1, 404 on /v2); `errorShapeFor(err, req)` — uses `req.errorShape` when set by route controllers (workstream 02), falls back to generic error envelope; library `errorResponse(err, extras)` updated with extras spread as CL9 bounded change)
+- [x] 1.5.3 — Wire library factory in app.js ✅ 2026-05-04 (`middleware.createErrorMiddleware({ statusCodeMap, errorShapeFor, logger })` replaces inline error terminator stub in `app.js`; table-driven test in `tests/unit/error_middleware.test.js` — 10 tests covering all (AppError subclass × mount prefix) combinations + multer LIMIT_ + unknown-500 + req.errorShape DI)
+
+**Sub-phase 1.6 (= Approach Phase 6 — Validation Middleware):**
+
+- [x] 1.6.1 — validate.js + request_schemas.js skeleton ✅ 2026-05-04 (`middleware/validate.js`: zod-based `validate({body, params, query})` factory; invalid input → BadRequestError with flattened zod issues in `err.details`; `schemas/request_schemas.js` is a placeholder that workstream 02 populates per-route; 5 unit tests — valid body/params/query + invalid + missing-section no-op)
+
+**Sub-phase 1.7 (= Approach Phase 7 — AWS Client Factory Wrapping):**
+
+- [x] 1.7.1 — pool.js ✅ 2026-05-04 (`services/pool.js`: `getPool()` mysql2.createPool singleton (memoised, connectionLimit:5, multipleStatements:true); `closePool()` async idempotent; reads INI via PHOTOAPP_CONFIG_PATH env or canonical path `../project01/client/photoapp-config.ini`; 5 unit tests mocking mysql2/promise + fs — memoisation, closePool idempotency, pool config assertions)
+- [x] 1.7.2 — breakers.js ✅ 2026-05-04 (`services/breakers.js`: `getBucketBreaker()` + `getRekognitionBreaker()` opossum wrappers around library AWS clients; timeout:10000, errorThresholdPercentage:50, resetTimeout:30000; state-change events logged at warn via pino; 5 unit tests — instance checks + memoisation + successful fire)
+
+**Sub-phase 1.8 (= Approach Phases 8+9 — Envelope Helpers + OpenAPI 3.1 Stub):**
+
+- [x] 1.8.1 — CL9 library change: variadic successResponse ✅ 2026-05-04 (Phase 8 checkpoint surfaced the gap: `successResponse(data)` didn't support Project 02's per-route shapes; bounded library change: `successResponse({...extras})` spread; Part 03 callsites updated `successResponse(data)` → `successResponse({data})` — 7 occurrences in `routes/photoapp_routes.js`; `errorResponse(err, extras={})` gains optional extras spread; library envelope tests expanded from 3 → 8 tests; wire contract unchanged; lib 104/104 + Part 03 32+2 skipped still green)
+- [x] 1.8.2 — Envelope spec shapes test ✅ 2026-05-04 (`tests/unit/envelopes_spec_shapes.test.js`: 9 tests asserting library helpers produce exact spec envelopes for all Project 02 route families: ping `{message,M,N}`, users/images `{message,data:[...]}`, upload `{message,assetid}`, download `{message,userid,local_filename,data}`, error with extras)
+- [x] 1.8.3 — api/openapi.yaml Phase 9 stub ✅ 2026-05-04 (OpenAPI 3.1 spec at `projects/project02/api/openapi.yaml`; covers all 8 spec routes: /healthz, /v1/ping, /v1/users, /v1/images, /v1/image/{userid}, /v1/image/{assetid}, /v1/image_labels/{assetid}, /v1/images_with_label/{label}, DELETE /v1/images; reusable component schemas: SuccessEnvelope, ErrorEnvelope, PingResponse, UserListResponse, UploadResponse, DownloadResponse, LabelListResponse, SearchResultResponse, DeleteAllResponse; internal consistency validated via `swagger-parser.validate` — 1 contract test)
+
+**Sub-phase 1.11 (= Approach Phase 11 — Test Pyramid Harness):**
+
+- [x] 1.11.1 — Jest multi-project config ✅ 2026-05-04 (`jest.config.js` updated to 6-project layout: unit / integration / contract / smoke / happy / live; each independently runnable via `npm run test:<layer>`; live layer `globalSetup` logs skip message when `PHOTOAPP_RUN_LIVE_TESTS` is unset)
+- [x] 1.11.2 — Smoke skeleton ✅ 2026-05-04 (`tests/smoke/smoke.test.js`: GET /healthz passes; /v1/* routes skipped until workstream 02)
+- [x] 1.11.3 — Happy-path skeleton ✅ 2026-05-04 (`tests/happy_path/upload_lifecycle.test.js`: 8 skipped stubs for full lifecycle — ping/users/upload/list/download/labels/search/delete)
+- [x] 1.11.4 — Live regression skeleton ✅ 2026-05-04 (`tests/live/upload_lifecycle.test.js` + `setup.js`; gated on PHOTOAPP_RUN_LIVE_TESTS=1; skipped when gate is off)
+- [ ] 1.11.5 — Python client harness (conftest.py, tests/unit, tests/integration, tests/live) — DEFERRED to workstream 03 (client API rewrite)
+
+**Total project02-server tests after 1.5–1.11:** 64 passed + 13 skipped ✅
 
 **Sub-phase 1.9 (= Approach Phase 1 — Repo Skeleton & Tooling Bootstrap):**
 
