@@ -24,7 +24,7 @@ exports.get_image_labels = async (request, response) => {
       );
       if (assetRows.length === 0) {
         const err = new Error("no such assetid");
-        err.statusCode = 404;
+        err.statusCode = 400;
         throw err;
       }
 
@@ -54,8 +54,8 @@ exports.get_image_labels = async (request, response) => {
   catch (err) {
     console.log("ERROR:");
     console.log(err.message);
-    if (err.statusCode === 404) {
-      response.status(404).json({ "message": err.message });
+    if (err.statusCode === 400) {
+      response.status(400).json({ "message": err.message, "data": [] });
     } else {
       response.status(500).json({ "message": err.message, "data": [] });
     }
