@@ -80,8 +80,8 @@ At Phase F, tick the 12 covered rows in `Human-Feature-Test-Suite.md` with a foo
 | Phase | Status | Commits | Date | Notes |
 |---|---|---|---|---|
 | Plan + branch | ✅ | `8f17d76` | 2026-05-04 | Plan committed after 2 adversarial self-reviews + 13 inline fixes |
-| Phase A — Bootstrap | 🔄 | P.1+P.2 done | 2026-05-04 | Pre-flight ✅ (`/health`/`/api/ping`/`/api/images` all 200; backend+frontend installed; config copied from sibling); OrientationMap activated; A.1 next |
-| Phase B — Happy path (default) | ⏳ | — | — | L1-L3 + LIB3 + U1 + A1 + A3 |
+| Phase A — Bootstrap | ✅ | `3aa9bd2`→`b7729d4`→`632a9c4`→`8cdf893`→`8366e7d`→(this) | 2026-05-04 | Sanity passes 454ms; default+destructive projects gated correctly; pdfkit ESM/CJS interop works (R1.1 averted) |
+| Phase B — Happy path (default) | 🔄 | (next) | — | L1-L3 + LIB3 + U1 + A1 + A3 — awaiting phase-boundary review |
 | Phase B-sidecar — Destructive deleteAll | ⏳ | — | — | Opt-in only |
 | Phase C — Document branch | ⏳ | — | — | LIB4 + U3 + A2 |
 | Phase D — Error surfaces | ⏳ | — | — | U2 + U4 + missing-file + 404 |
@@ -396,7 +396,7 @@ git commit -m "feat(part03): sanity e2e spec — wordmark renders (Phase A.4)"
 
 ### Task A.5: Phase A close-out gate
 
-- [ ] **Step A.5.1:** Run full default suite.
+- [x] **Step A.5.1:** ✅ 2026-05-04 — `npm run e2e` returned 1 passed (sanity; 101ms execution, 454ms total run). Clean.
 
 ```bash
 cd Part03/frontend
@@ -405,7 +405,7 @@ npm run e2e
 
 Expected: 1 passed (sanity); 0 failed; trace/video artifacts only on failure.
 
-- [ ] **Step A.5.2:** Run destructive project — confirm zero tests selected.
+- [x] **Step A.5.2:** ✅ 2026-05-04 — `npm run e2e:destructive` returned "No tests found" — project filter working as designed. Destructive specs land in Phase B-sidecar.
 
 ```bash
 npm run e2e:destructive
@@ -413,11 +413,9 @@ npm run e2e:destructive
 
 Expected: "No tests found" (or 0 passed). This confirms the project filter works — destructive specs don't yet exist, so the destructive project is empty by design.
 
-- [ ] **Step A.5.3:** Update Master Tracker for Phase A.
+- [x] **Step A.5.3:** ✅ 2026-05-04 — Master Tracker flipped: Phase A ✅ with commit range; Phase B 🔄 awaiting boundary review.
 
-Edit this plan: flip Phase A row to ✅ with commit hash range + today's date.
-
-- [ ] **Step A.5.4:** Commit Master Tracker flip.
+- [x] **Step A.5.4:** ✅ 2026-05-04 — committed (this commit).
 
 ```bash
 git add Part03/MetaFiles/plans/04-playwright-e2e-plan.md
