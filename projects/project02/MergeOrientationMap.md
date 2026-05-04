@@ -174,10 +174,10 @@ Resumption (per state):
 
 - [x] **Step 0** — Pre-flight ✅ 2026-05-04 — main + tag intact, working tree clean, both collaborator branches discovered + first-pass characterized (`feat/p02-foundation` @ `685b501` by **pranavvaranasi1254**; `feat/p02-gradescope-mvp` @ `e3d9a58` by **andrew-apple**), Docker dev env up, AWS lab spun-down (Step 4 sub-frame trigger queued), `utils/freshclone-smoke` against `main` PASS ~3-4s (base stable post-Phase-0 merge), `projects/project02/MetaFiles/refactor-log.md` quest-open entry authored.
 - [x] **Step 1** — Assessment scaffolding ✅ 2026-05-04 — `projects/project02/client/MetaFiles/code-reviews/00-assessment-criteria.md` (290+ lines: 9 dimensions / academic grade scale / 4-tier severity / evidence rubric / per-branch + comparison + retrospective templates / depth-where-merited clause); Erik checkpoint sign-off received per Choice-1 Mermaid-checkpoint pattern
-- [ ] **Step 2** — Assess branches:
-  - [ ] **Step 2a** — Parallel subagent audits (audit-before-author shape per system-plane reflection)
-  - [ ] **Step 2b** — Branch-vs-branch comparison (main context synthesis)
-  - [ ] **Step 2c** — Pick merge strategy from F catalog informed by 2a + 2b; document chunking
+- [x] **Step 2** — Assess branches ✅ 2026-05-04:
+  - [x] **Step 2a** — Parallel subagent audits (audit-before-author shape per system-plane reflection) ✅ — two `superpowers:code-reviewer` subagents dispatched in parallel; both wrote their per-branch reviews to disk and returned ~150-word syntheses. Reviewer A's original `_assignment-template/` source attribution corrected in-place after main-context git verification (substance unchanged; the byte-identical files come from the instructor baseline at `d2e039c`, restored by `685b501`).
+  - [x] **Step 2b** — Branch-vs-branch comparison (main context synthesis) ✅ — `2026-05-04-merge-comparison.md` authored. Per-dimension comparison: Branch A wins 5 dimensions (Code Elegance / Supporting Work / Codebase Alignment / Plan Progress / Cross-cutting); Branch B wins 2 (Functional Completeness / Strengths count); 2 ties (Test Quality with caveats / Commit Hygiene both A-range).
+  - [x] **Step 2c** — Pick merge strategy ✅ — **CURATE-AND-PICK** chosen. Rationale: branches are complementary, not redundant; A built Phase 1 Foundation, B built Phase 2 + 3 surface work. Sequential merge ships A's flawed `685b501`; integration-branch alone doesn't solve curation; discarding either loses real value. 8-chunk plan documented in the comparison file with test gates per chunk.
 - [ ] **Step 3** — Execute merge sequence (chunked per 2c; tests after each chunk; inline merge-execution notes)
 - [ ] **Step 4** — End-to-end verification:
   - [ ] **Step 4 sub-frame (conditional)** — Lab spin-up if `utils/lab-status` shows down: `utils/lab-up` → wait for RDS ready → `utils/smoke-test-aws --mode live` 10/10
