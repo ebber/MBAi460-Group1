@@ -82,9 +82,9 @@ At Phase F, tick the 12 covered rows in `Human-Feature-Test-Suite.md` with a foo
 | Plan + branch | ✅ | `8f17d76` | 2026-05-04 | Plan committed after 2 adversarial self-reviews + 13 inline fixes |
 | Phase A — Bootstrap | ✅ | `3aa9bd2`→`b7729d4`→`632a9c4`→`8cdf893`→`8366e7d`→(this) | 2026-05-04 | Sanity passes 454ms; default+destructive projects gated correctly; pdfkit ESM/CJS interop works (R1.1 averted) |
 | Phase B — Happy path (default) | ✅ | `6a47fb5`→`38af149`→(this) | 2026-05-04 | 8/8 passed (10.5s); 7 of 12 covered human-walk rows ticked (L1, L2, L3, LIB3, U1, A1, A3 — LIB4/U2/U3/U4/A2 land in C+D) |
-| Phase B-sidecar — Destructive deleteAll | 🔄 | (next) | — | Opt-in only — awaiting phase-boundary review |
-| Phase C — Document branch | ⏳ | — | — | LIB4 + U3 + A2 |
-| Phase D — Error surfaces | ⏳ | — | — | U2 + U4 + missing-file + 404 |
+| Phase D — Error surfaces | ✅ | (this commit) | 2026-05-04 | 4/4 passed (2.8s); resequenced first per Erik 2026-05-04 — non-mutating, low risk |
+| Phase C — Document branch | 🔄 | (next) | — | U3 PDF upload + LIB4 doc card + A2 PDF detail |
+| Phase B-sidecar — Destructive deleteAll | ⏳ | — | — | Opt-in only; runs LAST per resequenced order (D → C → B-sidecar) |
 | Phase E — CI (non-destructive) | ⏳ | — | — | GitHub Actions workflow |
 | Phase F — DOC-FRESHNESS closeout + PR | ⏳ | — | — | Workstream status flip + Human-Walk footnotes + OrientationMap + Roadmap + PR open |
 
@@ -839,7 +839,7 @@ git commit -m "chore(part03): close out Phase C — flip tracker (Phase C.2)"
 **Files:**
 - Create: `Part03/frontend/e2e/specs/error-paths.spec.ts`
 
-- [ ] **Step D.1.1:** Write the spec.
+- [x] **Step D.1.1:** ✅ 2026-05-04 — `error-paths.spec.ts` written with 4 tests (U4, missing-file-disabled, catch-all 404, asset-detail 404). Inspect-before-writing surfaced two coverage refinements: (a) submit button is `disabled` when queue empty, so missing-file is tested via disabled-assertion not validation-message, (b) `/asset/:id` 404s land on AssetDetailPage error surface (`data-testid="asset-detail-error"`), not the catch-all NotFoundPage — added a 4th test for the distinct surface.
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -882,9 +882,9 @@ test.describe('Error surfaces (U4 + U2 + missing-file + 404)', () => {
 
 **Selector dependencies:** `[data-testid="toast-error"]` and `[data-testid="form-error"]`. Inspect `frontend/src/components/ToastProvider.tsx` and the upload form for these — add if missing. `[role="alert"]` is a fallback that works for any ARIA-compliant toast/banner component.
 
-- [ ] **Step D.1.2:** Inspect components; add testids if needed.
+- [x] **Step D.1.2:** ✅ 2026-05-04 — inspected. UploadScreen has `[data-testid="upload-file-input"]` + `[data-testid="upload-submit"]` already; ToastProvider uses `role="status"` (no testid needed); NotFoundPage uses `<h1>404 — Not Found</h1>` (heading-role match); AssetDetailPage has `[data-testid="asset-detail-error"]` for unknown-asset case. **No new testids added** — all needed surfaces already exist.
 
-- [ ] **Step D.1.3:** Run the spec.
+- [x] **Step D.1.3:** ✅ 2026-05-04 — 4/4 passed in 2.8s. U4 (1.2s, oversized.bin → 50 MB limit hit → error toast), missing-file (477ms, submit-disabled assertion), unknown-route (91ms, NotFoundPage), unknown-asset (448ms, AssetDetailPage error).
 
 ```bash
 cd Part03/frontend
