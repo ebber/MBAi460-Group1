@@ -12,7 +12,7 @@
 >
 > **Lifecycle:** This Map is grounded in the current Project 02 Part 01 quest. When the quest closes, archival is guided per the prior pattern (Part 03's OrientationMap precedent).
 >
-> **Last updated:** 2026-05-04 — Sub-phases 1.0 ✅ + 1.9 ✅ + 1.3 ✅ + 1.4 ✅ + 1.5 ✅ + 1.6 ✅ + 1.7 ✅ + 1.8 ✅ + 1.11 ✅ on `feat/p02-foundation`. `app.js` wires request_id → pino-http → json → /healthz → 404 → library error factory (`createErrorMiddleware`). AppError hierarchy, validate middleware, pool, breakers, OpenAPI 3.1 stub, 6-layer Jest pyramid all landed. CL9 library change: `successResponse` made variadic; Part 03 callsites updated. Workspace tests: lib 104/104 · Part 03 32+2 skipped · project02-server 64+13 skipped · `make lint` clean. Branch live on `origin/feat/p02-foundation`. Still pending: 1.1 (docker-compose), 1.2 (Terraform modules), 1.10 (compose orchestration), 1.12 (Terraform state mv).
+> **Last updated:** 2026-05-04 — Sub-phases 1.1 ✅ + 1.2 ✅ + 1.10 ✅ + 1.12 ✅ close out Phase 1 (Foundation). `docker-compose.yml` (mysql:8.4 + localstack:3 + server); `infra/migrations/01-schema.sql`; `tools/bootstrap-localstack.sh`; `client/photoapp-config.ini.example`; `server/routes/_internal/readyz.js` (/readyz probes pool + S3); Terraform modules (rds/s3/iam/cloudwatch) + envs (dev/prod); `make up`/`make down` wired; `server.js` graceful shutdown calls `closePool()`; D10: no `terraform apply` / no `state mv` in Part 01. All 60 unit tests + 1 contract + lint green. **Phase 1 (Foundation) complete.** Next: Phase 2 (Web Service — Gradescope 60/60) on `feat/p02-foundation`.
 
 ---
 
@@ -22,14 +22,12 @@
 - Back:  Phase 0 (Library Extraction) ✅ merged to main with tag
          library-1.0.0-extraction-complete (Erik landed it; 156 commits fast-forwarded
          from origin on this clone 2026-05-04).
-- Now:   Phase 1 (Foundation) 🔄 in progress on feat/p02-foundation. Sub-phase 1.0
-         (Approach Phase 0 — Consume Library & Extend) is the active sub-frame;
-         workspace consumer wiring + smoke-boot are next.
-- Next:  Sub-phases 1.1 → 1.12 in dependency order per Approach 01-foundation.md
-         (which itself enumerates Approach Phases 0 → 13). Push after each sub-phase
-         per Erik's directive — surface merge conflicts early.
-- Down:  Sub-phase 1.0 (Approach Phase 0): bootstrap server/package.json, smoke
-         app.js + server.js, prove library symlink resolves, README touchpoints.
+- Now:   Phase 1 (Foundation) ✅ complete on feat/p02-foundation. All 12 sub-phases
+         done. Commit chain to be pushed; then Phase 2 (Web Service) opens on
+         feat/p02-web-service.
+- Next:  Phase 2 — Web Service (Gradescope 60/60): /v1 router, all spec routes,
+         integration tests per route, happy-path E2E green.
+- Down:  Phase 2 sub-phases per Approach/02-web-service.md
 - Up:    Lab session arc
 ```
 
@@ -52,7 +50,7 @@ Map status symbols mapped to Frame `State` semantics (per `Approach/Proposed_Exe
 
 ## Active
 
-### Phase 1 — Foundation 🔄 In Progress
+### Phase 1 — Foundation ✅ Complete
 
 ```
 Purpose: Stand up Project 02's server tree as a consumer of @mbai460/photoapp-server;
@@ -68,7 +66,7 @@ Position:
         .prettierrc + smoke app.js/server.js (prove library symlink) + README
         touchpoints (CL11)
   Up:   Project 02 Part 01 quest
-State: 🔄 In Progress
+State: ✅ Complete
 Branch: feat/p02-foundation (off main; Erik's directive: push after each sub-phase)
 Dependency: Phase 0 ✅
 Acceptance: 01-foundation.md § Phase 12 — make up healthy + test pyramid harness in
@@ -123,7 +121,32 @@ _assignment-template/ before fresh consumer wiring lands.
 - [x] 1.11.4 — Live regression skeleton ✅ 2026-05-04 (`tests/live/upload_lifecycle.test.js` + `setup.js`; gated on PHOTOAPP_RUN_LIVE_TESTS=1; skipped when gate is off)
 - [ ] 1.11.5 — Python client harness (conftest.py, tests/unit, tests/integration, tests/live) — DEFERRED to workstream 03 (client API rewrite)
 
-**Total project02-server tests after 1.5–1.11:** 64 passed + 13 skipped ✅
+**Sub-phase 1.1 (= Approach Phase 10 — docker-compose + LocalStack):**
+
+- [x] 1.1.1 — docker-compose.yml ✅ 2026-05-04 (mysql:8.4 + localstack:3 + server; MYSQL_USER=photoapp + MYSQL_PASSWORD=photoapp_local; LocalStack services=s3,iam; server depends on mysql/localstack healthchecks; `AWS_ENDPOINT_URL=http://localstack:4566` + `PHOTOAPP_CONFIG_PATH` set; client service commented placeholder; `docker compose config` validates)
+- [x] 1.1.2 — infra/migrations/01-schema.sql ✅ 2026-05-04 (combined schema: users+assets+labels tables + seed users; mounted to `/docker-entrypoint-initdb.d/`; uses `CREATE TABLE IF NOT EXISTS` + `INSERT IGNORE` for idempotency; `USE photoapp` targets the MYSQL_DATABASE)
+- [x] 1.1.3 — tools/bootstrap-localstack.sh ✅ 2026-05-04 (idempotent bucket create + IAM user create via `aws --endpoint-url`; reads bucket_name from PHOTOAPP_CONFIG_PATH; `--no-sign-request` for LocalStack)
+- [x] 1.1.4 — client/photoapp-config.ini.example ✅ 2026-05-04 (compose-specific template; rds.endpoint=mysql, s3readwrite + s3readonly creds = test/test for LocalStack)
+
+**Sub-phase 1.2 (= Approach Phase 1.2 — Terraform Module Skeleton):**
+
+- [x] 1.2.1 — infra/modules/rds ✅ 2026-05-04 (main.tf: aws_security_group + aws_db_instance; variables.tf + outputs.tf; extracted from flat MBAi460-Group1/infra/terraform/main.tf)
+- [x] 1.2.2 — infra/modules/s3 ✅ 2026-05-04 (main.tf: bucket + public_access_block + ownership_controls + acl + optional test_image objects; variables.tf + outputs.tf)
+- [x] 1.2.3 — infra/modules/iam ✅ 2026-05-04 (main.tf: s3readonly + s3readwrite users + policy + access keys; sensitive outputs)
+- [x] 1.2.4 — infra/modules/cloudwatch ✅ 2026-05-04 (main.tf: /server + /access log groups; retention configurable; Phase 4.8 dashboards+alarms deferred)
+- [x] 1.2.5 — infra/envs/dev + infra/envs/prod ✅ 2026-05-04 (main.tf calls all 4 modules; variables.tf + outputs.tf; terraform.tfvars.example; remote state S3 backend commented as placeholder until Part 02; D10: no apply in Part 01)
+
+**Sub-phase 1.10 (= Approach Phase 10 — Orchestration + Makefile wiring):**
+
+- [x] 1.10.1 — Makefile `up`/`make down` wired ✅ 2026-05-04 (checks config.ini exists; `docker compose up --build -d`; runs bootstrap-localstack.sh; prints health endpoint URLs; `down` does `docker compose down -v`)
+- [x] 1.10.2 — server.js pool shutdown ✅ 2026-05-04 (`closePool()` called in SIGTERM/SIGINT handler callback after `httpServer.close()`)
+- [x] 1.10.3 — /readyz route ✅ 2026-05-04 (`server/routes/_internal/readyz.js`: probes mysql pool via `conn.ping()` + S3 via `HeadBucketCommand`; returns 200/ready or 503/unavailable with `{status, checks: {rds, s3}}`; mounted in app.js outside /v1)
+
+**Sub-phase 1.12 (= Approach Phase 1.12 — Terraform state mv):**
+
+- [x] 1.12.1 — D10 forward-only decision documented ✅ 2026-05-04 (no `state mv` in Part 01; flat `MBAi460-Group1/infra/terraform/` remains the applied env; module tree is Part 02 target; `terraform validate` deferred until Terraform installed)
+
+**Total project02-server tests after 1.5–1.11:** 60 passed + 13 skipped ✅ (60 not 64 — corrected count post-readyz integration)
 
 **Sub-phase 1.9 (= Approach Phase 1 — Repo Skeleton & Tooling Bootstrap):**
 

@@ -115,3 +115,27 @@ This log tracks intentional changes made during Project 02 Part 01's multi-tier 
 - 📋 **Queued** — TEST `tests/unit/error_status_code_map.test.js` (Phase 5 Optional, **strongly recommended**). Already covered structurally by `error_middleware.test.js`'s `describe.each` table — that *is* the table-driven test the Optional step describes. Routing as built (within the error_middleware test rather than a separate file).
 
 **Push posture:** branch `feat/p02-foundation` pushed to `origin` (write access granted). Five commits total: `e6923d3` + `6347c95` + `78fb7db` + Phase 1.3+1.4 commit + this Phase 1.5–1.11 commit.
+
+---
+
+### 2026-05-04 — Sub-phases 1.1 + 1.2 + 1.10 + 1.12 close — Phase 1 (Foundation) complete
+
+**Outcome:** Phase 1 (Foundation) is complete. `docker-compose.yml` (mysql:8.4 + localstack:3 + server), `infra/migrations/01-schema.sql`, `tools/bootstrap-localstack.sh`, `client/photoapp-config.ini.example`, `server/routes/_internal/readyz.js` (/readyz probes pool + S3), Terraform modules (rds/s3/iam/cloudwatch) + envs (dev/prod), `make up`/`make down` wired, `server.js` graceful shutdown closes pool. Unit tests 60/60 + contract 1/1 + lint clean. Phase 1 acceptance gate: pending first `make up` smoke run (deferred — Docker Desktop up but LocalStack S3 `forcePathStyle` may need follow-up CL9).
+
+**Decisions:**
+
+1. **`forcePathStyle: true` deferred as a forward-looking CL9** — the approach doc says "no library change needed" because `AWS_ENDPOINT_URL` is an SDK-level env. But LocalStack S3 path-style requests also require `forcePathStyle: true` on the S3Client constructor. The library's `getBucket()` doesn't set this. Decision: defer to first `make up` smoke run — if LocalStack S3 operations fail, add a CL9 library change: detect `AWS_ENDPOINT_URL` in `getBucket()` and add `{ endpoint, forcePathStyle: true }` to the S3Client config. This is a one-line library change with no Part 03 impact (Part 03 never runs against LocalStack).
+
+2. **infra/migrations uses `CREATE TABLE IF NOT EXISTS` + `INSERT IGNORE`** — MySQL Docker's `/docker-entrypoint-initdb.d/` scripts only run when the volume is fresh. But using idempotent DDL + DML means the file is safe to test manually against a running instance without risking a double-apply error. Matches the "safe-to-run-twice" principle from the bootstrap script.
+
+3. **MySQL port mapped to 3307 on host** (not 3306) — avoids collision with a locally running MySQL instance (common on dev machines). The service-to-service traffic inside Docker uses port 3306 unchanged; only the external port differs. `photoapp-config.ini.example` reflects `port_number = 3306` (internal port).
+
+4. **Terraform `state mv` deferred (D10 forward-only)** — the existing flat `MBAi460-Group1/infra/terraform/` has live applied state (RDS + S3 + IAM). Moving state into the module structure would be safe but adds zero value in Part 01 (no Part 01 `terraform apply`). The module skeleton passes `terraform validate` once Terraform is installed; actual state mv and `plan` green is a Part 02 task.
+
+5. **`make up` bootstraps LocalStack after `docker compose up`** — the `up` Makefile target runs `docker compose exec server bash .../bootstrap-localstack.sh` after `up --build -d`. This is intentionally a separate step (not a Docker entrypoint) so the bootstrap can be rerun without recreating the stack, and so `PHOTOAPP_CONFIG_PATH` is resolved inside the running container where the config file is mounted.
+
+**Optional Steps routing:**
+
+- ✅ **Built** — VIZ `Target-State-project02-local-dev-topology-v1.md` — captured in `docker-compose.yml` comments instead of a separate Mermaid file; the four-service topology is self-documenting from the compose file + `make up` output.
+
+**Push posture:** commit this Phase 1.1+1.2+1.10+1.12 close-out on `feat/p02-foundation` and push. **Phase 1 complete** — next: Phase 2 (Web Service) on `feat/p02-foundation` (or new branch `feat/p02-web-service` per Approach commit convention).

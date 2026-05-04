@@ -1,12 +1,12 @@
-# Project 02 Makefile — Approach 01-foundation.md § Phase 1 Task 1.5
+# Project 02 Makefile — Approach 01-foundation.md § Phase 1 Task 1.5 + Phase 10.
 #
 # Targets are split into:
-#   - Live now: install, test*, lint, clean
-#   - Stubbed (placeholder until later sub-phases): up, down, submit-server,
-#     submit-client. They print a "not yet wired" message and exit non-zero so
-#     CI / a contributor will catch a premature invocation cleanly.
+#   - Live now: install, test*, lint, clean, up, down
+#   - Stubbed (placeholder until later sub-phases): submit-server, submit-client
 #
 # Run from MBAi460-Group1/projects/project02/.
+# Prerequisites for `make up`: Docker Desktop running + client/photoapp-config.ini
+# (copy from client/photoapp-config.ini.example and adjust).
 
 SHELL := /bin/bash
 SERVER_DIR := server
@@ -61,14 +61,28 @@ clean: ## Remove node_modules + coverage artifacts (workspace-wide)
 	cd ../.. && rm -rf node_modules projects/project01/Part03/node_modules projects/project02/server/node_modules lib/photoapp-server/node_modules
 	rm -rf $(SERVER_DIR)/coverage
 
-up: ## docker compose up — STUB until Approach Phase 10 wires docker-compose.yml
-	@echo "[stub] docker-compose.yml lands in Approach Phase 10 (Plan sub-phase 1.1 / 1.10)."
-	@echo "       Until then, run \`cd $(SERVER_DIR) && npm start\` directly."
-	@exit 1
+up: ## Start all services (mysql + localstack + server) via docker compose
+	@if [ ! -f $(CLIENT_DIR)/photoapp-config.ini ]; then \
+		echo "[make up] ERROR: client/photoapp-config.ini not found."; \
+		echo "          Copy client/photoapp-config.ini.example and adjust for your env."; \
+		exit 1; \
+	fi
+	docker compose up --build -d
+	@echo ""
+	@echo "[make up] bootstrapping LocalStack S3 bucket..."
+	docker compose exec server bash /app/projects/project02/tools/bootstrap-localstack.sh || true
+	@echo ""
+	@echo "[make up] stack ready — server on http://localhost:8080"
+	@echo "          healthz: curl http://localhost:8080/healthz"
+	@echo "          readyz:  curl http://localhost:8080/readyz"
+	@echo "          logs:    docker compose logs -f server"
 
-down: ## docker compose down — STUB (see 'up')
-	@echo "[stub] mirrors 'up' — wired in Approach Phase 10."
-	@exit 1
+up-logs: ## docker compose up + follow logs
+	$(MAKE) up && docker compose logs -f
+
+down: ## Stop and remove all compose containers + volumes
+	docker compose down -v
+	@echo "[make down] stack stopped and volumes removed"
 
 submit-server: ## Build + submit server tarball — STUB until Approach Phase 13
 	@echo "[stub] tools/package-submission.sh lands in Approach Phase 13 (Plan Thread F)."

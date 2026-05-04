@@ -1,0 +1,29 @@
+# photoapp-config.ini.example — local dev template for docker-compose.
+#
+# Copy this file to client/photoapp-config.ini before running `make up`.
+# This file is safe to commit. The real photoapp-config.ini (with prod credentials)
+# is gitignored.
+#
+# ── For local compose (LocalStack + MySQL in Docker) ────────────────────────
+# These values match the docker-compose.yml service definitions exactly.
+# Do NOT use these against real AWS — they are LocalStack test credentials.
+
+[s3]
+region_name = us-east-1
+bucket_name = photoapp-local
+
+[rds]
+endpoint    = mysql
+port_number = 3306
+user_name   = photoapp
+user_pwd    = photoapp_local
+db_name     = photoapp
+
+# LocalStack accepts any credential value; these match compose env vars.
+[s3readwrite]
+aws_access_key_id     = test
+aws_secret_access_key = test
+
+[s3readonly]
+aws_access_key_id     = test
+aws_secret_access_key = test
