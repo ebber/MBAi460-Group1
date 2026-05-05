@@ -46,7 +46,8 @@ describe('GET /ping', () => {
     photoapp.getPing.mockResolvedValueOnce({ s3_object_count: 12, user_count: 3 });
     const res = await request(app).get('/ping');
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ message: 'success', M: 3, N: 12 });
+    // Per cloned reference photoapp.py:83-84: M = bucket items, N = users.
+    expect(res.body).toEqual({ message: 'success', M: 12, N: 3 });
   });
 });
 
@@ -216,7 +217,9 @@ describe('GET /image_labels/:assetid', () => {
   test('NaN assetid: 400 with spec shape {message, data:[]}', async () => {
     const res = await request(app).get('/image_labels/abc');
     expect(res.status).toBe(400);
-    expect(res.body).toEqual({ message: 'assetid must be an integer', data: [] });
+    // Iter-15: per Project 02 autograder Test 3 / test_30, even invalid input shape
+    // returns 'no such assetid' (not a separate validation error message).
+    expect(res.body).toEqual({ message: 'no such assetid', data: [] });
   });
 
   test('lib throws "no such assetid": 400 with spec shape', async () => {
