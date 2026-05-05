@@ -254,18 +254,22 @@ components:
               description: Number of images
 
     User:
+      # Field names match the lib's userRowToObject (lib/photoapp-server/src/
+      # schemas/rows.js) which itself mirrors the RDS schema columns frozen
+      # since Phase 0 (Lab 01 / Project 01 Part 02 baseline). Pranav's
+      # original draft listed {fname, lname, email, bucketfolder} which were
+      # spec-guesses that don't match either the lib's behavior or the
+      # database schema. Adjusted 2026-05-04 during Step 7 reconciliation.
       type: object
-      required: [userid, fname, lname, email, bucketfolder]
+      required: [userid, username, givenname, familyname]
       properties:
         userid:
           type: integer
-        fname:
+        username:
           type: string
-        lname:
+        givenname:
           type: string
-        email:
-          type: string
-        bucketfolder:
+        familyname:
           type: string
 
     UserListResponse:
@@ -280,17 +284,27 @@ components:
                 $ref: '#/components/schemas/User'
 
     Image:
+      # Field names + presence match the lib's imageRowToObject (lib/
+      # photoapp-server/src/schemas/rows.js): {assetid, userid, localname,
+      # bucketkey, kind}. Pranav's original draft had {assetid, userid,
+      # assetname, bucketkey} — `assetname` was a spec-guess that doesn't
+      # match the lib's `localname` field, and `kind` (photo/document) was
+      # missing entirely. Adjusted 2026-05-04 during Step 7 reconciliation.
       type: object
-      required: [assetid, userid, assetname, bucketkey]
+      required: [assetid, userid, localname, bucketkey, kind]
       properties:
         assetid:
           type: integer
         userid:
           type: integer
-        assetname:
+        localname:
           type: string
         bucketkey:
           type: string
+        kind:
+          type: string
+          enum: [photo, document]
+          description: Photo extensions (.jpg/.jpeg/.png/.heic/.heif) classify as 'photo'; everything else as 'document'
 
     ImageListResponse:
       allOf:
@@ -358,13 +372,13 @@ components:
                 $ref: '#/components/schemas/Image'
 
     DeleteAllResponse:
-      allOf:
-        - $ref: '#/components/schemas/SuccessEnvelope'
-        - type: object
-          required: [deleted]
-          properties:
-            deleted:
-              type: integer
+      # Bare SuccessEnvelope. The lib's services.photoapp.deleteAll() returns
+      # {deleted: true} internally but the spec's wire response is just the
+      # success envelope; route handler at routes/v1/delete_images.js drops
+      # the internal flag. Adjusted 2026-05-04 during Step 7 reconciliation
+      # (was {deleted: integer}, which matched neither the lib's actual
+      # return shape nor a sensible spec response).
+      $ref: '#/components/schemas/SuccessEnvelope'
 
   responses:
     # Spec-compliant error (D7: /v1 uses 400 for all client errors)
