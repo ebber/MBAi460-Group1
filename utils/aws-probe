@@ -34,9 +34,35 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 TERRAFORM_DIR="${CLASS_ROOT}/infra/terraform"
 
-export AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-${CLASS_ROOT}/secrets/aws-credentials}"
-export AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-${CLASS_ROOT}/secrets/aws-config}"
-export AWS_PROFILE="${AWS_PROFILE:-Claude-Conjurer}"
+# AWS env vars: only override if the target file actually exists. Otherwise
+# AWS CLI falls back to ~/.aws/{config,credentials} which is the right
+# behavior on machines that use SSO + ~/.aws/config (the standard pattern;
+# this repo's secrets/ layout is optional). Bug fix 2026-05-04: original
+# unconditional overrides pointed CLI at nonexistent paths, breaking
+# profile lookup even when caller correctly set AWS_PROFILE.
+DEFAULT_CRED_FILE="${CLASS_ROOT}/secrets/aws-credentials"
+DEFAULT_CONFIG_FILE="${CLASS_ROOT}/secrets/aws-config"
+[ -f "$DEFAULT_CRED_FILE" ] && export AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-$DEFAULT_CRED_FILE}"
+[ -f "$DEFAULT_CONFIG_FILE" ] && export AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-$DEFAULT_CONFIG_FILE}"
+
+# Profile detection chain: caller-set AWS_PROFILE wins; otherwise try
+# ErikTheWizard (the canonical SSO profile in ~/.aws/config) — fall
+# back to Claude-Conjurer for the lab's PowerUserAccess identity.
+# Per Erik 2026-05-04: template from utils/Erik-AWS-Scan which uses
+# ErikTheWizard explicitly + passes --profile flag to every aws call.
+DEFAULT_PROFILE="${AWS_PROFILE:-}"
+if [ -z "$DEFAULT_PROFILE" ]; then
+  if grep -q "^\[profile ErikTheWizard\]" "${HOME}/.aws/config" 2>/dev/null; then
+    DEFAULT_PROFILE="ErikTheWizard"
+  else
+    DEFAULT_PROFILE="Claude-Conjurer"
+  fi
+fi
+export AWS_PROFILE="$DEFAULT_PROFILE"
+export AWS_REGION="${AWS_REGION:-us-east-2}"
+
+# Timeouts to prevent the hang Erik hit 2026-05-04 when CLI couldn't auth.
+AWS_TIMEOUT_FLAGS="--cli-connect-timeout 10 --cli-read-timeout 30"
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -47,7 +73,7 @@ require_cmd aws
 
 echo "╔═══════════════════════════════════════════════════════════════╗"
 echo "║              AWS Lab Probe — read-only state                  ║"
-echo "║  Profile: ${AWS_PROFILE}"
+echo "║  Profile: ${AWS_PROFILE}     Region: ${AWS_REGION}"
 echo "║  Terraform: ${TERRAFORM_DIR}"
 echo "╚═══════════════════════════════════════════════════════════════╝"
 
@@ -77,15 +103,18 @@ fi
 echo ""
 echo "== AWS RDS instance state (what AWS actually has) =="
 RDS_OUT="$(aws rds describe-db-instances \
+  --profile "$AWS_PROFILE" --region "$AWS_REGION" $AWS_TIMEOUT_FLAGS \
   --query 'DBInstances[*].{Id:DBInstanceIdentifier,Status:DBInstanceStatus,Endpoint:Endpoint.Address,Public:PubliclyAccessible}' \
   --output table 2>&1 || true)"
 echo "${RDS_OUT}" | sed 's/^/  /'
 
 # Capture status for the recommendation logic
 RDS_STATUS="$(aws rds describe-db-instances \
+  --profile "$AWS_PROFILE" --region "$AWS_REGION" $AWS_TIMEOUT_FLAGS \
   --query 'DBInstances[0].DBInstanceStatus' \
   --output text 2>/dev/null || echo "UNKNOWN")"
 RDS_ID="$(aws rds describe-db-instances \
+  --profile "$AWS_PROFILE" --region "$AWS_REGION" $AWS_TIMEOUT_FLAGS \
   --query 'DBInstances[0].DBInstanceIdentifier' \
   --output text 2>/dev/null || echo "")"
 

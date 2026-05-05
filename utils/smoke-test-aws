@@ -12,8 +12,18 @@ CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CONFIG="${CLASS_ROOT}/infra/config/photoapp-config.ini"
 TF_DIR="${CLASS_ROOT}/infra/terraform"
 
-export AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-${CLASS_ROOT}/secrets/aws-credentials}"
-export AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-${CLASS_ROOT}/secrets/aws-config}"
+# AWS env vars: only override if the target file actually exists. Otherwise
+# AWS CLI falls back to ~/.aws/{config,credentials} which is the right
+# behavior on machines that use SSO + ~/.aws/config rather than this repo's
+# secrets/ layout. Bug fix 2026-05-04: unconditional overrides pointed CLI
+# at nonexistent paths, breaking profile lookup even when AWS_PROFILE was
+# correctly exported by the caller (Erik exported AWS_PROFILE=ErikTheWizard
+# but the override still pointed AWS_CONFIG_FILE at a nonexistent file,
+# masking the [profile ErikTheWizard] section in ~/.aws/config).
+DEFAULT_CRED_FILE="${CLASS_ROOT}/secrets/aws-credentials"
+DEFAULT_CONFIG_FILE="${CLASS_ROOT}/secrets/aws-config"
+[ -f "$DEFAULT_CRED_FILE" ] && export AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-$DEFAULT_CRED_FILE}"
+[ -f "$DEFAULT_CONFIG_FILE" ] && export AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-$DEFAULT_CONFIG_FILE}"
 export AWS_PROFILE="${AWS_PROFILE:-Claude-Conjurer}"
 
 require_cmd() {
