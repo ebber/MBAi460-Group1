@@ -5,7 +5,7 @@
 > **Complements (does not replace)** plan documents: plans are specs (stable); this Map is execution state (mutable).
 > **Lifecycle:** This Map is grounded in the current Part 03 session. When the session/workstream-context closes, Erik will guide archival.
 > **Compass relationship:** there is NO Compass section in this Map. The lite Compass (`← Back / ● Now / → Next / ⬆ Up`) is in-chat only, printed at the end of in-conversation responses during active execution, and is derived on-the-fly from this Map's Active section. The Map is the authoritative durable state; the Compass is its ephemeral conversational echo. Compaction loses the Compass (convenience), not the Map (authority).
-> **Last updated:** 2026-04-27 — created at lab-root, relocated to Part 03 per Q1; sub-workstream C relocated to Class Project queue per Q3; status legend added (R1); Compass section removed (R3 — kept in-chat only).
+> **Last updated:** 2026-05-04 — Future-State Playwright E2E DEV-COMPLETE: moved Active → Closed. 16 tests (15 default + 1 destructive) + `utils/e2e-smoke` shipped; 12 of 15 human-walk rows automated. Phase E (CI) deferred. Branch `feat/p01p03-playwright-e2e` ready for PR. Prior update 2026-04-27.
 
 ---
 
@@ -24,19 +24,11 @@
 
 ## Active
 
-**No workstream actively engaged 2026-04-27 — between workstreams.**
+**No workstream actively engaged 2026-05-04 — between workstreams.**
 
-Outstanding Integrations workstream closed today (sub-A + sub-B + sub-D + sub-E all ✅; sub-C relocated to Class Project queue). See **Closed (recent)** below for the closeout entry + commit chain.
+Tier 1 Future-State Playwright E2E closed 2026-05-04 (see **Closed (recent)** below). Branch `feat/p01p03-playwright-e2e` ready for PR against `main`. Phase E (CI/GHA workflow) deferred per Erik 2026-05-04 — VCS scope-out; queued in `MetaFiles/TODO.md` for future activation.
 
-**Next workstream candidates** (pick one to engage):
-
-- **Sweep Class Project for drift** (queued in Pending; was already next-in-line per Map design). All-of-above scope per Q2 — doc + code + tracker drift detection.
-- **Playwright E2E** (Future-State; 🔥 HIGH per its doc + Tier 1 in sub-E's recommendation). Cheapest infrastructure win; protects all subsequent work.
-- **Form Library** (Future-State; HIGH per sub-A Q-Phase4-1 + Tier 1 in sub-E). Foundation for auth + admin screens.
-- **Library Polish** (Future-State; HIGH; Tier 1). User-visible value.
-- Or pause + transition to Project 03 / Lab 03 / something else.
-
-See `Part03/MetaFiles/Approach/Future-State-roadmap.md` "Activation priority recommendation 2026-04-27 (sub-E)" for the full tiered analysis.
+**Next workstream candidates** remain in Pending (Form Library, Library Polish, Sweep-for-drift, Production Hardening, etc.). Tier 1 reduced to 2 remaining (Form Library + Library Polish).
 
 ---
 
@@ -51,7 +43,6 @@ See `Part03/MetaFiles/Approach/Future-State-roadmap.md` "Activation priority rec
 | Future-State Chat | ⏳ Queued | `Future-State-chat-workstream.md` | |
 | Future-State Command Palette (⌘K) | ⏳ Queued | `Future-State-command-palette-workstream.md` | |
 | Future-State Documents + Textract (OCR) | ⏳ Queued | `Future-State-documents-and-textract-workstream.md` | Q9 — placeholder shipped in MVP |
-| Future-State Playwright E2E | ⏳ Queued | `Future-State-playwright-e2e-workstream.md` | |
 | Future-State Production Hardening | ⏳ Queued | `Future-State-production-hardening-workstream.md` | RDS lockdown, S3 ACL tighten, VPC scoping |
 | Future-State shadcn Primitive Migration | ⏳ Queued | `Future-State-shadcn-primitive-migration-workstream.md` | Descoped 2026-04-27 R1 from MVP; could revisit |
 | Future-State Tweaks Panel | ⏳ Queued | `Future-State-tweaks-panel-workstream.md` | |
@@ -66,6 +57,7 @@ See `Part03/MetaFiles/Approach/Future-State-roadmap.md` "Activation priority rec
 
 | Workstream | State | Closeout | Notes |
 |---|---|---|---|
+| Future-State Playwright E2E (Tier 1) | ✅ DEV-COMPLETE 2026-05-04 | `feat/p01p03-playwright-e2e` (commits `8f17d76`...closeout); PR against `main` pending | 16 Playwright tests across 5 specs (15 default + 1 destructive) + `utils/e2e-smoke` single-command lifecycle. 12 of 15 human-walk rows automated; 3 deferred (LIB1/LIB2/A11Y1 → Production Hardening). Phase E (CI) deferred per Erik 2026-05-04 — VCS scope-out; queued in `MetaFiles/TODO.md`. Surfaced 2 new TODO items during execution: `[API/Library Polish] DELETE /api/images/:id` + `[CI/Future-State] Phase E GHA workflow`. |
 | Outstanding Integrations workstream | ✅ COMPLETE 2026-04-27 | sub-A `1c4d2aa` (16 commits) + sub-B `324e855` (9 commits) + sub-D `a365807` + sub-E `eeb4be2` + this commit Action 3 | All 4 active sub-workstreams closed; sub-C moved to Class Project queue. Sub-A: Andrew MVP audit + Accelerators + 6 NEW Future-State docs + 9 TODOs. Sub-B: 23-row contract audit + 1 drift fix + type tightening (post-remediation: 22 ✅ / 0 🚩 / 1 ⏳). Sub-D: viz update queued for Erik external. Sub-E: 14-workstream priority recommendation in Future-State-roadmap.md (Tier 1: Playwright E2E + Form Library + Library Polish). |
 | Project 01 Part 03 — UI MVP (workstream 01) | ✅ DEV-COMPLETE 2026-04-27 | `378c8f3` (closeout) + `8f29463` (CLI-5 polish post-closeout) | Collaborator acceptance walk in flight |
 | Project 01 Part 03 — Server Foundation (workstream 02) | ✅ Closed prior | `dbe05d3` + `080456f` (SPA hotfix) | |

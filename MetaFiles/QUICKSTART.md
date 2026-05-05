@@ -268,6 +268,22 @@ cd projects/project01/Part03 && npm test             # 32 passed, 2 skipped (liv
 cd lib/photoapp-server && npm test                   # 99 passed
 ```
 
+---
+
+## ✅ Test 4 — End-to-end Playwright smoke (Part 03 UI + live AWS)
+
+The full UI-against-live-stack lifecycle in one command. Exercises 15 default-suite tests + 1 destructive-cleanup test. Total wall ~20s.
+
+```bash
+utils/e2e-smoke                  # default + destructive (clean end-state)
+utils/e2e-smoke --no-destructive # default suite only (accumulates 1 degu + 1 PDF)
+utils/e2e-smoke --help           # full help text
+```
+
+The script handles server lifecycle (start Express → wait for `/health` → run suites → stop server cleanly via trap). **The destructive suite WIPES ALL ASSETS from the live RDS+S3 stack** — pass `--no-destructive` for a non-mutating check.
+
+Prerequisites: workspace install complete (Step 7 above), Part 03 frontend built (`cd projects/project01/Part03/frontend && npm run build`), and Part 03 frontend Playwright deps installed (`cd projects/project01/Part03/frontend && npm install && npx playwright install chromium`).
+
 ### Working with the shared library
 
 - **Editing lib code:** `lib/photoapp-server/src/...` — consumers see the change immediately via the symlink. No re-install needed.

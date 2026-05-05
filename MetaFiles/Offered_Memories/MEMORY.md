@@ -6,3 +6,5 @@
 - [Feedback: don't use ~/.claude/ memory dirs](feedback_dont_use_claude_directories.md) — for this project, all memory lives here in Offered_Memories; not in the agent-local store
 - [Feedback: strict scope during cleanup/verification](feedback_strict_scope_during_cleanup.md) — when an owned scope is named, never cross out; even read-only verification probes count as crossing
 - [Feedback: preserve parallel-collaborator signal in git history](feedback_preserve_parallel_collaborator_signal.md) — prefer merge over rebase when divergence comes from different agents/actors
+- [Feedback: environment separation](feedback_environment_separation.md) — keep cross-checkout coupling out of forward-looking artifacts; cp not symlink; environment-agnostic doc language
+- [Feedback: inspect before writing](feedback_inspect_before_writing.md) — read source/config/conventions before authoring tests, configs, docs, code, or run-instructions; never write from memory then verify after

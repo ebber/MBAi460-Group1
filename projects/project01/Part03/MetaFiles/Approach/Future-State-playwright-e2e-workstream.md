@@ -1,6 +1,6 @@
 # Future-State Workstream — Playwright E2E Test Suite
 
-**Status:** Aspirational. **Not committed to Part 03 assignment completion.** **🔥 HIGH PRIORITY** — should land first among the no-backend-dependency Future-State workstreams; pre-deployment confidence is meaningfully degraded without an end-to-end happy-path gate.
+**Status:** ✅ **LANDED 2026-05-04** — see `Part03/MetaFiles/plans/04-playwright-e2e-plan.md` for the execution plan + per-task evidence. Branch `feat/p01p03-playwright-e2e` ready for PR against `main`. Phase E (CI / GitHub Actions workflow) **DEFERRED** per Erik 2026-05-04 — VCS scope-out; queued in `MetaFiles/TODO.md` for future activation.
 
 **Source:** split out from `01-ui-workstream.md` so the Part 03 UI MVP can ship with Vitest + React Testing Library coverage alone, while the cross-system happy-path verification ships in its own focused workstream right after.
 
@@ -115,3 +115,33 @@ For an assignment-window project, manual smoke is acceptable. For any continued 
 **No specific Accelerator subfolder for this workstream.** E2E testing infrastructure is not something Andrew shipped — his MVP is a visual + design spec, not a test suite. When this workstream activates, the executing agent builds the Playwright suite from scratch against the canonical user flows specified in `UI-Design-Requirements.md` §14.2 (testing strategy) and the journeys in §5 (J1–J6).
 
 **Audit cross-refs:** row 141 (FR-test — testing strategy: unit/component/E2E/a11y/visual-regression layered) in `MetaFiles/archive/Andrew-MVP-Integration.md`. Plus visibility of E2E coverage from Andrew's acceptance criteria across §9 screens.
+
+---
+
+## Closeout (2026-05-04)
+
+Workstream landed on branch `feat/p01p03-playwright-e2e` (~17 commits; PR pending against `main`). Plan: `Part03/MetaFiles/plans/04-playwright-e2e-plan.md` — Phase A through D completed inline, Phase B-sidecar ran end-to-end, Phase E deferred.
+
+**Coverage achieved (12 of 15 unticked browser-based human-walk rows in `MetaFiles/HumanTestInstructions/Human-Feature-Test-Suite.md`):**
+- L1, L2, L3 — `frontend/e2e/specs/routing-and-auth.spec.ts`
+- LIB3 — `frontend/e2e/specs/library-happy-path.spec.ts`
+- LIB4 — `frontend/e2e/specs/document-upload.spec.ts`
+- U1 — `frontend/e2e/specs/library-happy-path.spec.ts`
+- U2 — `frontend/e2e/specs/error-paths.spec.ts` (toast surface verified via U4 path)
+- U3 — `frontend/e2e/specs/document-upload.spec.ts`
+- U4 — `frontend/e2e/specs/error-paths.spec.ts`
+- A1, A3 — `frontend/e2e/specs/library-happy-path.spec.ts`
+- A2 — `frontend/e2e/specs/document-upload.spec.ts`
+
+**Bonus coverage** (pulled to include during execution): unknown-route catch-all 404 + unknown-asset-id AssetDetailPage error surface — 2 distinct 404 paths now under regression.
+
+**Deferred (3 of 15) — kept un-ticked, manual walk still required until target workstreams land:**
+- LIB1 (first-paint perf) → Future-State Production Hardening (perf budget)
+- LIB2 (responsive grid breakpoints) → Future-State Mobile / Production Hardening
+- A11Y1 (keyboard nav + focus + screen reader) → Future-State Production Hardening (axe-core gate)
+
+**Single-command lifecycle:** `utils/e2e-smoke` runs the full default + destructive cycle (~20s). See `MetaFiles/QUICKSTART.md` Test 4.
+
+**Scope-outs queued in `MetaFiles/TODO.md`:**
+- `[CI/Future-State]` Phase E GHA workflow (VCS deferred 2026-05-04)
+- `[API/Library Polish]` `DELETE /api/images/:id` single-asset delete (surfaced during Phase B-sidecar inspect-before-writing)

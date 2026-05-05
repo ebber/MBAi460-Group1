@@ -3,7 +3,9 @@
 > **Purpose:** Hand-on-keyboard acceptance walk for the Part 03 PhotoApp UI MVP. Each section is a discrete test you (the human) walk through, with explicit setup, steps, and expected results. Tick the `[ ]` next to each test ID as you confirm it.
 > **Audience:** Erik (or any reviewer) verifying the implementation. Companion to `README.md` (which covers backend-only CLI testing).
 > **Source of acceptance criteria:** `MetaFiles/plans/01-ui-workstream-plan.md` Phase 8.1 (acceptance items L1–A11Y1).
-> **Last updated:** 2026-04-27.
+> **Last updated:** 2026-05-04.
+
+> **Automation status (2026-05-04):** 12 of 15 browser-based rows are now automated by the Playwright E2E suite (`projects/project01/Part03/frontend/e2e/specs/`); see `MetaFiles/plans/04-playwright-e2e-plan.md`. Run `utils/e2e-smoke` (single command) for the full lifecycle. **Manual walk no longer required for ticked rows** — they regress automatically. **3 rows remain manual** (LIB1 perf, LIB2 responsive, A11Y1 a11y) — deferred to Future-State Production Hardening. The 5 CLI rows (CLI-1 to CLI-5) remain backend-only and are exercised manually or via `npm run e2e -- error-paths` (CLI-5 partially).
 
 ---
 
@@ -55,7 +57,7 @@
 
 ## Routing & Auth (L1–L3)
 
-### `[ ]` L1 — Default route redirects to `/library`
+### `[x]` L1 — Default route redirects to `/library`
 
 **Steps:**
 
@@ -69,7 +71,7 @@
 
 ---
 
-### `[ ]` L2 — Login + Register reachable; submit toggles mockAuth
+### `[x]` L2 — Login + Register reachable; submit toggles mockAuth
 
 **Steps:**
 
@@ -88,7 +90,7 @@
 
 ---
 
-### `[ ]` L3 — All in-scope routes render without auth gate
+### `[x]` L3 — All in-scope routes render without auth gate
 
 **Steps:** In a fresh incognito window (or after clearing localStorage to defeat prior mockAuth state), visit each URL directly:
 
@@ -144,7 +146,7 @@
 
 ---
 
-### `[ ]` LIB3 — Photo cards show ≤3 labels with "+N" overflow pill
+### `[x]` LIB3 — Photo cards show ≤3 labels with "+N" overflow pill
 
 **Setup:** Find a photo asset in Library that has >3 Rekognition labels. Most uploaded JPGs produce 5+ labels; verify by clicking through to Asset Detail (A1) and counting labels there if needed.
 
@@ -161,7 +163,7 @@
 
 ---
 
-### `[ ]` LIB4 — Document cards render metadata + "OCR coming soon" placeholder
+### `[x]` LIB4 — Document cards render metadata + "OCR coming soon" placeholder
 
 **Setup:** Upload a PDF first via U3 below so at least one document asset exists in Library.
 
@@ -180,7 +182,7 @@
 
 ## Upload (U1–U4)
 
-### `[ ]` U1 — Upload a JPG → assetid returned → library refreshes with new card + labels
+### `[x]` U1 — Upload a JPG → assetid returned → library refreshes with new card + labels
 
 **Steps:**
 
@@ -198,7 +200,7 @@
 
 ---
 
-### `[ ]` U2 — Upload error surfaces via toast
+### `[x]` U2 — Upload error surfaces via toast
 
 **Setup:** Induce a failure. Easiest: stop the Express server temporarily.
 
@@ -216,7 +218,7 @@
 
 ---
 
-### `[ ]` U3 — Upload a PDF → document card with "OCR coming soon"
+### `[x]` U3 — Upload a PDF → document card with "OCR coming soon"
 
 **Steps:**
 
@@ -232,7 +234,7 @@
 
 ---
 
-### `[ ]` U4 — File >50 MB → server 400 → friendly toast
+### `[x]` U4 — File >50 MB → server 400 → friendly toast
 
 **Setup:** Have a file >50 MB on disk.
 
@@ -252,7 +254,7 @@
 
 ## Asset Detail (A1–A3)
 
-### `[ ]` A1 — Photo asset detail shows labels in confidence-DESC order
+### `[x]` A1 — Photo asset detail shows labels in confidence-DESC order
 
 **Steps:**
 
@@ -266,7 +268,7 @@
 
 ---
 
-### `[ ]` A2 — Document asset detail shows PDF preview + "OCR coming soon"
+### `[x]` A2 — Document asset detail shows PDF preview + "OCR coming soon"
 
 **Steps:**
 
@@ -280,7 +282,7 @@
 
 ---
 
-### `[ ]` A3 — File preview loads via `/api/images/:id/file` (no base64)
+### `[x]` A3 — File preview loads via `/api/images/:id/file` (no base64)
 
 **Steps:**
 

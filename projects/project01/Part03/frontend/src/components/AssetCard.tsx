@@ -80,7 +80,7 @@ export function AssetCard({
       {isPhoto ? (
         <div className="flex flex-wrap gap-1">
           {visibleLabels.map((l) => (
-            <span key={l.label} className={pillClasses}>
+            <span key={l.label} className={pillClasses} data-testid="card-label">
               {l.label}
             </span>
           ))}
