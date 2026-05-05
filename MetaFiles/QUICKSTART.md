@@ -265,8 +265,24 @@ This installs every workspace's deps and creates symlinks like `node_modules/@mb
 ```bash
 utils/lib-symlink-check                              # 5/5 PASS expected
 cd projects/project01/Part03 && npm test             # 32 passed, 2 skipped (live-gated)
+cd projects/project02/server && npm test             # 2 passed (sub-phase 1.0 baseline)
 cd lib/photoapp-server && npm test                   # 99 passed
 ```
+
+Or in one shot from the repo root: `npm test --workspaces`.
+
+### Working on Project 02
+
+Project 02 is the second consumer of `@mbai460/photoapp-server` (Project 02 Part 01 quest, post-Phase-0). The active workstream is tracked in `projects/project02/client/MetaFiles/Approach/Plan.md` + the sibling `OrientationMap.md`.
+
+```bash
+cd projects/project02/server
+npm install                                          # idempotent if root install ran
+npm start                                            # boots on PORT=8080
+npm test                                             # workspace test suite
+```
+
+Day-to-day pickup: read `projects/project02/client/MetaFiles/OrientationMap.md` *Active* section + `MetaFiles/Approach/01-foundation.md` for the in-flight phase. The `_assignment-template/` subdir under `server/` is read-only reference (Prof. Hummel's starter); do not import from it.
 
 ### Working with the shared library
 

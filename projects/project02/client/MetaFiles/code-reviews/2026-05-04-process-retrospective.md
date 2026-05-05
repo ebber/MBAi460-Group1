@@ -153,6 +153,22 @@ Erik question 2026-05-04: rough percent of Optional Steps the collaborators exec
 
 ---
 
+### [2026-05-04 / Autonomous run while Erik away] Step 7 + branch artifact sweep + Q2 robustness adjustment + utils/aws-probe authored
+
+While Erik stepped away mid-Chunk-6 (lab spin-up requires his terminal's SSO), autonomous run continued on integration branch with mutation floor (no main-touching). Findings:
+
+**Tracker reconciliation (Step 7) high-agreement with Pranav's claims** — all 12 Phase 1 sub-phases on Pranav's `685b501:.../Plan.md` agreed with on-disk evidence at integration branch tip. Divergence is on Phase 2/3: Pranav's tracker didn't claim Phase 2 (his `685b501` was baseline-restore; we replaced via Chunk 3); Andrew did Phase 3 work without tracking (we author from on-disk reality). Comparison is straightforward — no contradictions surfaced; just complementary work that needed authoring rather than reconciling.
+
+**Q2 OpenAPI yaml robustness assessment surfaced 3 drift items** — Pranav's `User` schema said `{userid, fname, lname, email, bucketfolder}` but lib + RDS schema say `{userid, username, givenname, familyname}`. Same for `Image` (`assetname` vs `localname`; missing `kind`) and `DeleteAllResponse` (claimed integer field, lib returns boolean, spec wants bare envelope). All adjusted to lib reality (commit `bb19b21`). **Pattern: when contributor authors OpenAPI yaml without verifying against the lib's actual data, drift is automatic.** Worth a post-merge action: add a contract test that asserts route response shapes match yaml schemas against actual data fixtures (not just yaml internal-consistency).
+
+**utils/aws-probe authored as the diagnostic gap-filler** — discovered `utils/lab-up` at lab-repo level is Docker-only (delegates to docker-up). AWS-level probe utility didn't exist; built per Erik's Unix-philosophy directive (one job, one util, calls sub-utils — delegates to `utils/smoke-test-aws --mode live` for the live-state probe; adds Terraform state-list inspection + `aws rds describe-db-instances` + recommended-action synthesis). Worth promoting as a permanent diagnostic tool. Future utility candidates flagged: `utils/aws-tf-apply` (when destroyed; deferred), `utils/aws-down` (terraform destroy with confirmation gate; deferred — destructive op deserves dedicated design pass).
+
+**Branch artifact sweep (Erik directive, deep treatment) produced 19 distinctive patterns + 8 memory promotion candidates.** File at `2026-05-04-branch-artifact-sweep.md`. Headline insight: **two fresh agents on the same Approach produced visibly different working styles** — and the merged tree benefits from BOTH. Pranav's structural artifacts (per-sub-phase Optional Steps routing in refactor-log; preserved-reference README pattern; three-layer Makefile alignment; visible-stubs pattern) + Andrew's signal-density artifacts (PDF citations in commits + comments; inner-function retry naming; package.json description as deferred-decisions surface; test invariant assertions). Recommended: queue all 8 memory candidates for accumulation rather than promoting now (per `feedback_memory_discipline.md` "earn the durability").
+
+**Process retrospective itself reinforced — notes-as-we-go works.** Erik's "RAM precious vs Disk" heuristic (2026-05-04) led to seeding this file at Step 2c. Through Steps 3-7 + the sweep, the file accumulated observations *while hot*. By the time Step 6 fires (process retro authoring), most of the structural work is already done — the synthesis at Step 6 just consolidates + adds final patterns. Pattern validates the disk-offload-during-execution heuristic at one-quest granularity (still needs more cycles for formal memory promotion).
+
+---
+
 ### [2026-05-04 / Step 0] Lab spin-up scope clarification
 
 Erik's directive evolution from Phase 0 ("don't change AWS") to catch-and-merge ("drop into a sub-frame of spinning the lab back up if down") clarifies the lab-up boundary: **standard utility-driven spin-up via `utils/lab-up` is in-scope when AWS state is the gate**, distinct from "discretionary AWS changes during a long run" which remains out-of-scope. The mutation_gating discipline still applies (intent + scope + recovery path before invoking) but the gate is explicit.

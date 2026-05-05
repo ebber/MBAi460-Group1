@@ -259,19 +259,21 @@ Acceptance: 01-foundation.md § Phase 12 — make up healthy + test pyramid harn
 Approach pointer: 01-foundation.md (very large; read carefully)
 ```
 
-- [ ] **Phase 1.0** — Phase 0 of foundation: Consume library (foundation Phase 0)
-- [ ] **Phase 1.1** — docker-compose + LocalStack
-- [ ] **Phase 1.2** — Terraform module refactor (rds/, s3/, iam/, cloudwatch/ skeleton)
-- [ ] **Phase 1.3** — pino + pino-http structured logging
-- [ ] **Phase 1.4** — request_id middleware
-- [ ] **Phase 1.5** — error middleware via library factory + AppError hierarchy
-- [ ] **Phase 1.6** — validate middleware (zod-based)
-- [ ] **Phase 1.7** — mysql2 pool factory + opossum breakers (Project 02-specific)
-- [ ] **Phase 1.8** — OpenAPI 3.1 stub + library exports verified
-- [ ] **Phase 1.9** — ESLint / Prettier / pre-commit hooks
-- [ ] **Phase 1.10** — docker-compose orchestration validated
-- [ ] **Phase 1.11** — six-layer test pyramid harness (unit / integration / contract / smoke / happy-path / live)
-- [ ] **Phase 1.12** — Terraform `state mv` cutover from `MBAi460-Group1/infra/terraform/` to module form
+> **Phase 1 reconciliation status (2026-05-04, Step 7):** Foundation work landed via the catch-and-merge curate-and-pick — code from pranavvaranasi1254's `feat/p02-foundation` cherry-picked code-only onto `merge/collab-reconciliation`. Tracker authoring against on-disk reality below; Pranav's claims at `git show 685b501:projects/project02/client/MetaFiles/Approach/Plan.md` agreed on all 12 sub-phases (Phase 1.0–1.11 ✅; Phase 1.12 ✅ as forward-only).
+
+- [x] **Phase 1.0** — Phase 0 of foundation: Consume library ✅ 2026-05-04 (cherry-picked code-only from pranavvaranasi1254's `e6923d3` → integration `92cb003`; project02/server scaffolded as @mbai460/photoapp-server consumer; library_resolution.test.js green)
+- [x] **Phase 1.1** — docker-compose + LocalStack ✅ 2026-05-04 (cherry-picked from `2e88078` → integration `fd62ecd`; docker-compose.yml + tools/bootstrap-localstack.sh + Dockerfile)
+- [x] **Phase 1.2** — Terraform module refactor (rds/, s3/, iam/, cloudwatch/ skeleton) ✅ 2026-05-04 (cherry-picked from `2e88078`; modules/{rds,s3,iam,cloudwatch}/{main,variables,outputs}.tf + envs/{dev,prod}/...)
+- [x] **Phase 1.3** — pino + pino-http structured logging ✅ 2026-05-04 (cherry-picked from `7a5131c` → integration `f7f18ab`; observability/{pino,tracing}.js + middleware/logging.js + 3 unit tests)
+- [x] **Phase 1.4** — request_id middleware ✅ 2026-05-04 (cherry-picked from `7a5131c`; middleware/request_id.js + integration test through /healthz)
+- [x] **Phase 1.5** — error middleware via library factory + AppError hierarchy ✅ 2026-05-04 (cherry-picked from `5581051` → integration `8d2fc38`; middleware/{errors,error_config}.js + 23 unit tests; mount-prefix-aware D7 invariants)
+- [x] **Phase 1.6** — validate middleware (zod-based) ✅ 2026-05-04 (cherry-picked from `5581051`; middleware/validate.js + schemas/request_schemas.js placeholder + 5 unit tests)
+- [x] **Phase 1.7** — mysql2 pool factory + opossum breakers ✅ 2026-05-04 (cherry-picked from `5581051`; services/{pool,breakers}.js + 10 unit tests)
+- [x] **Phase 1.8** — OpenAPI 3.1 stub + library exports verified ✅ 2026-05-04 (cherry-picked from `5581051`; api/openapi.yaml + envelope_spec_shapes test + CL9 lib envelope variadic — lib went 99→104 tests; **OpenAPI yaml User/Image/DeleteAll schemas adjusted to lib reality 2026-05-04 commit `bb19b21` per Step 7 Q2 reconciliation**)
+- [x] **Phase 1.9** — ESLint / Prettier / pre-commit hooks ✅ 2026-05-04 partial (cherry-picked from `6347c95` → integration `85e971b`; eslint.config.js v9 flat + .prettierrc + commitlint.config.cjs; **husky deferred** per Pranav's refactor-log; runs via `make lint` until then)
+- [x] **Phase 1.10** — docker-compose orchestration validated ✅ 2026-05-04 (cherry-picked from `2e88078`; Makefile + readyz route + server.js SIGTERM closePool)
+- [x] **Phase 1.11** — six-layer test pyramid harness ✅ 2026-05-04 (cherry-picked from `5581051`+`2e88078`; jest.config.js multi-project across unit/integration/contract/smoke/happy_path/live; 64+13 skipped at Chunk 1 close + 17 v1 route tests added Chunk 3 = 81+13 skipped at integration tip; **Python client harness** deferred to workstream 03 per Pranav)
+- [x] **Phase 1.12** — Terraform `state mv` cutover ✅ 2026-05-04 (D10 forward-only per Pranav; flat `MBAi460-Group1/infra/terraform/` remains the applied dev env; module tree at `projects/project02/infra/` is Part 02 deployment target; no `terraform apply` executed)
 
 ### Phase 2 — Web Service (Gradescope 60/60)
 
@@ -297,16 +299,18 @@ Acceptance: Gradescope server 60/60; tag gradescope-server-60-60
 Approach pointer: 02-web-service.md (1059 lines)
 ```
 
-- [ ] **Phase 2.0** — Verify library exports + Project 02 DI seams (no code moved)
-- [ ] **Phase 2.1** — Layered skeleton + provided routes (`/ping`, `/users`)
-- [ ] **Phase 2.2** — `GET /v1/images` (with optional `?userid=`)
-- [ ] **Phase 2.3** — `POST /v1/image/:userid` (transactional upload + Rekognition)
-- [ ] **Phase 2.4** — `GET /v1/image/:assetid` (base64 download)
-- [ ] **Phase 2.5** — `GET /v1/image_labels/:assetid`
-- [ ] **Phase 2.6** — `GET /v1/images_with_label/:label`
-- [ ] **Phase 2.7** — `DELETE /v1/images`
-- [ ] **Phase 2.8** — Contract + happy-path sweep
-- [ ] **Phase 2.9** — Gradescope submission (60/60); tag
+> **Phase 2 reconciliation status (2026-05-04, Step 7):** Catch-and-merge curated route handlers onto Phase 1 Foundation — port from andrew-apple's `feat/p02-gradescope-mvp` PDF-spec-correct route logic into pranavvaranasi1254's `routes/_internal`-style structure with lib + middleware factory consumption. 8 routes mounted; 17 happy-path + key-error-shape integration tests added. Gradescope acceptance gate (60/60) NOT verified — requires lab spin-up + actual Gradescope submission.
+
+- [x] **Phase 2.0** — Verify library exports + Project 02 DI seams ✅ 2026-05-04 (validated via Foundation cherry-picks landing green; library_resolution.test.js + envelope_spec_shapes.test.js)
+- 🌗 **Phase 2.1** — Layered skeleton + provided routes (`/ping`, `/users`) — both routes ported (`routes/v1/{ping,users}.js`); each consumes `services.photoapp.{getPing,listUsers}`; 1 integration test each. `feat/p02-gradescope-mvp` partial input + Step 7 Q2 yaml reconciliation
+- 🌗 **Phase 2.2** — `GET /v1/images` (optional `?userid=`) — `routes/v1/images.js` ported; consumes `services.photoapp.listImages(userid?)`; integer-validation 400 envelope shape
+- 🌗 **Phase 2.3** — `POST /v1/image/:userid` (transactional upload + Rekognition) — `routes/v1/image_post.js` ported; base64 → temp file → `services.photoapp.uploadImage(userid, multerFile)`; sentinel `no such userid` → 400 with spec shape `{message, assetid:-1}`; bucketkey divergence resolved in favor of lib's `${username}/${uuid}-${localname}` pattern; happy-path + 4 error-case integration tests
+- 🌗 **Phase 2.4** — `GET /v1/image/:assetid` (base64 download) — `routes/v1/image_get.js` ported; consumes `services.photoapp.downloadImage(assetid)` (CL9 lib change adds `userid` to return shape); s3Result.Body streamed + base64-encoded
+- 🌗 **Phase 2.5** — `GET /v1/image_labels/:assetid` — `routes/v1/image_labels.js` ported; consumes `services.photoapp.getImageLabels(assetid)`; sentinel mapping
+- 🌗 **Phase 2.6** — `GET /v1/images_with_label/:label` — `routes/v1/images_with_label.js` ported; consumes `services.photoapp.searchImages(label)`
+- 🌗 **Phase 2.7** — `DELETE /v1/images` — `routes/v1/delete_images.js` ported; consumes `services.photoapp.deleteAll()`
+- [ ] **Phase 2.8** — Contract + happy-path sweep — partial (17 happy-path tests landed; full 6-layer-pyramid coverage of routes deferred; live regression PENDING ERIK lab spin-up)
+- [ ] **Phase 2.9** — Gradescope submission (60/60); tag — PENDING ERIK (lab spin-up + Gradescope tarball + submission run)
 
 ### Phase 3 — Client API (Gradescope 30/30)
 
@@ -330,12 +334,14 @@ Acceptance: Gradescope client 30/30; tag gradescope-client-30-30
 Approach pointer: 03-client-api.md (684 lines)
 ```
 
-- [ ] **Phase 3.1** — Bootstrap pytest harness + `api_version` config knob
-- [ ] **Phase 3.2** — Read functions (`get_images`, `get_image`, `get_image_labels`, `get_images_with_label`)
-- [ ] **Phase 3.3** — Write functions (`post_image`, `delete_images`)
-- [ ] **Phase 3.4** — Integration + contract + live coverage
-- [ ] **Phase 3.5** — Extend `tests.py` with one happy-path call per function
-- [ ] **Phase 3.6** — Gradescope submission (30/30); tag
+> **Phase 3 reconciliation status (2026-05-04, Step 7):** andrew-apple's `feat/p02-gradescope-mvp` did Phase 3 work on his own branch without tracking. Catch-and-merge cherry-picked his Python client commits code-only (`acc4063` + `e3d9a58`) onto integration branch. Phase 3 entries below reflect on-disk reality — `photoapp.py` aligned to PDF spec; `tests.py` extended with smoke + lifecycle. Full pytest harness scaffolding (Phase 3.1) NOT done; live test cycle pending lab spin-up.
+
+- [ ] **Phase 3.1** — Bootstrap pytest harness + `api_version` config knob — pending; out-of-scope for the MVP path
+- 🌗 **Phase 3.2** — Read functions (`get_images`, `get_image`, `get_image_labels`, `get_images_with_label`) — PDF-spec-aligned in `photoapp.py` (cherry-picked from `acc4063` → integration `f0631a8`); URL paths corrected
+- 🌗 **Phase 3.3** — Write functions (`post_image`, `delete_images`) — PDF-spec-aligned (same commit); body-shape + URL params corrected
+- [ ] **Phase 3.4** — Integration + contract + live coverage — pending; not on MVP path
+- 🌗 **Phase 3.5** — Extend `tests.py` with one happy-path call per function — partial (cherry-picked from `e3d9a58` → integration `46aa803`; smoke tests test_04 + test_05 + lifecycle test_99 added — runs against a live server, so deferred to lab-up)
+- [ ] **Phase 3.6** — Gradescope submission (30/30); tag — PENDING ERIK
 
 ### Phase 4 — Engineering Surface
 

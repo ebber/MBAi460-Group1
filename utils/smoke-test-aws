@@ -12,9 +12,27 @@ CLASS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CONFIG="${CLASS_ROOT}/infra/config/photoapp-config.ini"
 TF_DIR="${CLASS_ROOT}/infra/terraform"
 
-export AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-${CLASS_ROOT}/secrets/aws-credentials}"
-export AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-${CLASS_ROOT}/secrets/aws-config}"
+# AWS env vars: only override if the target file actually exists. Otherwise
+# AWS CLI falls back to ~/.aws/{config,credentials} which is the right
+# behavior on machines that use SSO + ~/.aws/config rather than this repo's
+# secrets/ layout. Bug fix 2026-05-04: unconditional overrides pointed CLI
+# at nonexistent paths, breaking profile lookup even when AWS_PROFILE was
+# correctly exported by the caller (Erik exported AWS_PROFILE=ErikTheWizard
+# but the override still pointed AWS_CONFIG_FILE at a nonexistent file,
+# masking the [profile ErikTheWizard] section in ~/.aws/config).
+DEFAULT_CRED_FILE="${CLASS_ROOT}/secrets/aws-credentials"
+DEFAULT_CONFIG_FILE="${CLASS_ROOT}/secrets/aws-config"
+[ -f "$DEFAULT_CRED_FILE" ] && export AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-$DEFAULT_CRED_FILE}"
+[ -f "$DEFAULT_CONFIG_FILE" ] && export AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-$DEFAULT_CONFIG_FILE}"
 export AWS_PROFILE="${AWS_PROFILE:-Claude-Conjurer}"
+
+# Timeouts on every aws call (added 2026-05-04 — Erik hit a hang in
+# this util when called from utils/aws-probe; agent session ran fine
+# but human run hung). Without these, retry chains can stall for
+# 30+ seconds per failed call. Erik confirmed direct calls return
+# in <1s so the hang isn't network/auth — it's a retry behavior in
+# one of the many aws-cli calls below. Bounding worst-case.
+AWS_TIMEOUT="--cli-connect-timeout 10 --cli-read-timeout 30"
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -78,7 +96,7 @@ printf "╚═══════════════════════
 section "S3"
 
 # 1. Bucket existence
-HTTP=$(aws s3api head-bucket --bucket "$BUCKET" 2>&1 || true)
+HTTP=$(aws s3api head-bucket --bucket "$BUCKET" $AWS_TIMEOUT 2>&1 || true)
 if [[ "$MODE" == "live" ]]; then
   if echo "$HTTP" | grep -qiE "error|NoSuchBucket|404|403" && ! echo "$HTTP" | grep -q "^$"; then
     fail "S3 bucket exists"
@@ -97,7 +115,7 @@ fi
 
 # 2. Public access block
 if [[ "$MODE" == "live" ]]; then
-  PAB=$(aws s3api get-public-access-block --bucket "$BUCKET" \
+  PAB=$(aws s3api get-public-access-block --bucket "$BUCKET" $AWS_TIMEOUT \
     --query 'PublicAccessBlockConfiguration' --output json 2>/dev/null || echo "{}")
   ALL_FALSE=$(echo "$PAB" | python3 -c "
 import json,sys
@@ -111,7 +129,7 @@ fi
 
 # 3. Bucket ACL has AllUsers READ
 if [[ "$MODE" == "live" ]]; then
-  ACL=$(aws s3api get-bucket-acl --bucket "$BUCKET" --output json 2>/dev/null || echo "{}")
+  ACL=$(aws s3api get-bucket-acl --bucket "$BUCKET" $AWS_TIMEOUT --output json 2>/dev/null || echo "{}")
   HAS_PUBLIC=$(echo "$ACL" | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
@@ -125,7 +143,7 @@ fi
 
 # 4. Object ACL
 if [[ "$MODE" == "live" ]]; then
-  OBJ_ACL=$(aws s3api get-object-acl --bucket "$BUCKET" --key "test/degu.jpg" --output json 2>/dev/null || echo "{}")
+  OBJ_ACL=$(aws s3api get-object-acl --bucket "$BUCKET" --key "test/degu.jpg" $AWS_TIMEOUT --output json 2>/dev/null || echo "{}")
   OBJ_PUBLIC=$(echo "$OBJ_ACL" | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
@@ -152,7 +170,7 @@ fi
 section "RDS"
 
 RDS_JSON=$(aws rds describe-db-instances \
-  --db-instance-identifier photoapp-db \
+  --db-instance-identifier photoapp-db $AWS_TIMEOUT \
   --query 'DBInstances[0]' \
   --output json 2>/dev/null || echo "null")
 
@@ -183,7 +201,7 @@ fi
 
 # 9. Security group
 SG=$(aws ec2 describe-security-groups \
-  --filters "Name=group-name,Values=photoapp-rds-sg" \
+  --filters "Name=group-name,Values=photoapp-rds-sg" $AWS_TIMEOUT \
   --query 'SecurityGroups[0]' \
   --output json 2>/dev/null || echo "null")
 

@@ -1,0 +1,397 @@
+openapi: 3.1.0
+info:
+  title: PhotoApp Web Service
+  version: 0.1.0
+  description: |
+    Project 02 Part 01 — spec-compliant /v1 routes (Gradescope 60/60) and
+    engineering /v2 surface (Phase 4).
+
+    **Mount note (D12):** Gradescope autograder hits routes without a prefix;
+    the v1 router is mounted at root "/" by default. The /v1 prefix shown here
+    is the internal module path; it maps to "/" at runtime (or /v1 when
+    OPTIONAL_V1_PREFIX=1 is set).
+
+    **Error mapping (D7):** /v1 routes return 200/400/500 only per spec.
+    /v2 routes use REST-correct status codes (404, 409, etc.).
+
+    For the full error-class → HTTP-status table, see api/error-map.md.
+
+servers:
+  - url: http://localhost:8080
+    description: Local dev (docker-compose)
+
+tags:
+  - name: health
+    description: Liveness and readiness probes
+  - name: v1
+    description: Spec-compliant routes (Gradescope)
+  - name: v2
+    description: Engineering surface (Phase 4; gated on ENABLE_V2_ROUTES=1)
+
+paths:
+  /healthz:
+    get:
+      tags: [health]
+      operationId: getHealthz
+      summary: Liveness probe
+      responses:
+        '200':
+          description: Service is live
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessResponse'
+
+  /v1/ping:
+    get:
+      tags: [v1]
+      operationId: v1GetPing
+      summary: Server uptime stats
+      responses:
+        '200':
+          description: Ping success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PingResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v1/users:
+    get:
+      tags: [v1]
+      operationId: v1GetUsers
+      summary: List all users
+      responses:
+        '200':
+          description: User list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v1/images:
+    get:
+      tags: [v1]
+      operationId: v1GetImages
+      summary: List images (optionally filtered by userid)
+      parameters:
+        - in: query
+          name: userid
+          schema:
+            type: integer
+          required: false
+          description: Filter by user ID
+      responses:
+        '200':
+          description: Image list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageListResponse'
+        '400':
+          $ref: '#/components/responses/SpecError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [v1]
+      operationId: v1DeleteImages
+      summary: Delete all images for all users (admin)
+      responses:
+        '200':
+          description: All images deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteAllResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v1/image/{userid}:
+    post:
+      tags: [v1]
+      operationId: v1PostImage
+      summary: Upload an image for a user
+      parameters:
+        - in: path
+          name: userid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          $ref: '#/components/responses/SpecError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v1/image/{assetid}:
+    get:
+      tags: [v1]
+      operationId: v1GetImage
+      summary: Download an image as base64
+      parameters:
+        - in: path
+          name: assetid
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Image data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadResponse'
+        '400':
+          $ref: '#/components/responses/SpecError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v1/image_labels/{assetid}:
+    get:
+      tags: [v1]
+      operationId: v1GetImageLabels
+      summary: Get Rekognition labels for an image
+      parameters:
+        - in: path
+          name: assetid
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Label list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelListResponse'
+        '400':
+          $ref: '#/components/responses/SpecError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v1/images_with_label/{label}:
+    get:
+      tags: [v1]
+      operationId: v1GetImagesWithLabel
+      summary: Search images by Rekognition label
+      parameters:
+        - in: path
+          name: label
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Matching images
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultResponse'
+        '400':
+          $ref: '#/components/responses/SpecError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    LivenessResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [live]
+
+    # Shared envelope base — all success responses include message: 'success'
+    SuccessEnvelope:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          enum: [success]
+
+    ErrorEnvelope:
+      type: object
+      required: [message, error]
+      properties:
+        message:
+          type: string
+          enum: [error]
+        error:
+          type: string
+
+    PingResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [M, N]
+          properties:
+            M:
+              type: integer
+              description: Number of users
+            N:
+              type: integer
+              description: Number of images
+
+    User:
+      # Field names match the lib's userRowToObject (lib/photoapp-server/src/
+      # schemas/rows.js) which itself mirrors the RDS schema columns frozen
+      # since Phase 0 (Lab 01 / Project 01 Part 02 baseline). Pranav's
+      # original draft listed {fname, lname, email, bucketfolder} which were
+      # spec-guesses that don't match either the lib's behavior or the
+      # database schema. Adjusted 2026-05-04 during Step 7 reconciliation.
+      type: object
+      required: [userid, username, givenname, familyname]
+      properties:
+        userid:
+          type: integer
+        username:
+          type: string
+        givenname:
+          type: string
+        familyname:
+          type: string
+
+    UserListResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [data]
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
+
+    Image:
+      # Field names + presence match the lib's imageRowToObject (lib/
+      # photoapp-server/src/schemas/rows.js): {assetid, userid, localname,
+      # bucketkey, kind}. Pranav's original draft had {assetid, userid,
+      # assetname, bucketkey} — `assetname` was a spec-guess that doesn't
+      # match the lib's `localname` field, and `kind` (photo/document) was
+      # missing entirely. Adjusted 2026-05-04 during Step 7 reconciliation.
+      type: object
+      required: [assetid, userid, localname, bucketkey, kind]
+      properties:
+        assetid:
+          type: integer
+        userid:
+          type: integer
+        localname:
+          type: string
+        bucketkey:
+          type: string
+        kind:
+          type: string
+          enum: [photo, document]
+          description: Photo extensions (.jpg/.jpeg/.png/.heic/.heif) classify as 'photo'; everything else as 'document'
+
+    ImageListResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [data]
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Image'
+
+    UploadResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [assetid]
+          properties:
+            assetid:
+              type: integer
+
+    DownloadResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [userid, local_filename, data]
+          properties:
+            userid:
+              type: integer
+            local_filename:
+              type: string
+            data:
+              type: string
+              description: Base64-encoded image bytes
+
+    Label:
+      type: object
+      required: [label, confidence]
+      properties:
+        label:
+          type: string
+        confidence:
+          type: number
+
+    LabelListResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [data]
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Label'
+
+    SearchResultResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [data]
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Image'
+
+    DeleteAllResponse:
+      # Bare SuccessEnvelope. The lib's services.photoapp.deleteAll() returns
+      # {deleted: true} internally but the spec's wire response is just the
+      # success envelope; route handler at routes/v1/delete_images.js drops
+      # the internal flag. Adjusted 2026-05-04 during Step 7 reconciliation
+      # (was {deleted: integer}, which matched neither the lib's actual
+      # return shape nor a sensible spec response).
+      $ref: '#/components/schemas/SuccessEnvelope'
+
+  responses:
+    # Spec-compliant error (D7: /v1 uses 400 for all client errors)
+    SpecError:
+      description: Client error (spec uses 400 for all /v1 client errors per D7)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+    ServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
