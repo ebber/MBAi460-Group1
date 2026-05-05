@@ -72,7 +72,15 @@ describe('GET /users', () => {
 
 describe('GET /images', () => {
   test('without userid: lists all assets', async () => {
-    const fakeImages = [{ assetid: 1001, userid: 80001, localname: 'a.jpg', bucketkey: 'p_sarkar/uuid-a.jpg', kind: 'photo' }];
+    const fakeImages = [
+      {
+        assetid: 1001,
+        userid: 80001,
+        localname: 'a.jpg',
+        bucketkey: 'p_sarkar/uuid-a.jpg',
+        kind: 'photo',
+      },
+    ];
     photoapp.listImages.mockResolvedValueOnce(fakeImages);
     const res = await request(app).get('/images');
     expect(res.status).toBe(200);
@@ -195,7 +203,10 @@ describe('GET /image/:assetid', () => {
 
 describe('GET /image_labels/:assetid', () => {
   test('happy path: returns {message, data}', async () => {
-    const fakeLabels = [{ label: 'Animal', confidence: 99 }, { label: 'Dog', confidence: 90 }];
+    const fakeLabels = [
+      { label: 'Animal', confidence: 99 },
+      { label: 'Dog', confidence: 90 },
+    ];
     photoapp.getImageLabels.mockResolvedValueOnce(fakeLabels);
     const res = await request(app).get('/image_labels/1001');
     expect(res.status).toBe(200);

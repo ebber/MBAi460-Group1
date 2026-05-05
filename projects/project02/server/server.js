@@ -9,7 +9,7 @@ const path = require('path');
 const { config: libConfig } = require('@mbai460/photoapp-server');
 libConfig.photoapp_config_filename = path.resolve(
   __dirname,
-  '../../project01/client/photoapp-config.ini'
+  '../../project01/client/photoapp-config.ini',
 );
 
 const app = require('./app');
