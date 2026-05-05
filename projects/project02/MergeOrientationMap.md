@@ -14,7 +14,7 @@
 >
 > **Lifecycle:** This Map is grounded in the Catch-and-Merge quest. When the quest closes (Step 11 select-next executes), this Map's Active section reverts to "quest closed; see <successor>" and the Phase rows from the parent Project 02 Part 01 plan re-anchor in whatever new Map the next quest needs.
 >
-> **Last updated:** 2026-05-04 — Catch-and-Merge quest declared. Step 0 (pre-flight) ✅ — main intact at `d2e039c` + tag `library-1.0.0-extraction-complete` + working tree clean + collaborator branches discovered (`feat/p02-foundation` @ `685b501` / `feat/p02-gradescope-mvp` @ `e3d9a58`) + Docker dev env operational + AWS lab spun-down (queued for Step 4 sub-frame). Step 1 (assessment scaffolding) is the next sub-phase.
+> **Last updated:** 2026-05-04 (autonomous run while Erik away mid-Chunk-6) — **Steps 0–5 + 7 ✅; Step 4 / Chunk 6 lab spin-up PINNED for Erik return; Step 8 (push + merge) HELD per mutation floor.** Integration branch `merge/collab-reconciliation` carries 19 commits ahead of `main`; all workspace tests green (lib 104 + Part 03 32+2 skipped + project02/server 81+13 skipped + freshclone-smoke PASS in ~4s + lib-symlink-check 7/7). Branch artifact sweep + Step 7 tracker reconciliation + OpenAPI yaml drift correction (Q2 robustness) all landed. Merge commit message drafted at `projects/project02/MetaFiles/merge-commit-message.draft.md`. **On Erik return:** run `utils/aws-probe`; recommended action drives next step. After lab live + regression green: merge `merge/collab-reconciliation` → main via `--no-ff` per the draft; tag; push.
 
 ---
 
