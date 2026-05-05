@@ -12,7 +12,7 @@ SHELL := /bin/bash
 SERVER_DIR := server
 CLIENT_DIR := client
 
-.PHONY: help install test test-unit test-integration test-contract test-smoke test-happy test-live lint format clean up down submit-server submit-client
+.PHONY: help install test test-unit test-integration test-contract test-smoke test-happy test-live lint format clean clean-dist up down submit-server submit-client submit-server-autograder submit-client-autograder
 
 help: ## List available targets
 	@awk 'BEGIN {FS = ":.*?## "}; /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -61,6 +61,33 @@ clean: ## Remove node_modules + coverage artifacts (workspace-wide)
 	cd ../.. && rm -rf node_modules projects/project01/Part03/node_modules projects/project02/server/node_modules lib/photoapp-server/node_modules
 	rm -rf $(SERVER_DIR)/coverage
 
+clean-dist: ## Prune dist/ to the most recent server + client submission (keeps the 4 most recent of each type by default)
+	@# Each iteration of submit-* creates ~5MB of dist + tarball. After a long
+	@# debugging arc (the Project 02 90/90 arc accumulated 1.5GB across 60+ items)
+	@# the disk-cost adds up. This target keeps the most recent N=2 server +
+	@# N=2 client submission dirs + their tarballs; deletes everything else.
+	@# Override N via KEEP_N=4 make clean-dist if you want more headroom.
+	@KEEP_N=$${KEEP_N:-2}; \
+	cd dist 2>/dev/null && { \
+	  echo "==> Pruning dist/ — keeping most recent $$KEEP_N of each (server + client)"; \
+	  for prefix in p02-server-submission p02-client-submission; do \
+	    KEEP_TS=$$(ls -1d $${prefix}-*Z 2>/dev/null | sort -r | head -n "$$KEEP_N" | sed 's|.*-||;s|Z$$||'); \
+	    [ -z "$$KEEP_TS" ] && continue; \
+	    KEEP_PATTERN=$$(echo "$$KEEP_TS" | tr '\n' '|' | sed 's/|$$//'); \
+	    for item in $${prefix}-*; do \
+	      ts=$$(echo "$$item" | sed -E "s/^$${prefix}-([0-9TZ]+).*/\1/" | sed 's/Z$$//'); \
+	      if echo "$$KEEP_TS" | grep -qFx "$$ts"; then \
+	        echo "  keep:   $$item"; \
+	      else \
+	        echo "  delete: $$item"; \
+	        rm -rf "$$item"; \
+	      fi; \
+	    done; \
+	  done; \
+	  echo ""; \
+	  echo "==> dist/ size after prune: $$(du -sh . | cut -f1)"; \
+	} || echo "  (dist/ does not exist; nothing to clean)"
+
 up: ## Start all services (mysql + localstack + server) via docker compose
 	@if [ ! -f $(CLIENT_DIR)/photoapp-config.ini ]; then \
 		echo "[make up] ERROR: client/photoapp-config.ini not found."; \
@@ -84,10 +111,21 @@ down: ## Stop and remove all compose containers + volumes
 	docker compose down -v
 	@echo "[make down] stack stopped and volumes removed"
 
-submit-server: ## Build + submit server tarball — STUB until Approach Phase 13
-	@echo "[stub] tools/package-submission.sh lands in Approach Phase 13 (Plan Thread F)."
-	@exit 1
+submit-server: ## Build the Project 02 server submission package (preserves `kind` extension)
+	./tools/package-submission.sh
 
-submit-client: ## Build + submit client tarball — STUB until Approach Phase 13
-	@echo "[stub] mirrors 'submit-server' — wired in Approach Phase 13."
-	@exit 1
+submit-client: ## Build the Project 02 client submission package (preserves `kind` extension)
+	./tools/package-client-submission.sh
+
+# Autograder-mode build targets — strip Project-extension features that
+# conflict with Gradescope's canonical assignment template (currently:
+# the `kind` column on `assets`). The toggle is intent-based: any future
+# Gradescope-specific transformation should be gated behind the same
+# P02_AUTOGRADER_BUILD=1 env var so all "make this dist autograder-safe"
+# behavior is one switch. See tools/package-submission.sh § Step 14
+# for the full diagnostic chain that revealed the strip is needed.
+submit-server-autograder: ## Build server package in autograder-safe mode (strips `kind` column)
+	P02_AUTOGRADER_BUILD=1 ./tools/package-submission.sh
+
+submit-client-autograder: ## Build client package in autograder-safe mode (strips `kind` column)
+	P02_AUTOGRADER_BUILD=1 ./tools/package-client-submission.sh

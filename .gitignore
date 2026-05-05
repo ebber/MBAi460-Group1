@@ -66,6 +66,14 @@ yarn-error.log*
 # pre-built SPA assets that the server serves at runtime.
 # ============================================================
 projects/project01/Part03/dist/
+projects/project02/dist/
+
+# ============================================================
+# Cloned course-provided Gradescope image (joe-hummel/mbai460-server).
+# It's a standalone git repo cloned for `gs submit` only — keep its
+# tooling, build artifacts, and instructor stubs out of our monorepo.
+# ============================================================
+projects/project02/images/
 
 # ============================================================
 # Standard ignores
