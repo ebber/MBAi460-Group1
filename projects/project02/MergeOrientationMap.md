@@ -204,7 +204,7 @@ Resumption (per state):
   - Live regression already verified Step 4: Part 03 live 34/34 + project02/server live 83/94+11 skipped + Python pytest 5/6 PASS (test_02 fixture-mismatch queued)
   - `utils/smoke-test-aws --mode live` ✅ 10/10 (verified Step 4)
   - docker build + package-submission deferred (Part 03 not affected; not Step 7 blockers per current scope)
-- [ ] **Step 8** — Push to main (team's direct-to-main flow)
+- 🚩 **Step 8** — Push to main (team's direct-to-main flow) — **GATED 2026-05-04** — system-layer permission denied on `git checkout main` precursor; Erik's "execute through committing" greenlight covered local commits but not main-mutation. Awaiting explicit Step 8 auth. Mutation-gate proposal surfaced: local merge `--no-ff` from `merge/collab-reconciliation` (25 commits ahead) using drafted message; tag `catch-and-merge-complete-2026-05-04`; recovery `git reset --hard d2e039c` if needed (no remote impact pre-push). Push to origin gated separately per `operational_rules.md` ("Ask first for: git push").
 - [ ] **Step 9** — Send notes to collaborators (channel TBD)
 - [ ] **Step 10** — Close the catch-and-merge quest (this Map → "quest closed"; predecessor pattern: legacy_PlanningOrientationMap.md)
 - [ ] **Step 11** — Select next execution (conditional on Step 2 findings; likely Phase 2 or finish-Phase-1)
