@@ -8,6 +8,7 @@ Contains governing philosophy, durable design docs, and the active TODO queue.
 | File / Directory | Purpose |
 |-----------------|---------|
 | `QUICKSTART.md` | New collaborator environment setup walkthrough — start here |
+| `AutoGrader_notes.md` | Northwestern Gradescope reference — submission mechanics + 7 documented contracts + diagnostic patterns; distilled from the Project 02 16-iteration debugging arc. Read before any Gradescope work on Project 03+ or re-grade scenarios. |
 | `Manifesto-AWS-Lab-Sanctum.md` | Governing principles for the AWS Lab — what intentionally insecure means and why |
 | `Future-State-Ideal-Lab.md` | Long-term design target for the Lab — security, observability, IaC maturity |
 | `TODO.md` | Active ActionQueue for Class Project level items |
