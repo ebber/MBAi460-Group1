@@ -12,7 +12,7 @@ Each lab/project part is graded separately and builds on a shared AWS environmen
 | `lib/` | Shared libraries (npm workspaces) — internals consumed by multiple project surfaces |
 | `labs/` | Lab assignments (lab01–lab04) |
 | `projects/` | Project assignments (project01–project03) |
-| `utils/` | Operational scripts — AWS, Docker, DB tooling |
+| `utils/` | Operational scripts — see [`utils/README.md`](utils/README.md) |
 | `setup/` | Host machine setup for the class environment |
 | `visualizations/` | Architecture and design diagrams |
 | `learnings/` | Process and methodology retrospectives — patterns, heuristics, reconciliation logs |
