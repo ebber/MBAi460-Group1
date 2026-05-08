@@ -16,111 +16,129 @@
 // using `errorResponse`.
 //
 
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-// Consume the shared library `@mbai460/photoapp-server` for service core,
+// Consume the shared library `../src/photoapp-core` for service core,
 // upload middleware factory, and envelope helpers. Part 03 surface owns
 // only this routes file (and app.js + tests/); the library owns services,
 // middleware factories, and schemas. Approach 00-shared-library-extraction.md
 // § Phase 4.1 documents this consume pattern.
-const lib = require('@mbai460/photoapp-server');
+const lib = require("../src/photoapp-core");
 const photoapp = lib.services.photoapp;
-const upload = lib.middleware.createUploadMiddleware();  // {} = Part 03 defaults (50 MB, os.tmpdir/photoapp-uploads)
+const upload = lib.middleware.createUploadMiddleware(); // {} = Part 03 defaults (50 MB, os.tmpdir/photoapp-uploads)
 const { successResponse, errorResponse } = lib.schemas.envelopes;
 
 // GET /api/ping
-router.get('/ping', async (req, res, next) => {
+router.get("/ping", async (req, res, next) => {
   try {
     const data = await photoapp.getPing();
     res.json(successResponse({ data }));
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 // GET /api/users
-router.get('/users', async (req, res, next) => {
+router.get("/users", async (req, res, next) => {
   try {
     const data = await photoapp.listUsers();
     res.json(successResponse({ data }));
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 // GET /api/images (with optional ?userid=)
-router.get('/images', async (req, res, next) => {
+router.get("/images", async (req, res, next) => {
   try {
     let userid;
     if (req.query.userid !== undefined) {
       userid = parseInt(req.query.userid, 10);
       if (Number.isNaN(userid)) {
-        return res.status(400).json(errorResponse('invalid userid'));
+        return res.status(400).json(errorResponse("invalid userid"));
       }
     }
     const data = await photoapp.listImages(userid);
     res.json(successResponse({ data }));
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 // POST /api/images (multipart upload)
-router.post('/images', upload.single('file'), async (req, res, next) => {
+router.post("/images", upload.single("file"), async (req, res, next) => {
   try {
     const userid = parseInt(req.body.userid, 10);
     if (Number.isNaN(userid)) {
-      return res.status(400).json(errorResponse('invalid userid'));
+      return res.status(400).json(errorResponse("invalid userid"));
     }
     if (!req.file) {
-      return res.status(400).json(errorResponse('missing file'));
+      return res.status(400).json(errorResponse("missing file"));
     }
     const data = await photoapp.uploadImage(userid, req.file);
     res.json(successResponse({ data }));
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 // GET /api/images/:assetid/file (streamed S3 body)
-router.get('/images/:assetid/file', async (req, res, next) => {
+router.get("/images/:assetid/file", async (req, res, next) => {
   try {
     const assetid = parseInt(req.params.assetid, 10);
     if (Number.isNaN(assetid)) {
-      return res.status(400).json(errorResponse('invalid assetid'));
+      return res.status(400).json(errorResponse("invalid assetid"));
     }
     const { contentType, s3Result } = await photoapp.downloadImage(assetid);
-    res.setHeader('Content-Type', contentType);
+    res.setHeader("Content-Type", contentType);
     // Forward stream errors into the centralized error middleware. Attach
     // before .pipe so the listener is in place when pipe starts consuming.
-    s3Result.Body.on('error', next);
+    s3Result.Body.on("error", next);
     s3Result.Body.pipe(res);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 // GET /api/images/:assetid/labels
-router.get('/images/:assetid/labels', async (req, res, next) => {
+router.get("/images/:assetid/labels", async (req, res, next) => {
   try {
     const assetid = parseInt(req.params.assetid, 10);
     if (Number.isNaN(assetid)) {
-      return res.status(400).json(errorResponse('invalid assetid'));
+      return res.status(400).json(errorResponse("invalid assetid"));
     }
     const data = await photoapp.getImageLabels(assetid);
     res.json(successResponse({ data }));
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 // GET /api/search?label=...
-router.get('/search', async (req, res, next) => {
+router.get("/search", async (req, res, next) => {
   try {
     const raw = req.query.label;
-    if (typeof raw !== 'string' || !raw.trim()) {
-      return res.status(400).json(errorResponse('missing required query param: label'));
+    if (typeof raw !== "string" || !raw.trim()) {
+      return res
+        .status(400)
+        .json(errorResponse("missing required query param: label"));
     }
     const data = await photoapp.searchImages(raw.trim());
     res.json(successResponse({ data }));
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 // DELETE /api/images
-router.delete('/images', async (req, res, next) => {
+router.delete("/images", async (req, res, next) => {
   try {
     const data = await photoapp.deleteAll();
     res.json(successResponse({ data }));
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;

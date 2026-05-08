@@ -12,8 +12,8 @@
 // Mock the library's photoapp service while preserving all other library
 // exports (middleware factories, schemas, config). See photoapp_routes.test.js
 // for the rationale on the factory + requireActual pattern.
-jest.mock('@mbai460/photoapp-server', () => {
-  const actual = jest.requireActual('@mbai460/photoapp-server');
+jest.mock("../src/photoapp-core", () => {
+  const actual = jest.requireActual("../src/photoapp-core");
   return {
     ...actual,
     services: {
@@ -32,44 +32,44 @@ jest.mock('@mbai460/photoapp-server', () => {
   };
 });
 
-const { Readable } = require('stream');
-const request = require('supertest');
-const { services: libServices } = require('@mbai460/photoapp-server');
+const { Readable } = require("stream");
+const request = require("supertest");
+const { services: libServices } = require("../src/photoapp-core");
 const photoapp = libServices.photoapp;
-const app = require('../app');
+const app = require("../app");
 
 // Silence the 500-path console.error so test output stays clean.
 let consoleErrSpy;
 beforeAll(() => {
-  consoleErrSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  consoleErrSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 });
 afterAll(() => {
   consoleErrSpy.mockRestore();
 });
 
-describe('integration: route → error middleware', () => {
+describe("integration: route → error middleware", () => {
   test('POST /api/images: service throws "no such userid" → 400 envelope', async () => {
-    photoapp.uploadImage.mockRejectedValue(new Error('no such userid'));
+    photoapp.uploadImage.mockRejectedValue(new Error("no such userid"));
 
     const res = await request(app)
-      .post('/api/images')
-      .field('userid', '99999')
-      .attach('file', Buffer.from('fakebytes'), 'x.jpg');
+      .post("/api/images")
+      .field("userid", "99999")
+      .attach("file", Buffer.from("fakebytes"), "x.jpg");
 
     expect(res.status).toBe(400);
-    expect(res.body).toEqual({ message: 'error', error: 'no such userid' });
+    expect(res.body).toEqual({ message: "error", error: "no such userid" });
   });
 
   test('GET /api/images/:assetid/labels: service throws "no such assetid" → 404 envelope', async () => {
-    photoapp.getImageLabels.mockRejectedValue(new Error('no such assetid'));
+    photoapp.getImageLabels.mockRejectedValue(new Error("no such assetid"));
 
-    const res = await request(app).get('/api/images/9999/labels');
+    const res = await request(app).get("/api/images/9999/labels");
 
     expect(res.status).toBe(404);
-    expect(res.body).toEqual({ message: 'error', error: 'no such assetid' });
+    expect(res.body).toEqual({ message: "error", error: "no such assetid" });
   });
 
-  test('GET /api/images/:assetid/file: route attaches error listener on S3 stream body (forwards via next)', async () => {
+  test("GET /api/images/:assetid/file: route attaches error listener on S3 stream body (forwards via next)", async () => {
     // Direct contract assertion: the route MUST call Body.on('error', next)
     // before piping. Triggering an actual stream error mid-flight runs into
     // pipe's Content-Type-already-set mechanics (response stream can't
@@ -80,32 +80,39 @@ describe('integration: route → error middleware', () => {
       on: jest.fn().mockReturnThis(),
       // End the response immediately so supertest doesn't hang waiting
       // for the stream to close.
-      pipe: jest.fn((dest) => { dest.end(); return dest; }),
+      pipe: jest.fn((dest) => {
+        dest.end();
+        return dest;
+      }),
     };
 
     photoapp.downloadImage.mockResolvedValue({
-      bucketkey: 'p_sarkar/uuid-anything.jpg',
-      localname: 'anything.jpg',
-      contentType: 'image/jpeg',
+      bucketkey: "p_sarkar/uuid-anything.jpg",
+      localname: "anything.jpg",
+      contentType: "image/jpeg",
       s3Result: { Body: fakeBody },
     });
 
-    await request(app).get('/api/images/1001/file');
+    await request(app).get("/api/images/1001/file");
 
     // The route attached an 'error' listener with a function (the route's `next`).
-    expect(fakeBody.on).toHaveBeenCalledWith('error', expect.any(Function));
+    expect(fakeBody.on).toHaveBeenCalledWith("error", expect.any(Function));
     // And piped after attaching — i.e., listener was registered before consume.
-    expect(fakeBody.on.mock.invocationCallOrder[0])
-      .toBeLessThan(fakeBody.pipe.mock.invocationCallOrder[0]);
+    expect(fakeBody.on.mock.invocationCallOrder[0]).toBeLessThan(
+      fakeBody.pipe.mock.invocationCallOrder[0],
+    );
   });
 
-  test('GET /api/users: generic service error → 500 envelope (sanitized)', async () => {
-    photoapp.listUsers.mockRejectedValue(new Error('SQL connection refused'));
+  test("GET /api/users: generic service error → 500 envelope (sanitized)", async () => {
+    photoapp.listUsers.mockRejectedValue(new Error("SQL connection refused"));
 
-    const res = await request(app).get('/api/users');
+    const res = await request(app).get("/api/users");
 
     expect(res.status).toBe(500);
-    expect(res.body).toEqual({ message: 'error', error: 'internal server error' });
+    expect(res.body).toEqual({
+      message: "error",
+      error: "internal server error",
+    });
     // Sanitization check: raw error text MUST NOT appear in the response body.
     expect(JSON.stringify(res.body)).not.toMatch(/SQL connection/);
   });

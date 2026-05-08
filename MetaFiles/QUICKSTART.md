@@ -6,13 +6,14 @@ Stand up the full AWS environment from scratch: secrets → Docker → Terraform
 
 ## Prerequisites
 
-| Tool | Purpose | Install |
-|------|---------|---------|
-| Docker + Colima | Container runtime for all utils | `brew install colima docker` |
-| Terraform ≥ 1.0 | IaC — manages S3, RDS, SG | `brew install terraform` |
-| Claude-Conjurer IAM credentials | AWS ops identity (PowerUserAccess) | Obtain from project owner |
+| Tool                            | Purpose                            | Install                      |
+| ------------------------------- | ---------------------------------- | ---------------------------- |
+| Docker + Colima                 | Container runtime for all utils    | `brew install colima docker` |
+| Terraform ≥ 1.0                 | IaC — manages S3, RDS, SG          | `brew install terraform`     |
+| Claude-Conjurer IAM credentials | AWS ops identity (PowerUserAccess) | Obtain from project owner    |
 
 All commands below assume **repo root** as your working directory:
+
 ```bash
 cd /path/to/MBAi460-Group1   # wherever you cloned the repo
 ```
@@ -29,6 +30,7 @@ mkdir -p "labs/lab01/Part 01 - AWS Setup/secrets"
 ```
 
 **`secrets/aws-credentials`** — IAM credentials for Terraform and AWS CLI utils:
+
 ```ini
 [Claude-Conjurer]
 aws_access_key_id     = <ACCESS_KEY_ID>
@@ -36,6 +38,7 @@ aws_secret_access_key = <SECRET_ACCESS_KEY>
 ```
 
 **`secrets/aws-config`** — AWS region/profile config:
+
 ```ini
 [profile Claude-Conjurer]
 region = us-east-2
@@ -43,9 +46,11 @@ output = json
 ```
 
 **`labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt`** — RDS admin password (used by `run-sql` and `validate-db`):
+
 ```
 <your-rds-master-password>
 ```
+
 > This must match `db_master_password` in `terraform.tfvars` (Step 3). Pick it now and use it consistently.
 
 ---
@@ -53,12 +58,14 @@ output = json
 ## Step 2 — Build Docker image
 
 Run from repo root:
+
 ```bash
 # Make scripts executable (first clone only — Mac/Linux)
 bash setup/mac.bash
 
 docker/build
 ```
+
 Expected: image `mbai460-client` built successfully.
 
 ---
@@ -69,6 +76,7 @@ Expected: image `mbai460-client` built successfully.
 IMAGE=$(cat docker/_image-name.txt)
 docker run --rm -v "$(pwd):/home/user" -w /home/user "$IMAGE" python3 utils/boto_test.py
 ```
+
 Expected: a boto3 version string (e.g. `1.42.83`). If this fails, the Docker image is broken — stop here.
 
 ---
@@ -122,9 +130,10 @@ cp projects/project01/client/photoapp-config.ini.example  projects/project01/cli
 cp labs/lab02/shorten-config.ini.example           labs/lab02/shorten-config.ini
 ```
 
-> **These are THREE separate files**, not one. The first two share the literal filename `photoapp-config.ini` despite different roles — backbone (`infra/config/...`, `photoapp-read-only`, consumed by `validate-db` / `smoke-test-aws` / `run-sql`) vs client (`projects/project01/client/...`, `photoapp-read-write`, consumed by Part 02 client + Part 03 Express server). Populating only the backbone leaves the Part 03 server unable to start — it reads the *client* file specifically.
+> **These are THREE separate files**, not one. The first two share the literal filename `photoapp-config.ini` despite different roles — backbone (`infra/config/...`, `photoapp-read-only`, consumed by `validate-db` / `smoke-test-aws` / `run-sql`) vs client (`projects/project01/client/...`, `photoapp-read-write`, consumed by Part 02 client + Part 03 Express server). Populating only the backbone leaves the Part 03 server unable to start — it reads the _client_ file specifically.
 
 Verify all three copies landed:
+
 ```bash
 ls -la infra/config/photoapp-config.ini projects/project01/client/photoapp-config.ini labs/lab02/shorten-config.ini
 ```
@@ -135,7 +144,9 @@ ls -la infra/config/photoapp-config.ini projects/project01/client/photoapp-confi
 > in the config files is what gets applied to RDS.
 
 ### `infra/config/photoapp-config.ini`
+
 Backbone config — used by `validate-db` and AWS utils.
+
 ```ini
 [rds]
 endpoint    = <rds_address output>
@@ -161,7 +172,9 @@ aws_secret_access_key = <s3readwrite_secret_access_key output>
 ```
 
 ### `projects/project01/client/photoapp-config.ini`
+
 Client config — used by project01 code and `validate-db`.
+
 ```ini
 [rds]
 endpoint    = <same rds_address>
@@ -187,7 +200,9 @@ aws_secret_access_key = <same s3readwrite_secret_access_key>
 ```
 
 ### `labs/lab02/shorten-config.ini`
+
 URL Shortener config — used by lab02 code and `run-sql create-shorten.sql`.
+
 ```ini
 [rds]
 endpoint    = <same rds_address>
@@ -211,6 +226,7 @@ export AWS_SHARED_CREDENTIALS_FILE="$(pwd)/secrets/aws-credentials"
 export AWS_CONFIG_FILE="$(pwd)/secrets/aws-config"
 utils/smoke-test-aws --mode live
 ```
+
 Expected: `Mode: live | Checks: 10 | Passed: 10 | Failed: 0`
 
 ---
@@ -234,20 +250,21 @@ Both commands should report `Statements: N | OK: N | Errors: 0`.
 ```bash
 utils/validate-db
 ```
+
 Expected: `Checks: 26 | Passed: 26 | Failed: 0`. Validates schema, seed data, AUTO_INCREMENT values, and both app user connections.
 
 ---
 
 ## Step 7 — Install Node workspace + run a consumer's tests
 
-The JS portions of the repo are an [npm workspaces](https://docs.npmjs.com/cli/v10/using-npm/workspaces) monorepo. Install once from the repo root. Project 01 Part 03 still consumes the shared library `@mbai460/photoapp-server`; Project 02's split-MVP runtime uses its local core under `projects/project02/server/src/photoapp-core`.
+The JS portions of the repo are an [npm workspaces](https://docs.npmjs.com/cli/v10/using-npm/workspaces) monorepo. Install once from the repo root. Project 01 Part 03 and Project 02 now use local split-MVP cores under their project trees.
 
 ### Prerequisites
 
-| Tool | Purpose | Install |
-|------|---------|---------|
-| Node 24.x | Runtime for the JS surfaces | `brew install node@24` (or `nvm install 24`) |
-| npm 11.x | Workspaces, the lockfile, the symlinks | Bundled with Node 24 |
+| Tool      | Purpose                                | Install                                      |
+| --------- | -------------------------------------- | -------------------------------------------- |
+| Node 24.x | Runtime for the JS surfaces            | `brew install node@24` (or `nvm install 24`) |
+| npm 11.x  | Workspaces, the lockfile, the symlinks | Bundled with Node 24                         |
 
 `engines` in the root `package.json` enforces these majors with `engine-strict=true` from `.npmrc`. Drift will surface as a hard error at install time, not a silent runtime weirdness later.
 
@@ -258,17 +275,27 @@ cd MBAi460-Group1     # repo root, NOT inside a workspace
 npm install
 ```
 
-This installs every workspace's deps and creates symlinks like `node_modules/@mbai460/photoapp-server -> ../lib/photoapp-server/` for surfaces that still consume the shared library.
+This installs every workspace's deps from the root lockfile. Runtime PhotoApp core code for Project 01 Part 03 and Project 02 lives in each project tree.
 
 ### Verify the active JS surfaces
 
 ```bash
 cd projects/project01/Part03 && npm test             # 32 passed, 2 skipped (live-gated)
-cd lib/photoapp-server && npm test                   # 99 passed
 cd projects/project02/server && npm test             # Project 02 split-MVP server tests
 ```
 
 Or in one shot from the repo root: `npm test --workspaces`.
+
+### Working on Project 01 Part 03
+
+Project 01 Part 03 is self-contained for the split MVP. Its local app core is `projects/project01/Part03/server/src/photoapp-core`; routes, tests, config, and Docker are Project 01-owned.
+
+```bash
+cd projects/project01/Part03
+npm install                                          # idempotent if root install ran
+npm start                                            # boots on PORT=8080
+npm test                                             # workspace test suite
+```
 
 ### Working on Project 02
 
@@ -283,14 +310,13 @@ npm test                                             # workspace test suite
 
 Day-to-day pickup: read `projects/project02/ARCHITECTURE.md` for the current split-MVP boundary. The older Approach/Plan docs under `projects/project02/client/MetaFiles/Approach/` preserve historical shared-library-era planning context until the history-vs-active docs convention is applied. The `_assignment-template/` subdir under `server/` is read-only reference (Prof. Hummel's starter); do not import from it.
 
-### Working with the shared library
+### Working with local PhotoApp cores
 
-- **Editing lib code:** `lib/photoapp-server/src/...` — active consumers see the change immediately via the symlink. No re-install needed.
-- **Editing lib `package.json`** (new dep, version): re-run `npm install` from the repo root once.
-- **Adding a public export:** see the *How to add a new export* section in [`lib/photoapp-server/README.md`](../lib/photoapp-server/README.md). Update `tests/exports-shape.test.js` in the same PR.
+- **Editing Project 01 Part 03 behavior:** change `projects/project01/Part03/server/src/photoapp-core/...`, not `lib/photoapp-server`.
 - **Editing Project 02 behavior:** change `projects/project02/server/src/photoapp-core/...`, not `lib/photoapp-server`.
+- **Future shared-core work:** `lib/photoapp-server/` is historical/future shared-core material until a deliberate DocumentApp/PhotoApp core extraction is designed.
 
-If `require('@mbai460/photoapp-server')` ever fails in a surface that still consumes the shared lib, run `utils/lib-symlink-check` from the repo root for a 5-line ground-truth check on workspace state.
+Do not assume changes under `lib/photoapp-server/` affect active project runtimes after the split MVP.
 
 For day-2 contribution discipline (where to install new deps, lockfile conflict survival, library-touching protocol, conventional commits): see [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 
@@ -326,27 +352,29 @@ cd infra/terraform && terraform destroy && cd ../..
 ```
 
 Verify resources are gone: check the AWS console (S3 + RDS) or run:
+
 ```bash
 export AWS_SHARED_CREDENTIALS_FILE="$(pwd)/secrets/aws-credentials"
 export AWS_CONFIG_FILE="$(pwd)/secrets/aws-config"
 utils/smoke-test-aws --mode dead
 ```
+
 Expected: 10/10 checks confirm all resources gone.
 
 ---
 
 ## Key file map
 
-| File | Tracked? | Purpose |
-|------|---------|---------|
-| `secrets/aws-credentials` | ❌ gitignored | IAM credentials for Claude-Conjurer |
-| `secrets/aws-config` | ❌ gitignored | AWS region/profile config |
-| `infra/terraform/terraform.tfvars` | ❌ gitignored | Terraform variable values incl. DB master password |
-| `labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt` | ❌ gitignored | RDS admin password; read by `run-sql` and `validate-db` |
-| `infra/config/photoapp-config.ini` | ❌ gitignored | Backbone config — photoapp-read-only password + S3; used by validate-db |
-| `projects/project01/client/photoapp-config.ini` | ❌ gitignored | Client config — photoapp-read-write password; used by project01 code |
-| `labs/lab02/shorten-config.ini` | ❌ gitignored | URL Shortener config — shorten-app password; used by lab02 code |
-| `.gradescope` | ❌ gitignored | Gradescope auth token — required for `gs submit`; NOT inside the repo |
-| `infra/config/photoapp-config.ini.example` | ✅ committed | Template for backbone config |
-| `projects/project01/client/photoapp-config.ini.example` | ✅ committed | Template for client config |
-| `labs/lab02/shorten-config.ini.example` | ✅ committed | Template for URL Shortener config |
+| File                                                             | Tracked?      | Purpose                                                                 |
+| ---------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------- |
+| `secrets/aws-credentials`                                        | ❌ gitignored | IAM credentials for Claude-Conjurer                                     |
+| `secrets/aws-config`                                             | ❌ gitignored | AWS region/profile config                                               |
+| `infra/terraform/terraform.tfvars`                               | ❌ gitignored | Terraform variable values incl. DB master password                      |
+| `labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt` | ❌ gitignored | RDS admin password; read by `run-sql` and `validate-db`                 |
+| `infra/config/photoapp-config.ini`                               | ❌ gitignored | Backbone config — photoapp-read-only password + S3; used by validate-db |
+| `projects/project01/client/photoapp-config.ini`                  | ❌ gitignored | Client config — photoapp-read-write password; used by project01 code    |
+| `labs/lab02/shorten-config.ini`                                  | ❌ gitignored | URL Shortener config — shorten-app password; used by lab02 code         |
+| `.gradescope`                                                    | ❌ gitignored | Gradescope auth token — required for `gs submit`; NOT inside the repo   |
+| `infra/config/photoapp-config.ini.example`                       | ✅ committed  | Template for backbone config                                            |
+| `projects/project01/client/photoapp-config.ini.example`          | ✅ committed  | Template for client config                                              |
+| `labs/lab02/shorten-config.ini.example`                          | ✅ committed  | Template for URL Shortener config                                       |

@@ -23,12 +23,12 @@
 // Mock the library's photoapp service while preserving all other library
 // exports (middleware factories, schemas, config). The factory + requireActual
 // pattern is required because the surface routes consume the library via
-// `const lib = require('@mbai460/photoapp-server')` and use
+// `const lib = require('../src/photoapp-core')` and use
 // `lib.services.photoapp.*` — we mock the inner service ref while leaving
 // `lib.middleware.createUploadMiddleware()` (real multer) + the envelope
 // helpers intact.
-jest.mock('@mbai460/photoapp-server', () => {
-  const actual = jest.requireActual('@mbai460/photoapp-server');
+jest.mock("../src/photoapp-core", () => {
+  const actual = jest.requireActual("../src/photoapp-core");
   return {
     ...actual,
     services: {
@@ -47,10 +47,10 @@ jest.mock('@mbai460/photoapp-server', () => {
   };
 });
 
-const request = require('supertest');
-const { services: libServices } = require('@mbai460/photoapp-server');
+const request = require("supertest");
+const { services: libServices } = require("../src/photoapp-core");
 const photoapp = libServices.photoapp;
-const app = require('../app');
+const app = require("../app");
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -59,15 +59,15 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 // GET /api/ping
 // ---------------------------------------------------------------------------
-describe('GET /api/ping', () => {
-  test('returns success envelope with counts', async () => {
+describe("GET /api/ping", () => {
+  test("returns success envelope with counts", async () => {
     photoapp.getPing.mockResolvedValue({ s3_object_count: 2, user_count: 3 });
 
-    const res = await request(app).get('/api/ping');
+    const res = await request(app).get("/api/ping");
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      message: 'success',
+      message: "success",
       data: { s3_object_count: 2, user_count: 3 },
     });
     expect(photoapp.getPing).toHaveBeenCalledTimes(1);
@@ -77,57 +77,74 @@ describe('GET /api/ping', () => {
 // ---------------------------------------------------------------------------
 // GET /api/users
 // ---------------------------------------------------------------------------
-describe('GET /api/users', () => {
-  test('returns success envelope with users array', async () => {
+describe("GET /api/users", () => {
+  test("returns success envelope with users array", async () => {
     photoapp.listUsers.mockResolvedValue([
-      { userid: 80001, username: 'p_sarkar', givenname: 'Pooja', familyname: 'Sarkar' },
+      {
+        userid: 80001,
+        username: "p_sarkar",
+        givenname: "Pooja",
+        familyname: "Sarkar",
+      },
     ]);
 
-    const res = await request(app).get('/api/users');
+    const res = await request(app).get("/api/users");
 
     expect(res.status).toBe(200);
-    expect(res.body.message).toBe('success');
+    expect(res.body.message).toBe("success");
     expect(Array.isArray(res.body.data)).toBe(true);
-    expect(res.body.data[0].username).toBe('p_sarkar');
+    expect(res.body.data[0].username).toBe("p_sarkar");
   });
 });
 
 // ---------------------------------------------------------------------------
 // GET /api/images (with optional ?userid=)
 // ---------------------------------------------------------------------------
-describe('GET /api/images', () => {
-  test('without userid: calls listImages(undefined) and returns envelope', async () => {
+describe("GET /api/images", () => {
+  test("without userid: calls listImages(undefined) and returns envelope", async () => {
     photoapp.listImages.mockResolvedValue([
-      { assetid: 1001, userid: 80001, localname: 'a.jpg', bucketkey: 'u/a.jpg', kind: 'photo' },
+      {
+        assetid: 1001,
+        userid: 80001,
+        localname: "a.jpg",
+        bucketkey: "u/a.jpg",
+        kind: "photo",
+      },
     ]);
 
-    const res = await request(app).get('/api/images');
+    const res = await request(app).get("/api/images");
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      message: 'success',
+      message: "success",
       data: [
-        { assetid: 1001, userid: 80001, localname: 'a.jpg', bucketkey: 'u/a.jpg', kind: 'photo' },
+        {
+          assetid: 1001,
+          userid: 80001,
+          localname: "a.jpg",
+          bucketkey: "u/a.jpg",
+          kind: "photo",
+        },
       ],
     });
     expect(photoapp.listImages).toHaveBeenCalledWith(undefined);
   });
 
-  test('with ?userid=80001: parses to int and calls listImages(80001)', async () => {
+  test("with ?userid=80001: parses to int and calls listImages(80001)", async () => {
     photoapp.listImages.mockResolvedValue([]);
 
-    const res = await request(app).get('/api/images?userid=80001');
+    const res = await request(app).get("/api/images?userid=80001");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ message: 'success', data: [] });
+    expect(res.body).toEqual({ message: "success", data: [] });
     expect(photoapp.listImages).toHaveBeenCalledWith(80001);
   });
 
-  test('non-int ?userid= returns 400 envelope', async () => {
-    const res = await request(app).get('/api/images?userid=notanumber');
+  test("non-int ?userid= returns 400 envelope", async () => {
+    const res = await request(app).get("/api/images?userid=notanumber");
 
     expect(res.status).toBe(400);
-    expect(res.body).toEqual({ message: 'error', error: 'invalid userid' });
+    expect(res.body).toEqual({ message: "error", error: "invalid userid" });
     expect(photoapp.listImages).not.toHaveBeenCalled();
   });
 });
@@ -135,41 +152,39 @@ describe('GET /api/images', () => {
 // ---------------------------------------------------------------------------
 // POST /api/images (multipart)
 // ---------------------------------------------------------------------------
-describe('POST /api/images', () => {
-  test('accepts multipart upload and returns assetid envelope', async () => {
+describe("POST /api/images", () => {
+  test("accepts multipart upload and returns assetid envelope", async () => {
     photoapp.uploadImage.mockResolvedValue({ assetid: 1001 });
 
     const res = await request(app)
-      .post('/api/images')
-      .field('userid', '80001')
-      .attach('file', Buffer.from('fakebytes'), 'test.jpg');
+      .post("/api/images")
+      .field("userid", "80001")
+      .attach("file", Buffer.from("fakebytes"), "test.jpg");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ message: 'success', data: { assetid: 1001 } });
+    expect(res.body).toEqual({ message: "success", data: { assetid: 1001 } });
     expect(photoapp.uploadImage).toHaveBeenCalledWith(
       80001,
-      expect.objectContaining({ originalname: 'test.jpg' })
+      expect.objectContaining({ originalname: "test.jpg" }),
     );
   });
 
-  test('non-int userid returns 400 envelope', async () => {
+  test("non-int userid returns 400 envelope", async () => {
     const res = await request(app)
-      .post('/api/images')
-      .field('userid', 'notanumber')
-      .attach('file', Buffer.from('fakebytes'), 'test.jpg');
+      .post("/api/images")
+      .field("userid", "notanumber")
+      .attach("file", Buffer.from("fakebytes"), "test.jpg");
 
     expect(res.status).toBe(400);
-    expect(res.body).toEqual({ message: 'error', error: 'invalid userid' });
+    expect(res.body).toEqual({ message: "error", error: "invalid userid" });
     expect(photoapp.uploadImage).not.toHaveBeenCalled();
   });
 
-  test('missing file returns 400 envelope', async () => {
-    const res = await request(app)
-      .post('/api/images')
-      .field('userid', '80001');
+  test("missing file returns 400 envelope", async () => {
+    const res = await request(app).post("/api/images").field("userid", "80001");
 
     expect(res.status).toBe(400);
-    expect(res.body).toEqual({ message: 'error', error: 'missing file' });
+    expect(res.body).toEqual({ message: "error", error: "missing file" });
     expect(photoapp.uploadImage).not.toHaveBeenCalled();
   });
 });
@@ -177,31 +192,31 @@ describe('POST /api/images', () => {
 // ---------------------------------------------------------------------------
 // GET /api/images/:assetid/file (streamed S3 body)
 // ---------------------------------------------------------------------------
-describe('GET /api/images/:assetid/file', () => {
-  test('streams the S3 body with Content-Type from the service', async () => {
+describe("GET /api/images/:assetid/file", () => {
+  test("streams the S3 body with Content-Type from the service", async () => {
     // Build a Readable stream that emits fake bytes; the route does
     // s3Result.Body.pipe(res), so any object with .pipe(res) works.
-    const { Readable } = require('stream');
-    const body = Readable.from([Buffer.from('hello-bytes')]);
+    const { Readable } = require("stream");
+    const body = Readable.from([Buffer.from("hello-bytes")]);
 
     photoapp.downloadImage.mockResolvedValue({
-      contentType: 'image/jpeg',
+      contentType: "image/jpeg",
       s3Result: { Body: body },
     });
 
-    const res = await request(app).get('/api/images/1001/file');
+    const res = await request(app).get("/api/images/1001/file");
 
     expect(res.status).toBe(200);
-    expect(res.headers['content-type']).toMatch(/^image\/jpeg/);
-    expect(res.body).toEqual(Buffer.from('hello-bytes'));
+    expect(res.headers["content-type"]).toMatch(/^image\/jpeg/);
+    expect(res.body).toEqual(Buffer.from("hello-bytes"));
     expect(photoapp.downloadImage).toHaveBeenCalledWith(1001);
   });
 
-  test('non-int :assetid returns 400 envelope', async () => {
-    const res = await request(app).get('/api/images/notanumber/file');
+  test("non-int :assetid returns 400 envelope", async () => {
+    const res = await request(app).get("/api/images/notanumber/file");
 
     expect(res.status).toBe(400);
-    expect(res.body).toEqual({ message: 'error', error: 'invalid assetid' });
+    expect(res.body).toEqual({ message: "error", error: "invalid assetid" });
     expect(photoapp.downloadImage).not.toHaveBeenCalled();
   });
 });
@@ -209,31 +224,31 @@ describe('GET /api/images/:assetid/file', () => {
 // ---------------------------------------------------------------------------
 // GET /api/images/:assetid/labels
 // ---------------------------------------------------------------------------
-describe('GET /api/images/:assetid/labels', () => {
-  test('returns labels envelope', async () => {
+describe("GET /api/images/:assetid/labels", () => {
+  test("returns labels envelope", async () => {
     photoapp.getImageLabels.mockResolvedValue([
-      { label: 'Animal', confidence: 99 },
-      { label: 'Dog', confidence: 90 },
+      { label: "Animal", confidence: 99 },
+      { label: "Dog", confidence: 90 },
     ]);
 
-    const res = await request(app).get('/api/images/1001/labels');
+    const res = await request(app).get("/api/images/1001/labels");
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      message: 'success',
+      message: "success",
       data: [
-        { label: 'Animal', confidence: 99 },
-        { label: 'Dog', confidence: 90 },
+        { label: "Animal", confidence: 99 },
+        { label: "Dog", confidence: 90 },
       ],
     });
     expect(photoapp.getImageLabels).toHaveBeenCalledWith(1001);
   });
 
-  test('non-int :assetid returns 400 envelope', async () => {
-    const res = await request(app).get('/api/images/notanumber/labels');
+  test("non-int :assetid returns 400 envelope", async () => {
+    const res = await request(app).get("/api/images/notanumber/labels");
 
     expect(res.status).toBe(400);
-    expect(res.body).toEqual({ message: 'error', error: 'invalid assetid' });
+    expect(res.body).toEqual({ message: "error", error: "invalid assetid" });
     expect(photoapp.getImageLabels).not.toHaveBeenCalled();
   });
 });
@@ -241,40 +256,40 @@ describe('GET /api/images/:assetid/labels', () => {
 // ---------------------------------------------------------------------------
 // GET /api/search?label=...
 // ---------------------------------------------------------------------------
-describe('GET /api/search', () => {
-  test('non-empty label returns search envelope', async () => {
+describe("GET /api/search", () => {
+  test("non-empty label returns search envelope", async () => {
     photoapp.searchImages.mockResolvedValue([
-      { assetid: 1001, label: 'Animal', confidence: 99 },
+      { assetid: 1001, label: "Animal", confidence: 99 },
     ]);
 
-    const res = await request(app).get('/api/search?label=animal');
+    const res = await request(app).get("/api/search?label=animal");
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      message: 'success',
-      data: [{ assetid: 1001, label: 'Animal', confidence: 99 }],
+      message: "success",
+      data: [{ assetid: 1001, label: "Animal", confidence: 99 }],
     });
-    expect(photoapp.searchImages).toHaveBeenCalledWith('animal');
+    expect(photoapp.searchImages).toHaveBeenCalledWith("animal");
   });
 
-  test('missing ?label= returns 400 envelope', async () => {
-    const res = await request(app).get('/api/search');
+  test("missing ?label= returns 400 envelope", async () => {
+    const res = await request(app).get("/api/search");
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({
-      message: 'error',
-      error: 'missing required query param: label',
+      message: "error",
+      error: "missing required query param: label",
     });
     expect(photoapp.searchImages).not.toHaveBeenCalled();
   });
 
-  test('empty/whitespace ?label= returns 400 envelope', async () => {
-    const res = await request(app).get('/api/search?label=%20%20');
+  test("empty/whitespace ?label= returns 400 envelope", async () => {
+    const res = await request(app).get("/api/search?label=%20%20");
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({
-      message: 'error',
-      error: 'missing required query param: label',
+      message: "error",
+      error: "missing required query param: label",
     });
     expect(photoapp.searchImages).not.toHaveBeenCalled();
   });
@@ -283,15 +298,15 @@ describe('GET /api/search', () => {
 // ---------------------------------------------------------------------------
 // DELETE /api/images
 // ---------------------------------------------------------------------------
-describe('DELETE /api/images', () => {
-  test('returns success envelope with deleted: true', async () => {
+describe("DELETE /api/images", () => {
+  test("returns success envelope with deleted: true", async () => {
     photoapp.deleteAll.mockResolvedValue({ deleted: true });
 
-    const res = await request(app).delete('/api/images');
+    const res = await request(app).delete("/api/images");
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      message: 'success',
+      message: "success",
       data: { deleted: true },
     });
     expect(photoapp.deleteAll).toHaveBeenCalledTimes(1);

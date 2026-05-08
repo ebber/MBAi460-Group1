@@ -1,0 +1,50 @@
+// Project 01 Part03 local PhotoApp core — split-MVP service core copy.
+//
+// Project 01 Part03 local core exports services / repositories / middleware
+// (factories) / schemas; never routers. Consumers own routing because their
+// wire contracts differ.
+//
+// Public API populated during:
+// - Phase 0.2 (mechanically pure extraction): config, services, middleware
+//   factories, schemas
+// - Phase 0.3 (CL9 SQL-into-repositories reconciliation): repositories.{
+//   users, assets, labels} — SQL byte-identical to Part 03 pre-extraction
+//
+// Approach: MBAi460-Group1/projects/project02/client/MetaFiles/Approach/
+// Project 01 split-MVP approach
+//
+// DI seams (CL3 — configurability via construction, not env):
+//   middleware.createErrorMiddleware({ statusCodeMap, errorShapeFor, logger })
+//   middleware.createUploadMiddleware({ destDir, sizeLimit })
+
+const config = require("./config");
+
+const services = {
+  aws: require("./services/aws"),
+  photoapp: require("./services/photoapp"),
+};
+
+const repositories = {
+  users: require("./repositories/users"),
+  assets: require("./repositories/assets"),
+  labels: require("./repositories/labels"),
+};
+
+const middleware = {
+  createErrorMiddleware: require("./middleware/error").createErrorMiddleware,
+  createUploadMiddleware: require("./middleware/upload").createUploadMiddleware,
+  cleanupTempFile: require("./middleware/upload").cleanupTempFile,
+};
+
+const schemas = {
+  envelopes: require("./schemas/envelopes"),
+  rows: require("./schemas/rows"),
+};
+
+module.exports = {
+  config,
+  services,
+  repositories,
+  middleware,
+  schemas,
+};
