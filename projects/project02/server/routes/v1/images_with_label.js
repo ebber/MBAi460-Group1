@@ -8,7 +8,7 @@
 // label ASC; the route validates label-presence + adapts the sentinel
 // error to the spec's 400 envelope shape.
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('../../src/photoapp-core');
 
 module.exports = async function getImagesWithLabel(req, res, next) {
   try {

@@ -15,7 +15,7 @@
 //                          { message: 'assetid must be an integer', userid: -1 } @ 400
 //
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('./src/photoapp-core');
 
 // p-retry is ESM-only; dynamic-import wrapper matches the assignment template's pattern.
 // Retry logic per PDF page 12 — pRetry `retries: 2` = 3 total attempts on the
@@ -35,10 +35,7 @@ exports.get_image = async (request, response) => {
 
     let result;
     try {
-      result = await pRetry(
-        () => services.photoapp.downloadImage(assetid),
-        { retries: 2 },
-      );
+      result = await pRetry(() => services.photoapp.downloadImage(assetid), { retries: 2 });
     } catch (err) {
       if (err && err.message === 'no such assetid') {
         return response.status(400).json({

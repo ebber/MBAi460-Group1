@@ -1,18 +1,17 @@
 // Approach 01-foundation.md § Phase 7 Task 7.1
 // mysql2 connection pool factory for Project 02.
 // Single pool per process; closePool() is called from server.js SIGTERM handler.
-// Promotion candidate for library 1.1.0 once stable.
+// Future shared-core extraction candidate once stable.
 //
 // Config source: PHOTOAPP_CONFIG_PATH env (override for tests/docker) or the
-// canonical Project 01 client config shared by both consumers.
+// Project 02-owned client/photoapp-config.ini fallback.
 const fs = require('fs');
 const path = require('path');
 const ini = require('ini');
 const mysql2 = require('mysql2/promise');
 
 const CONFIG_PATH =
-  process.env.PHOTOAPP_CONFIG_PATH ||
-  path.resolve(__dirname, '../../../project01/client/photoapp-config.ini');
+  process.env.PHOTOAPP_CONFIG_PATH || path.resolve(__dirname, '../../client/photoapp-config.ini');
 
 let pool = null;
 

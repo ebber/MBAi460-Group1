@@ -254,9 +254,9 @@ components:
               description: Number of images
 
     User:
-      # Field names match the lib's userRowToObject (lib/photoapp-server/src/
-      # schemas/rows.js) which itself mirrors the RDS schema columns frozen
-      # since Phase 0 (Lab 01 / Project 01 Part 02 baseline). Pranav's
+      # Field names match Project 02's local userRowToObject
+      # (server/src/photoapp-core/schemas/rows.js), which mirrors the RDS
+      # schema columns frozen since Phase 0 (Lab 01 / Project 01 Part 02 baseline). Pranav's
       # original draft listed {fname, lname, email, bucketfolder} which were
       # spec-guesses that don't match either the lib's behavior or the
       # database schema. Adjusted 2026-05-04 during Step 7 reconciliation.

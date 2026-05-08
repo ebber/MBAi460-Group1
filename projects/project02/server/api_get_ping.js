@@ -17,17 +17,16 @@
 // pattern check for `pRetry` in the file.
 //
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('./src/photoapp-core');
 
 // p-retry is ESM-only; dynamic-import wrapper matches the assignment template's pattern.
 const pRetry = (...args) => import('p-retry').then(({ default: pRetry }) => pRetry(...args));
 
 exports.get_ping = async (request, response) => {
   try {
-    const { s3_object_count, user_count } = await pRetry(
-      () => services.photoapp.getPing(),
-      { retries: 2 },
-    );
+    const { s3_object_count, user_count } = await pRetry(() => services.photoapp.getPing(), {
+      retries: 2,
+    });
     response.status(200).json({
       message: 'success',
       M: s3_object_count,

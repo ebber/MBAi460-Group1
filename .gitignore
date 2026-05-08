@@ -50,6 +50,7 @@ infra/terraform/*.tfplan
 # Agent working plans — internal coordination artifacts, not project history
 # ============================================================
 MetaFiles/plans/
+scratch/
 
 # ============================================================
 # Node / npm ignores — applies to any node_modules/ at any depth

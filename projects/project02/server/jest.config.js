@@ -2,8 +2,8 @@
 // Six-layer Jest multi-project configuration.
 // Each layer is independently runnable via npm run test:<layer>.
 //
-// Service-layer tests live in lib/photoapp-server/tests/ and are NOT duplicated here.
-// Project 02 surface tests cover the integration and contract surface.
+// Project 02 owns local-core tests under tests/unit/photoapp_core/.
+// Surface tests cover the integration and contract layers.
 module.exports = {
   projects: [
     {

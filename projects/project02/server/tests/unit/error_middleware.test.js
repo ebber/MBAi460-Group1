@@ -1,7 +1,7 @@
 // Approach 01-foundation.md § Phase 5 Task 5.2
 // Table-driven test: (AppError subclass × mount prefix) → (HTTP status × envelope shape).
 // Locks D7 (spec status codes on /v1) and the REST-correct deviations on /v2.
-const { middleware } = require('@mbai460/photoapp-server');
+const { middleware } = require('../../src/photoapp-core');
 const {
   BadRequestError,
   NotFoundError,

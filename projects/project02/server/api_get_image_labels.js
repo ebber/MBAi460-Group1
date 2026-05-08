@@ -12,7 +12,7 @@
 // (Iter-15: invalid input shape also returns 'no such assetid' per autograder.)
 //
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('./src/photoapp-core');
 
 // p-retry is ESM-only; dynamic-import wrapper matches the assignment template's pattern.
 // Retry logic per PDF page 12 — pRetry `retries: 2` = 3 total attempts on the
@@ -31,10 +31,7 @@ exports.get_image_labels = async (request, response) => {
 
     let data;
     try {
-      data = await pRetry(
-        () => services.photoapp.getImageLabels(assetid),
-        { retries: 2 },
-      );
+      data = await pRetry(() => services.photoapp.getImageLabels(assetid), { retries: 2 });
     } catch (err) {
       if (err && err.message === 'no such assetid') {
         return response.status(400).json({

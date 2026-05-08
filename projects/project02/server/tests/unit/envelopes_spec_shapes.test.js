@@ -1,9 +1,9 @@
 // Approach 01-foundation.md § Phase 8 Task 8.1
-// Surface-specific acceptance tests: assert the library's envelope helpers
+// Surface-specific acceptance tests: assert the local core envelope helpers
 // produce the exact spec-required envelope for each Project 02 route family.
-// CL9 note: library's successResponse() was made variadic in this phase;
+// Split-MVP note: successResponse() remains variadic here;
 // these tests lock the contract from the consumer's perspective.
-const { schemas } = require('@mbai460/photoapp-server');
+const { schemas } = require('../../src/photoapp-core');
 const { successResponse, errorResponse } = schemas.envelopes;
 
 describe('successResponse — Project 02 route family shapes', () => {

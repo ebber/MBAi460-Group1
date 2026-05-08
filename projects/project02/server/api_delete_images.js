@@ -27,7 +27,7 @@
 //   both are closed in finally blocks (theirs internal, ours below).
 //
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('./src/photoapp-core');
 
 // p-retry is ESM-only; dynamic-import wrapper matches the assignment template's pattern.
 // Retry logic per PDF page 12 — pRetry `retries: 2` = 3 total attempts.
@@ -47,10 +47,7 @@ exports.delete_images = async (request, response) => {
       // Execute the lib's deleteAll under retry. The lib manages its own
       // dbConn for the DELETE statements; the outer transaction here serves
       // as a rollback boundary on top of the lib's connection-per-call model.
-      await pRetry(
-        () => services.photoapp.deleteAll(),
-        { retries: 2 },
-      );
+      await pRetry(() => services.photoapp.deleteAll(), { retries: 2 });
 
       // Commit transaction on success.
       await dbConn.commit();
@@ -58,14 +55,22 @@ exports.delete_images = async (request, response) => {
       response.status(200).json({ message: 'success' });
     } catch (innerErr) {
       // Rollback transaction on any error from the work block.
-      try { await dbConn.rollback(); } catch (rbErr) { /* ignore rollback failure */ }
+      try {
+        await dbConn.rollback();
+      } catch {
+        /* ignore rollback failure */
+      }
       throw innerErr;
     }
   } catch (err) {
     response.status(500).json({ message: err.message });
   } finally {
     if (dbConn) {
-      try { await dbConn.end(); } catch (e) { /* ignore */ }
+      try {
+        await dbConn.end();
+      } catch {
+        /* ignore */
+      }
     }
   }
 };

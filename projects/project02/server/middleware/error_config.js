@@ -1,6 +1,6 @@
 // Approach 01-foundation.md § Phase 5 Task 5.2
-// DI config for the library's createErrorMiddleware factory.
-// Not the middleware itself — that lives in @mbai460/photoapp-server.
+// DI config for the local core createErrorMiddleware factory.
+// Not the middleware itself — that lives in ../src/photoapp-core.
 //
 // statusCodeMap(err, req):  mount-prefix-aware HTTP status selection.
 //   /v1 → spec status codes only (D7: 200/400/500; NotFoundError → 400 not 404)
@@ -11,7 +11,7 @@
 //   error responses carry the route-family's spec-required placeholder fields
 //   (e.g., { message: 'no such userid', assetid: -1 } for POST /image routes).
 //   Workstream 02 populates req.errorShape per route; Foundation falls back to
-//   the generic library error envelope.
+//   the generic local core error envelope.
 
 const {
   BadRequestError,
@@ -19,7 +19,7 @@ const {
   ConflictError,
   ServiceUnavailableError,
 } = require('./errors');
-const { schemas } = require('@mbai460/photoapp-server');
+const { schemas } = require('../src/photoapp-core');
 const { errorResponse } = schemas.envelopes;
 
 function isV2(req) {
@@ -33,7 +33,7 @@ function statusCodeMap(err, req) {
   if (err instanceof ServiceUnavailableError) return 503;
   // Multer upload-size errors
   if (err && typeof err.code === 'string' && err.code.startsWith('LIMIT_')) return 400;
-  // Library string-match errors (backward compat with Part 03 service layer)
+  // Local core string-match errors (backward compat with Part 03 service layer)
   if (err && err.message === 'no such userid') return 400;
   if (err && err.message === 'no such assetid') return isV2(req) ? 404 : 400;
   return 500;

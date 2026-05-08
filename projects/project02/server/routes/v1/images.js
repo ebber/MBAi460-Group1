@@ -6,7 +6,7 @@
 // Consumes lib's services.photoapp.listImages(userid); the userid arg is
 // optional — pass undefined when query param absent.
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('../../src/photoapp-core');
 
 module.exports = async function getImages(req, res, next) {
   try {

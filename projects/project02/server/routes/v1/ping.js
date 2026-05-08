@@ -8,7 +8,7 @@
 // Consumes lib's services.photoapp.getPing() — single source of S3 + DB
 // orchestration; this route is a thin envelope adapter.
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('../../src/photoapp-core');
 
 module.exports = async function getPing(req, res, next) {
   try {

@@ -240,7 +240,7 @@ Expected: `Checks: 26 | Passed: 26 | Failed: 0`. Validates schema, seed data, AU
 
 ## Step 7 — Install Node workspace + run a consumer's tests
 
-The JS portions of the repo are an [npm workspaces](https://docs.npmjs.com/cli/v10/using-npm/workspaces) monorepo. Install once from the repo root; consumers see the shared library `@mbai460/photoapp-server` via symlinks into their `node_modules/`.
+The JS portions of the repo are an [npm workspaces](https://docs.npmjs.com/cli/v10/using-npm/workspaces) monorepo. Install once from the repo root. Project 01 Part 03 still consumes the shared library `@mbai460/photoapp-server`; Project 02's split-MVP runtime uses its local core under `projects/project02/server/src/photoapp-core`.
 
 ### Prerequisites
 
@@ -258,22 +258,21 @@ cd MBAi460-Group1     # repo root, NOT inside a workspace
 npm install
 ```
 
-This installs every workspace's deps and creates symlinks like `node_modules/@mbai460/photoapp-server -> ../lib/photoapp-server/`.
+This installs every workspace's deps and creates symlinks like `node_modules/@mbai460/photoapp-server -> ../lib/photoapp-server/` for surfaces that still consume the shared library.
 
-### Verify the symlink + boot
+### Verify the active JS surfaces
 
 ```bash
-utils/lib-symlink-check                              # 5/5 PASS expected
 cd projects/project01/Part03 && npm test             # 32 passed, 2 skipped (live-gated)
-cd projects/project02/server && npm test             # 2 passed (sub-phase 1.0 baseline)
 cd lib/photoapp-server && npm test                   # 99 passed
+cd projects/project02/server && npm test             # Project 02 split-MVP server tests
 ```
 
 Or in one shot from the repo root: `npm test --workspaces`.
 
 ### Working on Project 02
 
-Project 02 is the second consumer of `@mbai460/photoapp-server` (Project 02 Part 01 quest, post-Phase-0). The active workstream is tracked in `projects/project02/client/MetaFiles/Approach/Plan.md` + the sibling `OrientationMap.md`.
+Project 02 is self-contained for the split MVP. Its local app core is `projects/project02/server/src/photoapp-core`; routes, tests, config, Docker, and Terraform are Project 02-owned.
 
 ```bash
 cd projects/project02/server
@@ -282,15 +281,16 @@ npm start                                            # boots on PORT=8080
 npm test                                             # workspace test suite
 ```
 
-Day-to-day pickup: read `projects/project02/client/MetaFiles/OrientationMap.md` *Active* section + `MetaFiles/Approach/01-foundation.md` for the in-flight phase. The `_assignment-template/` subdir under `server/` is read-only reference (Prof. Hummel's starter); do not import from it.
+Day-to-day pickup: read `projects/project02/ARCHITECTURE.md` for the current split-MVP boundary. The older Approach/Plan docs under `projects/project02/client/MetaFiles/Approach/` preserve historical shared-library-era planning context until the history-vs-active docs convention is applied. The `_assignment-template/` subdir under `server/` is read-only reference (Prof. Hummel's starter); do not import from it.
 
 ### Working with the shared library
 
-- **Editing lib code:** `lib/photoapp-server/src/...` — consumers see the change immediately via the symlink. No re-install needed.
+- **Editing lib code:** `lib/photoapp-server/src/...` — active consumers see the change immediately via the symlink. No re-install needed.
 - **Editing lib `package.json`** (new dep, version): re-run `npm install` from the repo root once.
 - **Adding a public export:** see the *How to add a new export* section in [`lib/photoapp-server/README.md`](../lib/photoapp-server/README.md). Update `tests/exports-shape.test.js` in the same PR.
+- **Editing Project 02 behavior:** change `projects/project02/server/src/photoapp-core/...`, not `lib/photoapp-server`.
 
-If `require('@mbai460/photoapp-server')` ever fails with "Cannot find module," run `utils/lib-symlink-check` from the repo root for a 5-line ground-truth check on workspace state.
+If `require('@mbai460/photoapp-server')` ever fails in a surface that still consumes the shared lib, run `utils/lib-symlink-check` from the repo root for a 5-line ground-truth check on workspace state.
 
 For day-2 contribution discipline (where to install new deps, lockfile conflict survival, library-touching protocol, conventional commits): see [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 

@@ -12,7 +12,7 @@ SHELL := /bin/bash
 SERVER_DIR := server
 CLIENT_DIR := client
 
-.PHONY: help install test test-unit test-integration test-contract test-smoke test-happy test-live lint format clean clean-dist up down submit-server submit-client submit-server-autograder submit-client-autograder
+.PHONY: help install test test-unit test-integration test-contract test-smoke test-happy test-live lint format clean clean-workspace clean-dist up down submit-server submit-client submit-server-autograder submit-client-autograder
 
 help: ## List available targets
 	@awk 'BEGIN {FS = ":.*?## "}; /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -57,8 +57,12 @@ lint: ## ESLint + Prettier (server). Python lint lands when pyproject.toml does.
 format: ## Auto-fix ESLint + Prettier (server)
 	cd $(SERVER_DIR) && npm run lint:fix
 
-clean: ## Remove node_modules + coverage artifacts (workspace-wide)
-	cd ../.. && rm -rf node_modules projects/project01/Part03/node_modules projects/project02/server/node_modules lib/photoapp-server/node_modules
+clean: ## Remove Project 02 server node_modules + coverage artifacts
+	rm -rf $(SERVER_DIR)/node_modules
+	rm -rf $(SERVER_DIR)/coverage
+
+clean-workspace: ## Remove root + Project 02 server node_modules (does not touch Project 01)
+	cd ../.. && rm -rf node_modules projects/project02/server/node_modules
 	rm -rf $(SERVER_DIR)/coverage
 
 clean-dist: ## Prune dist/ to the most recent server + client submission (keeps the 4 most recent of each type by default)
