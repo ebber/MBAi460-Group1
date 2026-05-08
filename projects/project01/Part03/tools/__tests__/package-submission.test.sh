@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
 # Test for package-submission.sh — verifies the produced tarball is
-# self-contained: extracts cleanly, and `require('@mbai460/photoapp-server')`
-# resolves inside the extracted tree without any further install step.
+# self-contained: extracts cleanly, and the local PhotoApp core resolves inside
+# the extracted tree without any further install step.
 #
 # This is the second checklist item from Approach § Phase 4.3:
 #
-#   "Tarball extracts cleanly and require('@mbai460/photoapp-server')
-#    resolves inside the extracted tree."
+#   "Tarball extracts cleanly and the local PhotoApp core resolves inside the
+#    extracted tree."
 #
 # Lives outside Jest because the script being tested is a bash script
 # orchestrating tar/cp/npm — running it through node-jest would either
@@ -49,12 +49,10 @@ trap 'rm -rf "${EXTRACT}"' EXIT
 echo "==> Step 3: extract to ${EXTRACT}"
 tar -xzf "${TAR}" -C "${EXTRACT}"
 
-# --- Verify the lib resolves WITHOUT any subsequent npm install ---
-# The whole point of inlining is that the grader's `node` can require
-# the lib straight out of node_modules/, even before `npm install` runs.
-echo "==> Step 4: require('@mbai460/photoapp-server') from extracted tree"
+# --- Verify the local core resolves WITHOUT any subsequent npm install ---
+echo "==> Step 4: require local photoapp core from extracted tree"
 ( cd "${EXTRACT}" && node -e "
-  const lib = require('@mbai460/photoapp-server');
+  const lib = require('./server/src/photoapp-core');
   const wantTopKeys = ['config', 'middleware', 'repositories', 'schemas', 'services'];
   const got = Object.keys(lib).sort();
   for (const k of wantTopKeys) {
@@ -78,7 +76,7 @@ echo "==> Step 4: require('@mbai460/photoapp-server') from extracted tree"
 " || { echo "FAIL: require check failed inside extracted tree"; exit 1; }
 )
 
-# --- Verify the boot graph (server.js → app.js → lib) resolves ---
+# --- Verify the boot graph (server.js → app.js → local core) resolves ---
 echo "==> Step 5: server.js boot graph from extracted tree (listen stubbed)"
 ( cd "${EXTRACT}" && node -e "
   require('http').Server.prototype.listen = function() { process.exit(0); };
@@ -87,4 +85,4 @@ echo "==> Step 5: server.js boot graph from extracted tree (listen stubbed)"
 )
 
 echo ""
-echo "PASS — submission tarball is self-contained and lib resolves"
+echo "PASS — submission tarball is self-contained and local core resolves"

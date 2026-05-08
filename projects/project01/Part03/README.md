@@ -4,7 +4,7 @@ Part 03 builds the user interface for the PhotoApp API from earlier project work
 
 **Stack (decided 2026-04-26):** React + Vite frontend, Express + Node backend. Built-only dev mode (Vite build → Express serves `frontend/dist`). See `MetaFiles/refactor-log.md` 2026-04-26 for the full Q1–Q6 decision record.
 
-**Library consumer (since 2026-05-02 / Phase 0):** This server is a consumer of the shared library [`@mbai460/photoapp-server`](../../../lib/photoapp-server/README.md). The library owns services, repositories, middleware factories, schemas, and config; this tree owns the `/api/*` route layer and surface-specific tests. Editing lib code is immediately visible here via the npm-workspace symlink — no re-install needed unless `lib/photoapp-server/package.json` changes. See `MetaFiles/refactor-log.md` 2026-05-02 (closeout) for the full extraction record and [`learnings/2026-05-02-photoapp-server-extraction.md`](../../../learnings/2026-05-02-photoapp-server-extraction.md) for the CL9 reconciliation log.
+**Split MVP local core (since 2026-05-07):** This server owns a local PhotoApp core at `server/src/photoapp-core/`. The local core owns services, repositories, middleware factories, schemas, and config for Part 03; this tree also owns the `/api/*` route layer and surface-specific tests. Historical shared-library extraction records remain in `MetaFiles/refactor-log.md` and `learnings/2026-05-02-photoapp-server-extraction.md`.
 
 ## Start Here
 
@@ -19,7 +19,7 @@ Read these in order:
 ## Current Working Areas
 
 - `ClaudeDesignDrop/` — collaborator drop zone for raw Claude Design exports.
-- `server/` — Express server. Smoothed `app.js` (exports app), `server.js` (listen entrypoint), `routes/photoapp_routes.js` (`/api` placeholder), `tests/` (Jest + supertest). Legacy `api_*.js` files retained as a behavioral reference (per Part 03 TODO).
+- `server/` — Express server. Smoothed `app.js` (exports app), `server.js` (listen entrypoint), `routes/photoapp_routes.js` (`/api` placeholder), `src/photoapp-core/` (local app core), `tests/` (Jest + supertest). Legacy `api_*.js` files retained as a behavioral reference (per Part 03 TODO).
 - `frontend/` — placeholder build under `frontend/dist/` (UI workstream replaces with a real Vite build).
 - `MetaFiles/Reference/` — reference-only copies of Project 2 Streamlit UI and Python client.
 - `MetaFiles/Approach/` — execution checklists for the team.
@@ -44,7 +44,7 @@ Server/API collaborator:
 
 ## Run the Server
 
-The repo is an npm workspaces monorepo (since 2026-05-02). Install **once at the repo root**, then operate from this directory:
+The repo still uses a root lockfile/workspace install for dependency determinism. Install **once at the repo root**, then operate from this directory:
 
 ```bash
 # 1. Install workspace deps (first run only — from MBAi460-Group1/, NOT this dir)
@@ -106,4 +106,3 @@ After workstream 02 acceptance, downstream workstreams have:
 - Keep Part 3 self-contained for Canvas submission.
 - Treat copied Project 2 files as a working baseline, not final architecture.
 - Before changing endpoint paths or response shapes, update `MetaFiles/Approach/00-coordination-and-contracts.md`.
-

@@ -1,12 +1,11 @@
-# Part 03 PhotoApp web service — workspace-aware Docker image.
+# Part 03 PhotoApp web service — split-MVP Docker image.
 #
 # This Dockerfile is built from the monorepo root, not the Part 03 directory:
 #
 #   docker build -t mbai460-part03:dev -f projects/project01/Part03/Dockerfile .
 #
-# It is the reference implementation of the npm-workspaces copy-and-install
-# pattern (Approach 00-shared-library-extraction.md § Phase 4.2). Project 02
-# Phase 1.10 will use the same pattern.
+# Uses the root lockfile for deterministic installs, but Project 01 Part03
+# runtime code is self-contained under projects/project01/Part03.
 #
 # Layer ordering is deliberate: package descriptors are copied (and the
 # install layer is cached) BEFORE source code, so editing server.js does
@@ -20,10 +19,8 @@ FROM node:24-alpine AS base
 WORKDIR /app
 
 # ---------------------------------------------------------------------------
-# Stage 1 — install dependencies for the Part 03 workspace + the lib it
-# transitively depends on. We copy the *minimum* needed for `npm ci` to
-# resolve the workspace graph: the root descriptors, plus every workspace
-# package.json (preserving directory structure).
+# Stage 1 — install dependencies for the Part 03 workspace.
+# Copy the minimum needed for `npm ci` to resolve the workspace graph.
 # ---------------------------------------------------------------------------
 FROM base AS deps
 
@@ -31,14 +28,10 @@ FROM base AS deps
 # isn't present at the root you'll get a less-deterministic install.
 COPY package.json package-lock.json .npmrc ./
 
-# Workspace descriptors. Note: projects/project02/server has no package.json
-# yet (Phase 1 scaffolds it), so it's intentionally absent here. When Phase 1
-# lands, append:
-#   COPY projects/project02/server/package.json projects/project02/server/
-COPY lib/photoapp-server/package.json lib/photoapp-server/
+# Workspace package descriptor.
 COPY projects/project01/Part03/package.json projects/project01/Part03/
 
-# Install only the Part 03 workspace + its workspace deps (the lib).
+# Install only the Part 03 workspace.
 # --include-workspace-root pulls root devDeps if any are needed for postinstall;
 # omit=dev keeps the production tree lean.
 RUN npm ci --workspace=projects/project01/Part03 --include-workspace-root --omit=dev
@@ -52,12 +45,10 @@ FROM base AS runtime
 # require() resolution finds the workspace packages.
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package.json /app/package-lock.json /app/.npmrc ./
-COPY --from=deps /app/lib/photoapp-server/package.json ./lib/photoapp-server/
 COPY --from=deps /app/projects/project01/Part03/package.json ./projects/project01/Part03/
 
 # Source code. Tests, frontend src, and IDE artifacts are excluded via
 # .dockerignore, so this COPY only brings in what the runtime needs.
-COPY lib/photoapp-server/src ./lib/photoapp-server/src
 COPY projects/project01/Part03/server ./projects/project01/Part03/server
 
 # Pre-built SPA assets are served as static files by app.js. If they aren't

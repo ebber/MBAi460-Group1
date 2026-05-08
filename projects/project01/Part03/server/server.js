@@ -8,8 +8,8 @@
 // Jest + supertest import `app` without holding a real socket.
 //
 
-const app = require('./app');
-const { config } = require('@mbai460/photoapp-server');
+const app = require("./app");
+const { config } = require("./src/photoapp-core");
 
 const port = config.web_service_port;
 

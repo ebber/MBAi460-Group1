@@ -10,17 +10,17 @@
 // router below and replaced with real endpoints by workstream 03.
 //
 
-const express = require('express');
-const path = require('path');
-const photoappRoutes = require('./routes/photoapp_routes');
-const { middleware: libMiddleware } = require('@mbai460/photoapp-server');
+const express = require("express");
+const path = require("path");
+const photoappRoutes = require("./routes/photoapp_routes");
+const { middleware: libMiddleware } = require("./src/photoapp-core");
 
 const app = express();
 
 // Resolve the frontend build artifact directory once, so route handlers
 // can fall back to index.html for the SPA. UI workstream produces a real
 // Vite build into this directory; Phase 4 places a placeholder index.html.
-const FRONTEND_DIST = path.join(__dirname, '..', 'frontend', 'dist');
+const FRONTEND_DIST = path.join(__dirname, "..", "frontend", "dist");
 
 // ---- Mount order is LOAD-BEARING (see 02-server-foundation.md §7) ----
 // 1. JSON body parser (preserved from baseline; supports large uploads).
@@ -31,18 +31,18 @@ const FRONTEND_DIST = path.join(__dirname, '..', 'frontend', 'dist');
 // ----------------------------------------------------------------------
 
 // 1. JSON middleware
-app.use(express.json({ strict: false, limit: '50mb' }));
+app.use(express.json({ strict: false, limit: "50mb" }));
 
 // 2. Liveness probe — deliberately outside /api/*. /api/ping (workstream 03)
 //    is the PhotoApp app-level ping that exercises S3 + RDS; /health is a
 //    server-level signal that does not touch any external dependency.
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'running' });
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "running" });
 });
 
 // 3. /api router (placeholder in Phase 7; real endpoints in workstream 03).
 //    MUST be mounted BEFORE express.static.
-app.use('/api', photoappRoutes);
+app.use("/api", photoappRoutes);
 
 // 3a. /api 404 fallback — JSON envelope for unmatched /api/* paths.
 //     Mounted after the real /api router so it only catches what fell
@@ -50,8 +50,10 @@ app.use('/api', photoappRoutes);
 //     rest of the API (no Express default HTML 404). The SPA fallback
 //     below already excludes /api/* so it never reaches this handler
 //     for non-/api paths.
-app.use('/api', (req, res) => {
-  res.status(404).json({ message: `No route for ${req.method} ${req.originalUrl}` });
+app.use("/api", (req, res) => {
+  res
+    .status(404)
+    .json({ message: `No route for ${req.method} ${req.originalUrl}` });
 });
 
 // 4. Static frontend assets.
@@ -66,14 +68,14 @@ app.use(express.static(FRONTEND_DIST));
 //    Express 5 changed path-to-regexp; '*' is no longer valid. Using
 //    `app.use` middleware instead, which bypasses path parsing entirely.
 app.use((req, res, next) => {
-  if (req.method !== 'GET') return next();
-  if (req.path.startsWith('/api')) return next();
-  res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
+  if (req.method !== "GET") return next();
+  if (req.path.startsWith("/api")) return next();
+  res.sendFile(path.join(FRONTEND_DIST, "index.html"));
 });
 
 // Centralized error middleware via the shared library's DI factory. Default
 // args reproduce Part 03's pre-extraction status-code mapping + error envelope
-// shape exactly (see lib/photoapp-server/src/middleware/error.js for the
+// shape exactly (see src/photoapp-core/middleware/error.js for the
 // default mapping; this consumer passes {} = use Part 03 defaults).
 app.use(libMiddleware.createErrorMiddleware({}));
 
