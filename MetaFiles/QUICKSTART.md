@@ -312,11 +312,11 @@ Day-to-day pickup: read `projects/project02/ARCHITECTURE.md` for the current spl
 
 ### Working with local PhotoApp cores
 
-- **Editing Project 01 Part 03 behavior:** change `projects/project01/Part03/server/src/photoapp-core/...`, not `lib/photoapp-server`.
-- **Editing Project 02 behavior:** change `projects/project02/server/src/photoapp-core/...`, not `lib/photoapp-server`.
-- **Future shared-core work:** `lib/photoapp-server/` is historical/future shared-core material until a deliberate DocumentApp/PhotoApp core extraction is designed.
+- **Editing Project 01 Part 03 behavior:** change `projects/project01/Part03/server/src/photoapp-core/...`, not `lib/deprecated/photoapp-server`.
+- **Editing Project 02 behavior:** change `projects/project02/server/src/photoapp-core/...`, not `lib/deprecated/photoapp-server`.
+- **Future shared-core work:** `lib/deprecated/photoapp-server/` is historical/future shared-core material until a deliberate DocumentApp/PhotoApp core extraction is designed.
 
-Do not assume changes under `lib/photoapp-server/` affect active project runtimes after the split MVP.
+Do not assume changes under `lib/deprecated/photoapp-server/` affect active project runtimes after the split MVP.
 
 For day-2 contribution discipline (where to install new deps, lockfile conflict survival, library-touching protocol, conventional commits): see [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 

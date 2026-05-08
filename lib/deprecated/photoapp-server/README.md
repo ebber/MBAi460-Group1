@@ -1,4 +1,15 @@
-# `@mbai460/photoapp-server`
+# Deprecated: `@mbai460/photoapp-server`
+
+This package is deprecated as of 2026-05-07.
+
+Project 01 Part03 and Project 02 now use project-owned local PhotoApp cores:
+
+- `projects/project01/Part03/server/src/photoapp-core`
+- `projects/project02/server/src/photoapp-core`
+
+Do not add new runtime dependencies on this package. It is preserved for historical reference and future PhotoApp/DocumentApp shared-core comparison only.
+
+---
 
 Shared service core for MBAi 460 PhotoApp surfaces. Internals-only library (CL2): exports the use-cases, repositories, schemas, AWS clients, and middleware factories that both PhotoApp surfaces share. **Does not export routers** — consumers own routing because their wire contracts differ (Part 03 mounts under `/api/*`; Project 02's `/v1` mounts at root + `/v2` for the engineering surface).
 

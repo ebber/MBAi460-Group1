@@ -2,7 +2,7 @@
   "name": "mbai460-group1-monorepo",
   "version": "0.0.0",
   "private": true,
-  "description": "MBAi 460 group class project monorepo — workspaces for the shared service-core library and per-project trees. See CONTRIBUTING.md for workspace etiquette and lib/photoapp-server/README.md for the library's public API.",
+  "description": "MBAi 460 group class project monorepo — workspaces for the shared service-core library and per-project trees. See CONTRIBUTING.md for workspace etiquette; deprecated shared-core reference lives under lib/deprecated/.",
   "workspaces": [
     "lib/*",
     "projects/project01/Part03",

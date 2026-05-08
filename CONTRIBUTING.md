@@ -40,10 +40,10 @@ Root-level installs (`cd MBAi460-Group1 && npm install <pkg>`) are reserved for 
 
 ### How the symlinks work
 
-When you run `npm install` from the root, npm still creates workspace symlinks for declared packages. `lib/photoapp-server` remains in the repo as historical/future shared-core material, but active split-MVP project runtimes use local core copies. This means:
+When you run `npm install` from the root, npm still creates workspace symlinks for declared packages. `lib/deprecated/photoapp-server` remains in the repo as historical/future shared-core material, but active split-MVP project runtimes use local core copies. This means:
 
-- A code change in `lib/photoapp-server/src/` should not change Project 01 Part03 or Project 02 split-MVP runtime behavior.
-- A change to `lib/photoapp-server/package.json` (new dep, version bump) **does** require a fresh root `npm install`.
+- A code change in `lib/deprecated/photoapp-server/src/` should not change Project 01 Part03 or Project 02 split-MVP runtime behavior.
+- A change to `lib/deprecated/photoapp-server/package.json` (new dep, version bump) **does** require a fresh root `npm install`.
 - Change `projects/project01/Part03/server/src/photoapp-core/` for Project 01 Part03 behavior.
 - Change `projects/project02/server/src/photoapp-core/` for Project 02 behavior.
 
@@ -98,12 +98,12 @@ This is heavy-handed but reliable. Save it for genuine "everything's broken" mom
 
 ## Library change protocol (CL12)
 
-If your PR touches `lib/photoapp-server/` (or any future `lib/<Y>/`), it is a **library-touching PR**. After the Project 01/02 split MVPs, no active project runtime consumes this library by default; reviewers still need to think across future shared-core plans and repo-wide install behavior.
+If your PR touches `lib/deprecated/photoapp-server/` (or any future `lib/<Y>/`), it is a **library-touching PR**. After the Project 01/02 split MVPs, no active project runtime consumes this deprecated library by default; reviewers still need to think across future shared-core plans and repo-wide install behavior.
 
 Three concrete obligations:
 
 1. **Apply the `lib:photoapp-server` GitHub label** (or the label corresponding to the library you touched).
-2. **Confirm affected tests pass.** At minimum: `cd lib/photoapp-server && npm test`. Also run `cd projects/project01/Part03 && npm test` or `cd projects/project02/server && npm test` when the PR touches those project-local cores, project surfaces, or repo-wide workspace/install behavior.
+2. **Confirm affected tests pass.** At minimum: `cd lib/deprecated/photoapp-server && npm test` if the deprecated library is touched. Also run `cd projects/project01/Part03 && npm test` or `cd projects/project02/server && npm test` when the PR touches those project-local cores, project surfaces, or repo-wide workspace/install behavior.
 3. **Mention all affected consumers in the PR description**, even if the change is "purely additive" — additive changes to a library still ripple into consumer test runs and reviewer attention.
 
 The PR template (`.github/pull_request_template.md`) carries the library-touching checkbox; the label is enforced manually until branch-protection automation lands.
@@ -185,7 +185,7 @@ Body conventions:
 
 Open PRs against `main`. Required status checks (once branch protection lands per Phase 0.6.3):
 
-- `test (lib/photoapp-server)`
+- `test (lib/deprecated/photoapp-server)`
 - `test (projects/project01/Part03)`
 - `test (projects/project02/server)` — once that workspace exists
 
@@ -217,7 +217,7 @@ Approach docs surface "Optional Test / Utility / Visualization Steps" — work t
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | First-run env setup     | [`MetaFiles/QUICKSTART.md`](MetaFiles/QUICKSTART.md)                                                             |
 | Repo overview           | [`README.md`](README.md)                                                                                         |
-| Library API             | [`lib/photoapp-server/README.md`](lib/photoapp-server/README.md)                                                 |
+| Library API             | [`lib/deprecated/photoapp-server/README.md`](lib/deprecated/photoapp-server/README.md)                                                 |
 | Doc-freshness rule      | [`MetaFiles/DOC-FRESHNESS.md`](MetaFiles/DOC-FRESHNESS.md)                                                       |
 | Active Project 02 quest | [`projects/project02/client/MetaFiles/OrientationMap.md`](projects/project02/client/MetaFiles/OrientationMap.md) |
 | TODO queue              | [`MetaFiles/TODO.md`](MetaFiles/TODO.md)                                                                         |

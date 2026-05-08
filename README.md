@@ -22,7 +22,7 @@ Each lab/project part is graded separately and builds on a shared AWS environmen
 
 Since 2026-05-02 (Phase 0 of the Project 02 Part 01 quest), the JavaScript portions of the repo are organized as npm workspaces. The root `package.json` currently declares:
 
-- `lib/*` — historical/future shared libraries (currently `lib/photoapp-server`; no active project runtime should depend on it after the split MVPs)
+- `lib/` — historical/future shared libraries; deprecated cores live under `lib/deprecated/`
 - `projects/project01/Part03` — Part 03 PhotoApp web service (workspace member for install/test ergonomics; runtime is self-contained under `projects/project01/Part03/server/src/photoapp-core`)
 - `projects/project02/server` — Project 02 server (workspace member for install/test ergonomics; runtime is self-contained under `projects/project02/server/src/photoapp-core`)
 
@@ -30,7 +30,7 @@ Since 2026-05-02 (Phase 0 of the Project 02 Part 01 quest), the JavaScript porti
 
 ```sh
 cd MBAi460-Group1
-npm install                   # installs every workspace; symlinks the lib into consumer node_modules
+npm install                   # installs every workspace from the root lockfile
 ```
 
 After install, workspace packages are available from the root install, but Project 01 Part03 and Project 02 now own copied local PhotoApp cores for their split MVPs. Lockfiles are root-only — there is exactly one `package-lock.json`.

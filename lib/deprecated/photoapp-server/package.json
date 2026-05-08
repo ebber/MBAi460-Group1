@@ -1,7 +1,7 @@
 {
   "name": "@mbai460/photoapp-server",
   "version": "1.0.0",
-  "description": "Shared service core for MBAi 460 PhotoApp surfaces — extracted from Project 01 Part 03 server tree (Phase 0.2 mechanically pure + Phase 0.3 CL9 SQL-into-repositories bounded reconciliation). Internals-only: exports services / repositories / middleware (factories) / schemas; never routers (consumers own routing because their wire contracts differ).",
+  "description": "DEPRECATED historical PhotoApp service core. Preserved for reference only after Project 01 Part03 and Project 02 moved to project-owned local cores.",
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
