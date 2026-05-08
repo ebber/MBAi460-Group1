@@ -1,10 +1,10 @@
 // Approach 01-foundation.md § Phase 7 Task 7.2
-// opossum circuit breakers wrapping the library's S3 and Rekognition clients.
+// opossum circuit breakers wrapping the local core S3 and Rekognition clients.
 // One breaker per service, memoised per process.
 // State changes are logged at warn so CloudWatch / pino captures transitions.
-// Promotion candidate for library 1.1.0.
+// Future shared-core extraction candidate.
 const CircuitBreaker = require('opossum');
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('../src/photoapp-core');
 const logger = require('../observability/pino');
 
 const BREAKER_OPTS = {

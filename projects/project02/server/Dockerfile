@@ -1,18 +1,18 @@
-# Project 02 PhotoApp web service — workspace-aware Docker image.
+# Project 02 PhotoApp web service — split-MVP Docker image.
 #
 # Build from the monorepo root (NOT this directory):
 #
 #   docker build -t mbai460-project02:dev -f projects/project02/server/Dockerfile .
 #
-# Follows the same layer pattern as projects/project01/Part03/Dockerfile
-# (Approach 00-shared-library-extraction.md § Phase 4.2 — workspace-aware copy).
+# Uses the root lockfile for deterministic installs, but Project 02 runtime code
+# is self-contained under projects/project02/server.
 # Layer ordering: package descriptors first (install layer cached) then source.
 
 FROM node:24-alpine AS base
 WORKDIR /app
 
 # ---------------------------------------------------------------------------
-# Stage 1 — install workspace deps for project02-server + its lib dep.
+# Stage 1 — install workspace deps for project02-server.
 # Copy the minimum needed for `npm ci` to resolve the workspace graph.
 # ---------------------------------------------------------------------------
 FROM base AS deps
@@ -20,11 +20,10 @@ FROM base AS deps
 # Root descriptors (.npmrc carries engine-strict + lockfile flags)
 COPY package.json package-lock.json .npmrc ./
 
-# Workspace package descriptors — preserving directory structure
-COPY lib/photoapp-server/package.json lib/photoapp-server/
+# Workspace package descriptor — preserving directory structure
 COPY projects/project02/server/package.json projects/project02/server/
 
-# Install only the project02-server workspace + its workspace deps (the lib).
+# Install only the project02-server workspace.
 # --omit=dev keeps the production image lean.
 RUN npm ci --workspace=projects/project02/server --include-workspace-root --omit=dev
 
@@ -35,11 +34,9 @@ FROM base AS runtime
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package.json /app/package-lock.json /app/.npmrc ./
-COPY --from=deps /app/lib/photoapp-server/package.json ./lib/photoapp-server/
 COPY --from=deps /app/projects/project02/server/package.json ./projects/project02/server/
 
 # Source trees (tests, MetaFiles, _assignment-template excluded via .dockerignore)
-COPY lib/photoapp-server/src ./lib/photoapp-server/src
 COPY projects/project02/server ./projects/project02/server
 
 # Run from the server directory so '../client/photoapp-config.ini' resolves to

@@ -13,7 +13,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('../../src/photoapp-core');
 
 module.exports = async function postImage(req, res, next) {
   try {
@@ -42,7 +42,7 @@ module.exports = async function postImage(req, res, next) {
         `p02-upload-${Date.now()}-${userid}-${path.basename(local_filename)}`,
       );
       fs.writeFileSync(tmpPath, buffer);
-    } catch (decodeErr) {
+    } catch {
       return res.status(400).json({ message: 'invalid base64 data', assetid: -1 });
     }
 

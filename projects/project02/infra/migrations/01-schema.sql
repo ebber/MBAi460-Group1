@@ -1,7 +1,8 @@
 -- 01-schema.sql
--- PhotoApp schema bootstrap — mounted to /docker-entrypoint-initdb.d/ by docker-compose.
+-- Project 02-owned PhotoApp schema bootstrap — mounted to /docker-entrypoint-initdb.d/ by docker-compose.
 -- Runs once when the MySQL container initialises a fresh volume.
--- Source: projects/project01/create-photoapp.sql + create-photoapp-labels.sql
+-- Lineage: derived from Project 01 create-photoapp.sql + create-photoapp-labels.sql.
+-- This file is the Project 02 runtime/local-dev schema contract for the split MVP.
 --
 -- Note: user_name / user_pwd in photoapp-config.ini.example map to
 --       MYSQL_USER / MYSQL_PASSWORD in compose (full-access single user for local dev).

@@ -7,7 +7,7 @@
 // S3 DeleteObjects) per Phase 0 reconciliation log. Route is a thin
 // envelope adapter — no domain logic.
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('../../src/photoapp-core');
 
 module.exports = async function deleteImages(req, res, next) {
   try {

@@ -57,7 +57,7 @@ module "iam" {
   source = "../../modules/iam"
 
   bucket_name               = var.bucket_name
-  s3_read_write_policy_path = "${path.root}/../../../../projects/project01/s3-read-write-policy.json.txt"
+  s3_read_write_policy_path = "${path.root}/../../policies/s3-read-write-policy.json"
   tags                      = local.common_tags
 }
 

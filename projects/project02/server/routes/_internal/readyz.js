@@ -2,7 +2,7 @@
 // GET /readyz — readiness probe: verifies RDS pool + S3 reachability.
 // Returns 200 if both deps are up; 503 if either is down.
 // Mounted outside /v1 so ALB + monitoring hit it directly (F2 convention).
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('../../src/photoapp-core');
 const { getPool } = require('../../services/pool');
 const { HeadBucketCommand } = require('@aws-sdk/client-s3');
 

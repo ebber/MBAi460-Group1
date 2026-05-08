@@ -1,6 +1,6 @@
 // Integration tests for /v1 spec routes — happy path + key error envelopes.
 //
-// Mocks @mbai460/photoapp-server's services.photoapp.* so tests are
+// Mocks ../../src/photoapp-core's services.photoapp.* so tests are
 // hermetic (no real AWS / DB). Verifies the route adapters correctly:
 //   1. Translate lib service responses to PDF-spec envelopes
 //   2. Translate lib sentinel errors to PDF-spec error envelopes (400 + spec shape)
@@ -8,8 +8,8 @@
 //
 // Per-route ordering matches the mount order in app.js.
 
-jest.mock('@mbai460/photoapp-server', () => {
-  const actual = jest.requireActual('@mbai460/photoapp-server');
+jest.mock('../../src/photoapp-core', () => {
+  const actual = jest.requireActual('../../src/photoapp-core');
   return {
     ...actual,
     services: {
@@ -30,7 +30,7 @@ jest.mock('@mbai460/photoapp-server', () => {
 
 const request = require('supertest');
 const app = require('../../app');
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('../../src/photoapp-core');
 const photoapp = services.photoapp;
 
 beforeEach(() => {

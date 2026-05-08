@@ -4,7 +4,7 @@ variable "bucket_name" {
 }
 
 variable "s3_read_write_policy_path" {
-  description = "Path to the s3-read-write-policy.json.txt template (relative to root module)"
+  description = "Path to the Project 02 S3 read-write policy template"
   type        = string
   default     = null
 }

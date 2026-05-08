@@ -5,7 +5,7 @@
 // Consumes lib's services.photoapp.listUsers(); shape determined by
 // the lib's userRowToObject (userid, username, givenname, familyname).
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('../../src/photoapp-core');
 
 module.exports = async function getUsers(req, res, next) {
   try {

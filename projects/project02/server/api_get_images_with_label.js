@@ -17,7 +17,7 @@
 // PDF spec error envelope: { message: 'label is required', data: [] } @ 400
 //
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('./src/photoapp-core');
 
 // p-retry is ESM-only; dynamic-import wrapper matches the assignment template's pattern.
 // Retry logic per PDF page 12 — pRetry `retries: 2` = 3 total attempts on the
@@ -36,10 +36,7 @@ exports.get_images_with_label = async (request, response) => {
 
     let data;
     try {
-      data = await pRetry(
-        () => services.photoapp.searchImages(label),
-        { retries: 2 },
-      );
+      data = await pRetry(() => services.photoapp.searchImages(label), { retries: 2 });
     } catch (err) {
       if (err && err.message === 'label is required') {
         return response.status(400).json({

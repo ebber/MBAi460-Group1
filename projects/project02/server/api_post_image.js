@@ -36,7 +36,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('./src/photoapp-core');
 
 // p-retry is ESM-only; dynamic-import wrapper matches the assignment template's pattern.
 // Retry logic per PDF page 12 — pRetry `retries: 2` = 3 total attempts on the
@@ -81,7 +81,7 @@ exports.post_image = async (request, response) => {
         `p02-upload-${Date.now()}-${userid}-${path.basename(local_filename)}`,
       );
       fs.writeFileSync(tmpPath, buffer);
-    } catch (decodeErr) {
+    } catch {
       return response.status(400).json({ message: 'invalid base64 data', assetid: -1 });
     }
 
@@ -95,10 +95,9 @@ exports.post_image = async (request, response) => {
     await dbConn.beginTransaction();
 
     try {
-      const { assetid } = await pRetry(
-        () => services.photoapp.uploadImage(userid, multerFile),
-        { retries: 2 },
-      );
+      const { assetid } = await pRetry(() => services.photoapp.uploadImage(userid, multerFile), {
+        retries: 2,
+      });
 
       // Commit transaction on success.
       await dbConn.commit();
@@ -106,7 +105,11 @@ exports.post_image = async (request, response) => {
       return response.status(200).json({ message: 'success', assetid });
     } catch (innerErr) {
       // Rollback transaction on any error from the work block.
-      try { await dbConn.rollback(); } catch (rbErr) { /* ignore rollback failure */ }
+      try {
+        await dbConn.rollback();
+      } catch {
+        /* ignore rollback failure */
+      }
       if (innerErr && innerErr.message === 'no such userid') {
         return response.status(400).json({ message: 'no such userid', assetid: -1 });
       }
@@ -116,7 +119,11 @@ exports.post_image = async (request, response) => {
     return response.status(500).json({ message: err.message, assetid: -1 });
   } finally {
     if (dbConn) {
-      try { await dbConn.end(); } catch (e) { /* ignore */ }
+      try {
+        await dbConn.end();
+      } catch {
+        /* ignore */
+      }
     }
     // Note: lib's uploadImage() cleans its own tmpPath via cleanupTempFile
     // in its finally block, so we don't double-clean here.

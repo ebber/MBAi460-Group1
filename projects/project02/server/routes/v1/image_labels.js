@@ -14,7 +14,7 @@
 // "assetid must be an integer" error. The reference impl just lets the int
 // coercion produce NaN, and the DB lookup naturally returns no rows.
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('../../src/photoapp-core');
 
 module.exports = async function getImageLabels(req, res, next) {
   try {

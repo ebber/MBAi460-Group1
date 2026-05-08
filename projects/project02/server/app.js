@@ -1,5 +1,5 @@
 // Approach 01-foundation.md § Phase 2 (Express skeleton) + Phase 3 (observability)
-//                           + Phase 5 (error middleware via library factory)
+//                           + Phase 5 (error middleware via local core factory)
 //                           + Phase 4 (readyz probe).
 //
 // Mount order (D11/D12 from 00-overview-and-conventions.md): when /v2 and /v1
@@ -13,13 +13,13 @@
 //     - GET /healthz (liveness; outside version namespace)         [Phase 2]
 //     - GET /readyz  (RDS + S3 readiness probe)                    [Phase 4]
 //     - 404 fallback                                               [Phase 2]
-//     - error middleware via library factory + Project 02 DI       [Phase 5]
+//     - error middleware via local core factory + Project 02 DI       [Phase 5]
 //
 //   DEFERRED:
 //     - /v2 router (engineering surface)                           → workstream 04
 //     - /v1 router at root (spec routes)                           → workstream 02
 const express = require('express');
-const { middleware } = require('@mbai460/photoapp-server');
+const { middleware } = require('./src/photoapp-core');
 
 const requestId = require('./middleware/request_id');
 const logging = require('./middleware/logging');
@@ -61,7 +61,7 @@ app.use((req, res) => {
   });
 });
 
-// Error middleware — library factory with Project 02's mount-prefix-aware DI config.
+// Error middleware — local core factory with Project 02's mount-prefix-aware DI config.
 // statusCodeMap: /v1 → spec codes (D7); /v2 → REST-correct codes.
 // errorShapeFor: uses req.errorShape when set by route controllers (workstream 02);
 //                falls back to generic error envelope during Foundation.

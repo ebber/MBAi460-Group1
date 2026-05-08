@@ -2,7 +2,7 @@
 // Circuit breaker memoisation + basic lifecycle assertions.
 // Full lifecycle (open → half-open → close) deferred to Optional Integration test.
 
-jest.mock('@mbai460/photoapp-server', () => ({
+jest.mock('../../src/photoapp-core', () => ({
   services: {
     aws: {
       getBucket: jest.fn(() => ({ send: jest.fn().mockResolvedValue({}) })),
@@ -23,7 +23,7 @@ describe('breakers.js', () => {
   beforeEach(() => {
     jest.resetModules();
     // Re-mock after resetModules so fresh module loads with fresh state.
-    jest.mock('@mbai460/photoapp-server', () => ({
+    jest.mock('../../src/photoapp-core', () => ({
       services: {
         aws: {
           getBucket: jest.fn(() => ({ send: jest.fn().mockResolvedValue({}) })),

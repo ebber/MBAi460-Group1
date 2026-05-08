@@ -13,7 +13,7 @@
 // transformToByteArray helper as fallback; concatenates to buffer; emits
 // base64.
 
-const { services } = require('@mbai460/photoapp-server');
+const { services } = require('../../src/photoapp-core');
 
 module.exports = async function getImage(req, res, next) {
   try {

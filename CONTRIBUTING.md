@@ -20,6 +20,8 @@ The repo is an npm workspaces monorepo. Workspaces are declared in the root `pac
 
 This has three concrete consequences for daily work:
 
+> **Current architecture note:** `projects/project02/server` remains an npm workspace member for install/test ergonomics, but its runtime core is local at `projects/project02/server/src/photoapp-core`. It is no longer a runtime consumer of `@mbai460/photoapp-server`.
+
 ### Where to install
 
 Almost always **inside the workspace**, not at the root:
@@ -40,10 +42,11 @@ Root-level installs (`cd MBAi460-Group1 && npm install <pkg>`) are reserved for 
 
 When you run `npm install` from the root, npm creates a symlink at `node_modules/@mbai460/photoapp-server/` pointing into `lib/photoapp-server/`. This means:
 
-- A code change in `lib/photoapp-server/src/` is **immediately visible** to consumers — no `npm install` needed.
+- A code change in `lib/photoapp-server/src/` is **immediately visible** to current consumers — no `npm install` needed.
 - A change to `lib/photoapp-server/package.json` (new dep, version bump) **does** require a fresh root `npm install`.
+- Project 02's split-MVP runtime does **not** consume this symlink; change `projects/project02/server/src/photoapp-core/` for Project 02 behavior.
 
-If `require('@mbai460/photoapp-server')` ever fails with "Cannot find module," run `utils/lib-symlink-check` from the repo root for a 5-line ground-truth check on the symlink state.
+If `require('@mbai460/photoapp-server')` ever fails in a surface that still consumes the shared lib, run `utils/lib-symlink-check` from the repo root for a 5-line ground-truth check on the symlink state.
 
 ### What "the lockfile" means now
 
@@ -99,8 +102,8 @@ If your PR touches `lib/photoapp-server/` (or any future `lib/<Y>/`), it is a **
 Three concrete obligations:
 
 1. **Apply the `lib:photoapp-server` GitHub label** (or the label corresponding to the library you touched).
-2. **Confirm both consumers' tests pass.** Today: `cd projects/project01/Part03 && npm test` AND `cd lib/photoapp-server && npm test`. Once Project 02 server is scaffolded (Phase 1+), add `cd projects/project02/server && npm test`.
-3. **Mention all consumers in the PR description**, even if the change is "purely additive" — additive changes to a library still ripple into consumer test runs and reviewer attention.
+2. **Confirm affected consumers' tests pass.** Today: `cd projects/project01/Part03 && npm test` AND `cd lib/photoapp-server && npm test`. Project 02 is no longer a runtime consumer after the split MVP; run `cd projects/project02/server && npm test` only when the PR also touches Project 02 or repo-wide workspace/install behavior.
+3. **Mention all affected consumers in the PR description**, even if the change is "purely additive" — additive changes to a library still ripple into consumer test runs and reviewer attention.
 
 The PR template (`.github/pull_request_template.md`) carries the library-touching checkbox; the label is enforced manually until branch-protection automation lands.
 
@@ -110,7 +113,7 @@ The PR template (`.github/pull_request_template.md`) carries the library-touchin
 |---|---|
 | Internal refactor; no public API change | No version bump (pre-1.1.0 policy: workspace `*` floats anyway) |
 | New public export | Bump minor when the next strict-pin window opens; don't bump mid-window |
-| Breaking change to existing public export | **Don't.** Add the new export alongside; deprecate the old one in a follow-up PR. Breaking changes during pre-1.1.0 still require both consumers updated in the same PR. |
+| Breaking change to existing public export | **Don't.** Add the new export alongside; deprecate the old one in a follow-up PR. Breaking changes require all active consumers updated in the same PR. |
 
 ---
 
