@@ -17,7 +17,8 @@ ENV_NAME="calc-web-service-env"
 REGION="us-east-2"
 PLATFORM="Node.js"
 ZIPFILE="app.zip"
-VERSION="app.zip"
+UNIQUE_ID=$(date +"%Y%m%d%H%M%S")
+VERSION=$UNIQUE_ID-$ZIPFILE
 
 #
 # start of script:

@@ -22,8 +22,8 @@ ZIPFILE="app.zip"
 #
 # Network-related variables:
 #
-VPCID="vpc-???"
-VPCSUBGROUPS="subnet-???,subnet-???,subnet-???"
+VPCID="vpc-05985f11095f56e76"
+VPCSUBGROUPS="subnet-00792fcc8564ed59c,subnet-08039669d9b47e5b1,subnet-072ab646df9b64a88"
 
 #
 # start of script:
