@@ -1,15 +1,25 @@
-# Project 02 PhotoApp web service — split-MVP Docker image.
+# Project 02 PhotoApp web service — canonical Docker image.
 #
 # Build from the monorepo root (NOT this directory):
 #
 #   docker build -t mbai460-project02:dev -f projects/project02/server/Dockerfile .
 #
-# Uses the root lockfile for deterministic installs, but Project 02 runtime code
-# is self-contained under projects/project02/server.
+# Uses the root lockfile for deterministic installs. Project 02 runtime code
+# is self-contained under projects/project02/server (no shared lib copy).
 # Layer ordering: package descriptors first (install layer cached) then source.
+#
+# This Dockerfile is the canonical Project02 app image. It is the build target
+# for both local Compose (docker-compose.yml) and the planned Elastic Beanstalk
+# deployment. The instructor/class container under projects/project02/images/
+# mbai460-server is reference-only (see tools/DEPRECATED.md).
 
 FROM node:24-alpine AS base
 WORKDIR /app
+
+# OCI labels so the produced image is identifiable from `docker inspect`.
+LABEL org.opencontainers.image.title="mbai460-project02-server"
+LABEL org.opencontainers.image.source="projects/project02/server"
+LABEL org.opencontainers.image.description="MBAi460 Project02 PhotoApp web service (canonical app image)"
 
 # ---------------------------------------------------------------------------
 # Stage 1 — install workspace deps for project02-server.
@@ -36,7 +46,14 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package.json /app/package-lock.json /app/.npmrc ./
 COPY --from=deps /app/projects/project02/server/package.json ./projects/project02/server/
 
-# Source trees (tests, MetaFiles, _assignment-template excluded via .dockerignore)
+# Source tree. The COPY pulls everything under projects/project02/server.
+# The root .dockerignore (at MBAi460-Group1/.dockerignore) currently excludes
+# **/node_modules, **/tests, **/__tests__, **/*.test.js, **/jest.config.js,
+# IDE configs, **/photoapp-config.ini, and various lab-side directories.
+# It does NOT currently exclude server/_assignment-template/, so the
+# instructor starter copy ships in the image. See scratch/phase1-strays-
+# inventory.md for the full list of cross-scope references touching this
+# image build.
 COPY projects/project02/server ./projects/project02/server
 
 # Run from the server directory so '../client/photoapp-config.ini' resolves to
