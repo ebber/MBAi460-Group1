@@ -1,38 +1,49 @@
-# Project02 Deprecation Inventory (Phase 1)
+# Project02 Deprecation Inventory
 
-Single source of truth, scoped to `projects/project02/`, for artifacts that have been deprecated by the `docker-native-deployment` plan but are kept alive in Phase 1 for safety. Phase 1.5 will decide what to remove or archive.
+History of what was deprecated and removed/archived during Phases 1 and 1.5 of the `docker-native-deployment` plan. Scoped to `projects/project02/`. Update on each Phase 1.5 group landing.
 
 ## Status Definitions
 
-- **DEPRECATED** — kept executable but marked. New work must not extend it. Not the canonical deploy path.
-- **REFERENCE-ONLY** — kept on disk for inspection. No Project02 runtime depends on it.
-- **GENERATED** — output of a deprecated tool. Reproducible, safe to delete.
+- **REMOVED** — gone from the live tree. Reachable via git history.
+- **ARCHIVED** — moved out of the live tree into `projects/project02/submission artifacts/`. Read-only, preserved for inspection.
+- **DEPRECATED** — still on disk in its original location, marked, kept executable for safety. Removal queued for a later phase.
 
-## Inventory (Project02 scope only)
+## Inventory
 
-| Path | Status | Why deprecated | Phase 1.5 action candidate |
+| Path (final) | Status | Phase | Notes |
 |---|---|---|---|
-| `tools/package-submission.sh` | DEPRECATED | Builds Gradescope tarball with flatten + lib vendoring + config rewrites. The runtime no longer needs `lib/photoapp-server`. | Remove after Phase 1.5 confirms Docker-native build covers the same surface. |
-| `tools/package-client-submission.sh` | DEPRECATED | Mirror of server packaging plus `photoapp.py`. | Remove with the server packaging script. |
-| `dist/p02-server-submission-20260505T074204Z(.tar.gz)` | GENERATED | Older of the two server submissions. Differs from 074215Z only in `repositories/assets.js`. | Delete in Phase 1.5. Keep latest (`074215Z`) as historical reference until Phase 1.5 sign-off. |
-| `dist/p02-server-submission-20260505T074215Z(.tar.gz)` | GENERATED | Canonical submitted artifact (60/60). | Archive separately or delete after Phase 1.5 confirms the submission-functionality checklist is covered by tests in the Docker-native runtime. |
-| `dist/p02-client-submission-20260505T073104Z(.tar.gz)` | GENERATED | Submitted client artifact (30/30). Equals server submission + `photoapp.py`. | Same as server dist. |
-| `images/mbai460-server/` | REFERENCE-ONLY | Vendored copy of the instructor course repo; carries its own `.git/`. Used today only by an ad-hoc `docker run -it ... bash` workflow that mounts `dist/` into the container for `/gradescope/gs submit`. | Phase 1.5 should: (a) verify nothing else in Project02 depends on it, (b) remove from disk and from the gitignored area, OR (c) move outside the project02 tree if the instructor shell is still useful for personal labs. |
-| `Makefile` targets `submit-server`, `submit-client`, `submit-server-autograder`, `submit-client-autograder`, `clean-dist` | DEPRECATED (wrappers) | Drive the deprecated scripts above. | Either remove or repoint to a Phase 1.5 archive script. |
-| `server/api_*.js` (eight files) | NOT YET DEPRECATED in Phase 1 | These are Gradescope filename compatibility wrappers that re-export the canonical `routes/v1/*` handlers. They duplicate behavior but the canonical handlers are tested. | Leave alone in Phase 1.5. Phase 2 (codebase + test alignment) decides whether to delete them after canonical route tests prove parity. |
+| `submission artifacts/tools/archieve_package-submission.sh` | ARCHIVED | 1.5 Group A/B | Original `tools/package-submission.sh`. Built Gradescope tarballs (flatten + lib vendoring + Gradescope shim). Replaced by `server/Dockerfile` as the canonical artifact builder. |
+| `submission artifacts/tools/archieve_package-client-submission.sh` | ARCHIVED | 1.5 Group A/B | Mirror of the server packaging script plus `photoapp.py`. |
+| `submission artifacts/dist/archieve_p02-server-submission-20260505T074204Z(.tar.gz)` | ARCHIVED | 1.5 Group A | Generated submission output; older of the two server submissions. Differs from 074215Z only in `repositories/assets.js`. |
+| `submission artifacts/dist/archieve_p02-server-submission-20260505T074215Z(.tar.gz)` | ARCHIVED | 1.5 Group A | Canonical submitted artifact (60/60). Kept as the historical reference baseline. |
+| `submission artifacts/dist/archieve_p02-client-submission-20260505T073104Z(.tar.gz)` | ARCHIVED | 1.5 Group A | Submitted client artifact (30/30). Equals server submission + `photoapp.py`. |
+| `submission artifacts/images/archieve_mbai460-server/` | ARCHIVED | 1.5 Group C | Vendored copy of the instructor course repo with its own `.git/`. Used by the deprecated `gs submit` workflow. |
+| `Makefile` targets `submit-server`, `submit-client`, `submit-server-autograder`, `submit-client-autograder`, `clean-dist` | REMOVED | 1.5 Group B | Removed in commit `9fa8bd8`. Reachable via `git log -p Makefile`. |
+| `Makefile` aliases `up`, `down` | DEPRECATED | (Group E) | Aliases for `docker-up-aws` / `docker-down`. Kept for muscle memory; removal queued for Group E. |
+| `server/api_*.js` (8 files) | NOT YET DEPRECATED | (Phase 2 P2.A) | Gradescope filename-compatibility wrappers. Phase 2 retires them after canonical route tests prove parity. |
 
 ## What is canonical (kept and prominent)
 
 - `server/Dockerfile` — canonical Project02 app image.
-- `docker-compose.yml` — local dev topology (mysql + localstack + server).
-- `Makefile` targets `up`, `up-logs`, `down`, `test*`, `lint`, `clean*`.
-- `tools/bootstrap-localstack.sh` — used by `make up`.
+- `docker-compose.yml` — local dev topology, two profiled lanes.
+- `Makefile` — canonical operator commands (`docker-up-aws`, `docker-up-localstack`, `docker-down`, `bootstrap-localstack`, plus test/lint/install/clean).
+- `tools/bootstrap-localstack.sh` — operator-driven LocalStack provisioning.
 - `tools/phase1-smoke.sh` — Phase 1 test gate runner.
+- `README.md` — operator entry point.
 
-## Deletion is NOT performed in Phase 1
+## How to inspect archived content
 
-Phase 1's promise: label and document only. Deletion happens in Phase 1.5 after the Phase 1 alignment review confirms the Docker-native path works. See:
+```bash
+ls "projects/project02/submission artifacts/"
+ls "projects/project02/submission artifacts/tools/"
+ls "projects/project02/submission artifacts/dist/"           # gitignored on disk
+ls "projects/project02/submission artifacts/images/"         # gitignored on disk
+```
 
-- `scratch/phase1-strays-inventory.md` — full cross-scope reference list.
-- `scratch/phase1-test-suite.md` — the test gate that must pass before Phase 1.5 deletes anything.
-- `scratch/project02-core-structure-vizualizer.md` — current vs target Docker state visualization.
+The two `archieve_package-*-submission.sh` files are tracked in git; the dist tarballs and the instructor repo stay gitignored to avoid bloating the parent repo.
+
+## Removal vs archival decisions
+
+Group B removed Makefile targets because they are tiny, reachable via `git log -p`, and there is no value in keeping a broken bash shim that points at a script no longer in `tools/`.
+
+Groups A + C archived rather than removed because the content has historical/reference value (the canonical submission tarball is the byte-for-byte record of what passed Gradescope; the instructor repo carries its own `.git/`). Archive moves are reversible; deletes are not.
