@@ -12,7 +12,7 @@ SHELL := /bin/bash
 SERVER_DIR := server
 CLIENT_DIR := client
 
-.PHONY: help install test test-unit test-integration test-contract test-smoke test-happy test-live lint format clean clean-workspace clean-dist up down submit-server submit-client submit-server-autograder submit-client-autograder
+.PHONY: help install test test-unit test-integration test-contract test-smoke test-happy test-live lint format clean clean-workspace clean-dist up down docker-up docker-up-aws docker-up-localstack docker-down bootstrap-localstack submit-server submit-client submit-server-autograder submit-client-autograder
 
 help: ## List available targets
 	@awk 'BEGIN {FS = ":.*?## "}; /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -92,28 +92,59 @@ clean-dist: ## Prune dist/ to the most recent server + client submission (keeps 
 	  echo "==> dist/ size after prune: $$(du -sh . | cut -f1)"; \
 	} || echo "  (dist/ does not exist; nothing to clean)"
 
-up: ## Start all services (mysql + localstack + server) via docker compose
+docker-up: docker-up-aws ## Default lane: AWS (alias for docker-up-aws)
+
+docker-up-aws: ## Bring up server only; talks to real AWS RDS + S3 + Rekognition
 	@if [ ! -f $(CLIENT_DIR)/photoapp-config.ini ]; then \
-		echo "[make up] ERROR: client/photoapp-config.ini not found."; \
-		echo "          Copy client/photoapp-config.ini.example and adjust for your env."; \
+		echo "[docker-up-aws] ERROR: client/photoapp-config.ini not found."; \
+		echo "                Provision it from your AWS-shaped photoapp-config.ini."; \
 		exit 1; \
 	fi
-	docker compose up --build -d
+	@# AWS lane: omit AWS_ENDPOINT_URL so SDK uses real endpoints; PHOTOAPP_CONFIG_FILE
+	@# defaults to photoapp-config.ini (the real-AWS file).
+	AWS_ENDPOINT_URL= \
+	  docker compose up server -d --build
 	@echo ""
-	@echo "[make up] bootstrapping LocalStack S3 bucket..."
-	docker compose exec server bash /app/projects/project02/tools/bootstrap-localstack.sh || true
+	@echo "[docker-up-aws] server on http://localhost:8080 → real AWS"
+	@echo "                healthz: curl http://localhost:8080/healthz"
+	@echo "                readyz:  curl http://localhost:8080/readyz"
+	@echo "                logs:    docker compose logs -f server"
+
+docker-up-localstack: ## Bring up server + mysql + localstack; talks to local mocks
+	@if [ ! -f $(CLIENT_DIR)/photoapp-config.ini.example ]; then \
+		echo "[docker-up-localstack] ERROR: client/photoapp-config.ini.example missing"; \
+		exit 1; \
+	fi
+	PHOTOAPP_CONFIG_FILE=photoapp-config.ini.example \
+	AWS_ENDPOINT_URL=http://localstack:4566 \
+	AWS_ACCESS_KEY_ID=test \
+	AWS_SECRET_ACCESS_KEY=test \
+	  docker compose --profile localstack up -d --build
 	@echo ""
-	@echo "[make up] stack ready — server on http://localhost:8080"
-	@echo "          healthz: curl http://localhost:8080/healthz"
-	@echo "          readyz:  curl http://localhost:8080/readyz"
-	@echo "          logs:    docker compose logs -f server"
+	@echo "[docker-up-localstack] bootstrapping LocalStack S3 bucket..."
+	$(MAKE) bootstrap-localstack
+	@echo ""
+	@echo "[docker-up-localstack] stack ready — server on http://localhost:8080 → LocalStack"
+	@echo "                       logs: docker compose logs -f server"
 
-up-logs: ## docker compose up + follow logs
-	$(MAKE) up && docker compose logs -f
+bootstrap-localstack: ## Provision LocalStack S3 bucket + IAM (uses awslocal in localstack container)
+	@if ! docker compose ps localstack --status running 2>/dev/null | grep -q localstack; then \
+		echo "[bootstrap-localstack] ERROR: localstack container not running. Start with 'make docker-up-localstack' first."; \
+		exit 1; \
+	fi
+	./tools/bootstrap-localstack.sh
 
-down: ## Stop and remove all compose containers + volumes
-	docker compose down -v
-	@echo "[make down] stack stopped and volumes removed"
+docker-down: ## Stop and remove all containers + volumes (both lanes)
+	docker compose --profile localstack down -v
+	@echo "[docker-down] stack stopped and volumes removed"
+
+# ── Backwards-compat aliases (operator muscle memory) ────────────────────────
+up: docker-up-aws ## DEPRECATED alias for docker-up-aws (kept for muscle memory)
+
+down: docker-down ## DEPRECATED alias for docker-down (kept for muscle memory)
+
+up-logs: docker-up-aws ## docker-up-aws + follow logs
+	docker compose logs -f server
 
 submit-server: ## Build the Project 02 server submission package (preserves `kind` extension)
 	./tools/package-submission.sh

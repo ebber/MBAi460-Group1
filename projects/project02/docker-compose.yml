@@ -1,22 +1,33 @@
-# Project 02 local dev topology — Approach 01-foundation.md § Phase 10 Task 10.1.
+# Project 02 local dev topology.
 #
-# Four services on one network:
-#   mysql      — MySQL 8.4 init'd with infra/migrations/01-schema.sql
-#   localstack — LocalStack 3 (S3 + IAM only; Rekognition mocked at SDK level)
-#   server     — Project 02 Node.js service (hot-reload bind-mount)
-#   client     — Python client stub (bind-mount; Dockerfile lands in Phase 3)
+# Two lanes (selected via Compose profiles):
 #
-# Usage:
-#   make up          # bring up + tail logs
-#   make down        # stop + remove containers/volumes
+#   AWS lane (default)           — server only; talks to real AWS RDS + S3 + Rekognition
+#     `docker compose up server -d --build`
+#     or:  make docker-up-aws
 #
-# One-time setup: copy client/photoapp-config.ini.example → client/photoapp-config.ini
-# and adjust bucket_name if desired.
+#   LocalStack lane              — server + mysql + localstack on one bridge network
+#     `docker compose --profile localstack up -d --build`
+#     or:  make docker-up-localstack
+#
+# Service-to-lane mapping:
+#   server     — both lanes (no profile = always runs)
+#   mysql      — LocalStack lane only (profiles: ["localstack"])
+#   localstack — LocalStack lane only (profiles: ["localstack"])
+#
+# Config files (both gitignored except .example):
+#   client/photoapp-config.ini          — real AWS values; used by AWS lane
+#   client/photoapp-config.ini.example  — LocalStack-shaped values; used by LocalStack lane
+#
+# The Makefile selects which file to mount via PHOTOAPP_CONFIG_FILE; default is
+# the real AWS file. AWS_ENDPOINT_URL is set by the LocalStack lane only; the
+# AWS lane omits it so the SDK uses real endpoints.
 
 services:
 
-  # ── MySQL 8.4 ───────────────────────────────────────────────────────────────
+  # ── MySQL 8.4 ──────────────────────────────────── LocalStack lane only ────
   mysql:
+    profiles: ["localstack"]
     image: mysql:8.4
     environment:
       MYSQL_ROOT_PASSWORD: photoapp_root_local
@@ -37,8 +48,9 @@ services:
     networks:
       - photoapp
 
-  # ── LocalStack 3 (S3 + IAM) ─────────────────────────────────────────────────
+  # ── LocalStack 3 (S3 + IAM) ──────────────────── LocalStack lane only ────
   localstack:
+    profiles: ["localstack"]
     image: localstack/localstack:3
     environment:
       SERVICES:              s3,iam
@@ -59,7 +71,7 @@ services:
     networks:
       - photoapp
 
-  # ── Server (Node.js 24) ──────────────────────────────────────────────────────
+  # ── Server (Node.js 24) ────────────────────────────────── both lanes ────
   server:
     build:
       context: ../..          # monorepo root — required for workspace-aware npm ci
@@ -68,13 +80,16 @@ services:
       NODE_ENV:             development
       PORT:                 8080
       LOG_LEVEL:            debug
-      # LocalStack S3 endpoint — seam between local (LocalStack) and prod (real AWS).
-      AWS_ENDPOINT_URL:     http://localstack:4566
-      AWS_DEFAULT_REGION:   us-east-1
-      AWS_ACCESS_KEY_ID:    test
-      AWS_SECRET_ACCESS_KEY: test
-      # Pool config override — resolves to client/photoapp-config.ini (mounted below).
-      PHOTOAPP_CONFIG_PATH: /app/projects/project02/client/photoapp-config.ini
+      # AWS endpoint:
+      #   - AWS lane:        leave AWS_ENDPOINT_URL unset → SDK uses real AWS
+      #   - LocalStack lane: Makefile exports AWS_ENDPOINT_URL=http://localstack:4566
+      AWS_ENDPOINT_URL:     ${AWS_ENDPOINT_URL:-}
+      AWS_DEFAULT_REGION:   ${AWS_DEFAULT_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID:    ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      # Config file selector. Defaults to the real-AWS file; LocalStack lane
+      # overrides via Makefile to point at photoapp-config.ini.example.
+      PHOTOAPP_CONFIG_PATH: /app/projects/project02/client/${PHOTOAPP_CONFIG_FILE:-photoapp-config.ini}
     ports:
       - "8080:8080"
     volumes:
@@ -82,10 +97,15 @@ services:
       - ./server:/app/projects/project02/server
       - ./client:/app/projects/project02/client
     depends_on:
+      # `required: false` (Compose v2.20+) lets the AWS lane start the server
+      # without these profiled sidecars defined. The LocalStack lane activates
+      # the profile and the dependencies become real (wait for health).
       mysql:
         condition: service_healthy
+        required: false
       localstack:
         condition: service_healthy
+        required: false
     networks:
       - photoapp
     # Override CMD to start with nodemon for hot-reload.
