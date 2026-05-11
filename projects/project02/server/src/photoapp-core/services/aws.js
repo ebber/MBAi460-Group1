@@ -70,6 +70,14 @@ async function getDbConn() {
  * Returns an S3Client configured from [s3].region_name and the
  * photoapp_s3_profile credentials.
  *
+ * forcePathStyle: when AWS_ENDPOINT_URL is set (LocalStack lane), the SDK
+ * must use path-style addressing (`<endpoint>/<bucket>`) instead of the
+ * default virtual-hosted style (`<bucket>.<endpoint>`). LocalStack does
+ * not register per-bucket subdomains, so virtual-hosted requests fail with
+ * `getaddrinfo ENOTFOUND <bucket>.<endpoint>`. The AWS lane has no
+ * AWS_ENDPOINT_URL set, so this stays false and real AWS continues to use
+ * virtual-hosted addressing as expected.
+ *
  * @returns {S3Client}
  */
 function getBucket() {
@@ -78,6 +86,7 @@ function getBucket() {
     region: photoappConfig.s3.region_name,
     maxAttempts: 3,
     defaultsMode: 'standard',
+    forcePathStyle: !!process.env.AWS_ENDPOINT_URL,
     credentials: fromIni({
       profile: config.photoapp_s3_profile,
       filepath: config.photoapp_config_filename,
