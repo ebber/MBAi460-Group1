@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MBAi460-Group1 — Project Visualizations</title>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.1/dist/cytoscape.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --fg: #1a1a1a;
+      --muted: #666;
+      --accent: #0066cc;
+      --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--fg);
+      line-height: 1.5; height: 100%; overflow: hidden;
+    }
+    body { display: flex; flex-direction: column; }
+    header {
+      background: #fff; border-bottom: 1px solid var(--border);
+      padding: 12px 24px; flex-shrink: 0;
+    }
+    header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+    header .meta { margin-top: 2px; font-size: 11px; color: var(--muted); }
+    .controls {
+      background: #fff; border-bottom: 1px solid var(--border);
+      padding: 10px 24px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .control-label {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--muted); font-weight: 600;
+    }
+    .view-select {
+      padding: 6px 28px 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--fg);
+      min-width: 240px;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23666' d='M0 0l5 6 5-6z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+    .view-select:hover { border-color: var(--accent); }
+    .segments {
+      display: inline-flex; border: 1px solid var(--border);
+      border-radius: 6px; overflow: hidden; background: #fff;
+    }
+    .segments button {
+      padding: 6px 14px; border: 0; background: transparent;
+      font-size: 12px; font-weight: 500; cursor: pointer; color: var(--fg);
+      border-right: 1px solid var(--border);
+    }
+    .segments button:last-child { border-right: 0; }
+    .segments button:hover { background: #f0f4f8; }
+    .segments button.active { background: var(--accent); color: #fff; }
+    .btn {
+      padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px;
+      background: #fff; font-size: 12px; cursor: pointer; color: var(--fg);
+    }
+    .btn:hover { background: #f0f4f8; }
+    .btn-group { display: inline-flex; gap: 6px; }
+    .lod-group { display: inline-flex; align-items: center; gap: 8px; }
+    .lod-group.hidden { display: none; }
+    .legend {
+      display: flex; gap: 8px; flex-wrap: wrap; font-size: 11px; margin-left: auto;
+    }
+    .legend-item {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 8px; border-radius: 3px; border: 1px solid var(--border);
+    }
+    .swatch {
+      display: inline-block; width: 10px; height: 10px;
+      border-radius: 2px; border: 1px solid;
+    }
+    .swatch.active { background: #fff4cc; border-color: #cc9900; }
+    .swatch.library { background: #cce5ff; border-color: #0066cc; }
+    .swatch.cloud { background: #ffe6cc; border-color: #ff6600; }
+    .swatch.coord { background: #e6ffe6; border-color: #00aa00; }
+    .swatch.historical { background: #f0f0f0; border-color: #888; }
+    .swatch.external { background: #f0e6ff; border-color: #9933cc; }
+    .stage {
+      flex: 1 1 auto; position: relative; background: #fafafa; overflow: hidden;
+    }
+    #cy { position: absolute; inset: 0; }
+    .status-pill {
+      position: absolute; bottom: 12px; right: 12px;
+      background: rgba(255,255,255,0.95); border: 1px solid var(--border);
+      border-radius: 4px; padding: 4px 10px; font-size: 11px; color: var(--muted);
+      pointer-events: none;
+    }
+    code {
+      background: #eef; padding: 1px 5px; border-radius: 3px; font-size: 11px;
+    }
+    kbd {
+      background: #f5f5f5; border: 1px solid var(--border);
+      border-radius: 3px; padding: 1px 5px;
+      font-family: -apple-system, monospace; font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MBAi460-Group1 — Project Visualizations</h1>
+    <div class="meta">
+      Branch: <code>infrastructure</code> &nbsp;·&nbsp; Engine: Cytoscape.js + dagre
+      &nbsp;·&nbsp; Drag any node or zone &nbsp;·&nbsp; Scroll to zoom &nbsp;·&nbsp;
+      <kbd>0</kbd> fit · <kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd> LOD
+    </div>
+  </header>
+
+  <div class="controls">
+    <span class="control-label">View</span>
+    <select id="view-select" class="view-select" aria-label="Visualization view">
+      <option value="project-structure">Project Structure (whole monorepo)</option>
+      <option value="p02-sprint">P02 Sprint Architecture (EB deployment)</option>
+    </select>
+
+    <div class="lod-group" id="lod-group">
+      <span class="control-label">Detail</span>
+      <div class="segments" role="group" aria-label="Level of detail">
+        <button data-lod="overview">Overview</button>
+        <button data-lod="standard" class="active">Standard</button>
+        <button data-lod="detailed">Detailed</button>
+      </div>
+    </div>
+
+    <span class="control-label" style="margin-left: 4px;">Zoom</span>
+    <div class="btn-group">
+      <button class="btn" id="btn-zoom-in">+</button>
+      <button class="btn" id="btn-zoom-out">−</button>
+      <button class="btn" id="btn-fit">Fit</button>
+      <button class="btn" id="btn-relayout">Re-layout</button>
+    </div>
+
+    <span class="control-label" style="margin-left: 4px;">Layout</span>
+    <div class="btn-group">
+      <button class="btn" id="btn-save-layout" title="Save current layout (positions + zoom + pan + view + LOD)">💾 Save</button>
+      <select id="saved-layouts" class="view-select" style="min-width: 200px;" aria-label="Saved layouts">
+        <option value="">— No saved layouts —</option>
+      </select>
+      <button class="btn" id="btn-delete-layout" title="Delete the selected saved layout">🗑</button>
+    </div>
+
+    <div class="legend">
+      <span class="legend-item"><span class="swatch active"></span> Active</span>
+      <span class="legend-item"><span class="swatch library"></span> Library</span>
+      <span class="legend-item"><span class="swatch cloud"></span> AWS</span>
+      <span class="legend-item"><span class="swatch coord"></span> Coordination</span>
+      <span class="legend-item"><span class="swatch historical"></span> Existing / unchanged</span>
+      <span class="legend-item"><span class="swatch external"></span> External (Gradescope)</span>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div id="cy"></div>
+    <div class="status-pill" id="status-pill">Standard · zoom 1.00×</div>
+  </div>
+
+  <script>
+    // ============================================================
+    // GRAPH DATA
+    //
+    // DIAGRAMS[viewName][lodName] = { nodes: [...], edges: [...] }
+    //
+    // Two views:
+    //   'project-structure' — the whole monorepo (3 LOD levels)
+    //   'p02-sprint' — Project 02 Part 02 EB deployment architecture
+    //                  (single 'default' LOD)
+    //
+    // Two top-level zones in every diagram (visual separation):
+    //   'local' (light gray, solid border)   — what lives in this repo
+    //   'aws'   (warm cream, dashed orange)  — AWS resources
+    //   'ext'   (pale violet, dotted purple) — external systems (P02 sprint only)
+    // ============================================================
+
+    const DIAGRAMS = {
+
+      'project-structure': {
+
+        // --------------------------------------------------------
+        overview: {
+          nodes: [
+            { data: { id: 'local', label: '💾 Local Repository' }, classes: 'zone zone-local' },
+            { data: { id: 'coord', label: '🧭 Coordination\nMetaFiles · learnings · visualizations', parent: 'local' }, classes: 'coord' },
+            { data: { id: 'code',  label: '💻 Code\nlib · projects/{01,02,03} · labs', parent: 'local' } },
+            { data: { id: 'plat',  label: '🛠 Platform\ninfra · docker · utils', parent: 'local' } },
+
+            { data: { id: 'aws', label: '☁️ AWS (us-east-2)' }, classes: 'zone zone-aws' },
+            { data: { id: 'aws-services', label: 'RDS · S3 · Rekognition · IAM · EB', parent: 'aws' }, classes: 'cloud' },
+          ],
+          edges: [
+            { data: { id: 'e1', source: 'code', target: 'aws-services', label: 'runtime + IaC' }, classes: 'thick' },
+            { data: { id: 'e2', source: 'plat', target: 'aws-services', label: 'operates on' }, classes: 'dotted' },
+          ]
+        },
+
+        // --------------------------------------------------------
+        standard: {
+          nodes: [
+            { data: { id: 'local', label: '💾 Local Repository' }, classes: 'zone zone-local' },
+
+            { data: { id: 'coord', label: '🧭 Coordination', parent: 'local' }, classes: 'coord-zone' },
+            { data: { id: 'metafiles', label: 'MetaFiles/\nQUICKSTART · CONTRIBUTING\nDOC-FRESHNESS · RESEARCH-RESOURCES\nTODO · Manifesto · Journal', parent: 'coord' }, classes: 'coord' },
+            { data: { id: 'learnings', label: 'learnings/\nretrospectives · reconciliation', parent: 'coord' }, classes: 'coord' },
+            { data: { id: 'viz', label: 'visualizations/\nTarget-State-*.md', parent: 'coord' }, classes: 'coord' },
+
+            { data: { id: 'code', label: '💻 Code (npm workspaces)', parent: 'local' } },
+            { data: { id: 'lib', label: 'lib/photoapp-server@1.0.0\nservices · repositories\nmiddleware · schemas · config', parent: 'code' }, classes: 'library' },
+
+            { data: { id: 'projects', label: 'projects/', parent: 'code' } },
+            { data: { id: 'p01', label: 'project01/\nPart02 Python\nPart03 Express (lib consumer)', parent: 'projects' } },
+            { data: { id: 'p02', label: '⭐ project02/ (active)', parent: 'projects' }, classes: 'active-zone' },
+            { data: { id: 'p02srv', label: 'server/\nExpress · routes/v1/\nmiddleware · observability\nservices · tests · Dockerfile', parent: 'p02' }, classes: 'active' },
+            { data: { id: 'p02cli', label: 'client/\nphotoapp.py · tests.py', parent: 'p02' }, classes: 'active' },
+            { data: { id: 'p02inf', label: 'infra/\nTerraform modules\niam · rds · s3 · cloudwatch\n+ envs/{dev,prod}', parent: 'p02' }, classes: 'active' },
+            { data: { id: 'p02api', label: 'api/openapi.yaml', parent: 'p02' }, classes: 'active' },
+            { data: { id: 'p02tools', label: 'tools/\npackage-submission.sh\nbootstrap-localstack.sh', parent: 'p02' }, classes: 'active' },
+            { data: { id: 'p02deploy', label: 'deployment/ (TBD this branch)\nEB scripts · IAM roles · CNAME', parent: 'p02' }, classes: 'active' },
+            { data: { id: 'p03', label: 'project03/ (future)', parent: 'projects' }, classes: 'historical' },
+
+            { data: { id: 'labs', label: 'labs/lab01–04\n(historical · complete)', parent: 'code' }, classes: 'historical' },
+
+            { data: { id: 'plat', label: '🛠 Platform', parent: 'local' } },
+            { data: { id: 'infra', label: 'infra/\nterraform/ (backbone)\nconfig/ (RDS · creds)', parent: 'plat' } },
+            { data: { id: 'docker', label: 'docker/\nclass dev image', parent: 'plat' } },
+            { data: { id: 'utils', label: 'utils/\ncred-sweep · validate-db\nsmoke-test-aws · lab-up\nrotate-passwords · rebuild-db', parent: 'plat' } },
+
+            { data: { id: 'aws', label: '☁️ AWS (us-east-2)' }, classes: 'zone zone-aws' },
+            { data: { id: 'rds', label: 'RDS\nMySQL 8', parent: 'aws' }, classes: 'cloud' },
+            { data: { id: 's3', label: 'S3\nimage bucket', parent: 'aws' }, classes: 'cloud' },
+            { data: { id: 'rek', label: 'Rekognition\nlabel detection', parent: 'aws' }, classes: 'cloud' },
+            { data: { id: 'iam', label: 'IAM\nroles · policies', parent: 'aws' }, classes: 'cloud' },
+            { data: { id: 'eb', label: '⭐ Elastic Beanstalk\n(Part 02 target)', parent: 'aws' }, classes: 'active' },
+          ],
+          edges: [
+            { data: { id: 'el-p01-lib', source: 'p01', target: 'lib', label: 'consumes' }, classes: 'dotted' },
+            { data: { id: 'el-p02-lib', source: 'p02srv', target: 'lib', label: 'consumes' }, classes: 'dotted' },
+
+            { data: { id: 'es-rds', source: 'p02srv', target: 'rds', label: 'reads/writes' } },
+            { data: { id: 'es-s3', source: 'p02srv', target: 's3', label: 'stores images' } },
+            { data: { id: 'es-rek', source: 'p02srv', target: 'rek', label: 'labels images' } },
+
+            { data: { id: 'ec-srv', source: 'p02cli', target: 'p02srv', label: 'HTTP API' } },
+
+            { data: { id: 'ei-rds', source: 'p02inf', target: 'rds', label: 'provisions' }, classes: 'dotted' },
+            { data: { id: 'ei-s3', source: 'p02inf', target: 's3', label: 'provisions' }, classes: 'dotted' },
+            { data: { id: 'ei-iam', source: 'p02inf', target: 'iam', label: 'provisions' }, classes: 'dotted' },
+            { data: { id: 'ei-back-rds', source: 'infra', target: 'rds', label: 'backbone' }, classes: 'dotted' },
+            { data: { id: 'ei-back-s3', source: 'infra', target: 's3', label: 'backbone' }, classes: 'dotted' },
+
+            { data: { id: 'ed-deploy', source: 'p02deploy', target: 'eb', label: 'deploys' }, classes: 'thick' },
+            { data: { id: 'ed-host', source: 'eb', target: 'p02srv', label: 'hosts' }, classes: 'thick' },
+
+            { data: { id: 'eo-utils', source: 'utils', target: 'aws', label: 'operates on' }, classes: 'dotted' },
+            { data: { id: 'eo-docker', source: 'docker', target: 'code', label: 'local runtime' }, classes: 'dotted' },
+          ]
+        },
+
+        // --------------------------------------------------------
+        detailed: {
+          nodes: [
+            { data: { id: 'local', label: '💾 Local Repository' }, classes: 'zone zone-local' },
+
+            { data: { id: 'coord', label: '🧭 Coordination', parent: 'local' }, classes: 'coord-zone' },
+            { data: { id: 'mf-q', label: 'QUICKSTART.md', parent: 'coord' }, classes: 'coord' },
+            { data: { id: 'mf-c', label: 'CONTRIBUTING.md', parent: 'coord' }, classes: 'coord' },
+            { data: { id: 'mf-df', label: 'DOC-FRESHNESS.md', parent: 'coord' }, classes: 'coord' },
+            { data: { id: 'mf-rr', label: 'RESEARCH-RESOURCES.md', parent: 'coord' }, classes: 'coord' },
+            { data: { id: 'mf-todo', label: 'TODO.md', parent: 'coord' }, classes: 'coord' },
+            { data: { id: 'mf-man', label: 'Manifesto.md', parent: 'coord' }, classes: 'coord' },
+            { data: { id: 'mf-jr', label: 'Journal/', parent: 'coord' }, classes: 'coord' },
+            { data: { id: 'learnings', label: 'learnings/', parent: 'coord' }, classes: 'coord' },
+            { data: { id: 'viz', label: 'visualizations/\nTarget-State-*.md', parent: 'coord' }, classes: 'coord' },
+
+            { data: { id: 'code', label: '💻 Code', parent: 'local' } },
+
+            { data: { id: 'lib', label: 'lib/photoapp-server@1.0.0', parent: 'code' }, classes: 'library-zone' },
+            { data: { id: 'lib-svc', label: 'services/\nphotoapp.js', parent: 'lib' }, classes: 'library' },
+            { data: { id: 'lib-repo', label: 'repositories/\nusers · assets · labels', parent: 'lib' }, classes: 'library' },
+            { data: { id: 'lib-mw', label: 'middleware/\nerror · logger · request_id', parent: 'lib' }, classes: 'library' },
+            { data: { id: 'lib-sch', label: 'schemas/\nenvelopes', parent: 'lib' }, classes: 'library' },
+            { data: { id: 'lib-cfg', label: 'config.js', parent: 'lib' }, classes: 'library' },
+
+            { data: { id: 'projects', label: 'projects/', parent: 'code' } },
+            { data: { id: 'p01', label: 'project01/\nPart02 Python · Part03 Express', parent: 'projects' } },
+
+            { data: { id: 'p02', label: '⭐ project02/ (active)', parent: 'projects' }, classes: 'active-zone' },
+
+            { data: { id: 'p02srv', label: 'server/', parent: 'p02' }, classes: 'active-zone' },
+            { data: { id: 'srv-app', label: 'app.js · server.js', parent: 'p02srv' }, classes: 'active' },
+            { data: { id: 'srv-routes', label: 'routes/v1/\nping · users · images\nimage_get · image_post\nimage_labels\nimages_with_label · delete_images', parent: 'p02srv' }, classes: 'active' },
+            { data: { id: 'srv-mw', label: 'middleware/\nerror · logging\nrequest_id · validate', parent: 'p02srv' }, classes: 'active' },
+            { data: { id: 'srv-obs', label: 'observability/\npino · tracing', parent: 'p02srv' }, classes: 'active' },
+            { data: { id: 'srv-svc', label: 'services/\npool · breakers', parent: 'p02srv' }, classes: 'active' },
+            { data: { id: 'srv-tests', label: 'tests/\nunit · integration · contract\nsmoke · happy_path · live', parent: 'p02srv' }, classes: 'active' },
+            { data: { id: 'srv-dock', label: 'Dockerfile', parent: 'p02srv' }, classes: 'active' },
+
+            { data: { id: 'p02cli', label: 'client/\nphotoapp.py · tests.py', parent: 'p02' }, classes: 'active' },
+
+            { data: { id: 'p02inf', label: 'infra/', parent: 'p02' }, classes: 'active-zone' },
+            { data: { id: 'tf-iam', label: 'modules/iam/', parent: 'p02inf' }, classes: 'active' },
+            { data: { id: 'tf-rds', label: 'modules/rds/', parent: 'p02inf' }, classes: 'active' },
+            { data: { id: 'tf-s3', label: 'modules/s3/', parent: 'p02inf' }, classes: 'active' },
+            { data: { id: 'tf-cw', label: 'modules/cloudwatch/', parent: 'p02inf' }, classes: 'active' },
+            { data: { id: 'tf-envs', label: 'envs/{dev,prod}/', parent: 'p02inf' }, classes: 'active' },
+            { data: { id: 'tf-mig', label: 'migrations/\n01-schema.sql', parent: 'p02inf' }, classes: 'active' },
+
+            { data: { id: 'p02api', label: 'api/openapi.yaml', parent: 'p02' }, classes: 'active' },
+            { data: { id: 'p02tools', label: 'tools/\npackage-submission.sh\nbootstrap-localstack.sh', parent: 'p02' }, classes: 'active' },
+            { data: { id: 'p02deploy', label: '⭐ deployment/ (TBD)\nEB scripts · CNAME', parent: 'p02' }, classes: 'active' },
+            { data: { id: 'p02dk', label: 'docker-compose.yml\nMakefile', parent: 'p02' }, classes: 'active' },
+
+            { data: { id: 'p03', label: 'project03/ (future)', parent: 'projects' }, classes: 'historical' },
+            { data: { id: 'labs', label: 'labs/lab01–04', parent: 'code' }, classes: 'historical' },
+
+            { data: { id: 'plat', label: '🛠 Platform', parent: 'local' } },
+            { data: { id: 'infra-tf', label: 'infra/terraform/\nbackbone IaC', parent: 'plat' } },
+            { data: { id: 'infra-cfg', label: 'infra/config/\nphotoapp-config.ini', parent: 'plat' } },
+            { data: { id: 'docker', label: 'docker/\nclass dev image', parent: 'plat' } },
+            { data: { id: 'utils', label: 'utils/\ncred-sweep · validate-db\nsmoke-test-aws · lab-up', parent: 'plat' } },
+
+            { data: { id: 'aws', label: '☁️ AWS (us-east-2)' }, classes: 'zone zone-aws' },
+            { data: { id: 'rds', label: 'RDS\nMySQL 8 instance', parent: 'aws' }, classes: 'cloud' },
+            { data: { id: 's3', label: 'S3\nimage bucket', parent: 'aws' }, classes: 'cloud' },
+            { data: { id: 'rek', label: 'Rekognition\nDetectLabels API', parent: 'aws' }, classes: 'cloud' },
+            { data: { id: 'iam-grp', label: 'IAM', parent: 'aws' }, classes: 'cloud-zone' },
+            { data: { id: 'iam-s3rw', label: 's3readwrite role', parent: 'iam-grp' }, classes: 'cloud' },
+            { data: { id: 'iam-rds', label: 'rds-data-api role', parent: 'iam-grp' }, classes: 'cloud' },
+            { data: { id: 'iam-eb-svc', label: '⭐ aws-elasticbeanstalk-service-role', parent: 'iam-grp' }, classes: 'active' },
+            { data: { id: 'iam-eb-ec2', label: '⭐ aws-elasticbeanstalk-ec2-role', parent: 'iam-grp' }, classes: 'active' },
+            { data: { id: 'eb', label: '⭐ Elastic Beanstalk\n(Part 02 target)', parent: 'aws' }, classes: 'active' },
+          ],
+          edges: [
+            { data: { id: 'el-p01', source: 'p01', target: 'lib', label: 'consumes' }, classes: 'dotted' },
+            { data: { id: 'el-p02', source: 'srv-app', target: 'lib', label: 'consumes' }, classes: 'dotted' },
+
+            { data: { id: 'es-rds', source: 'srv-routes', target: 'rds', label: 'reads/writes' } },
+            { data: { id: 'es-s3', source: 'srv-routes', target: 's3', label: 'stores' } },
+            { data: { id: 'es-rek', source: 'srv-routes', target: 'rek', label: 'labels' } },
+            { data: { id: 'ec-srv', source: 'p02cli', target: 'srv-app', label: 'HTTP' } },
+
+            { data: { id: 'ei-iam', source: 'tf-iam', target: 'iam-grp', label: 'provisions' }, classes: 'dotted' },
+            { data: { id: 'ei-rds', source: 'tf-rds', target: 'rds', label: 'provisions' }, classes: 'dotted' },
+            { data: { id: 'ei-s3', source: 'tf-s3', target: 's3', label: 'provisions' }, classes: 'dotted' },
+            { data: { id: 'ei-cw', source: 'tf-cw', target: 'aws', label: 'provisions' }, classes: 'dotted' },
+
+            { data: { id: 'ei-back-rds', source: 'infra-tf', target: 'rds', label: 'backbone' }, classes: 'dotted' },
+            { data: { id: 'ei-back-s3', source: 'infra-tf', target: 's3', label: 'backbone' }, classes: 'dotted' },
+            { data: { id: 'ei-cfg', source: 'infra-cfg', target: 'srv-app', label: 'configures' }, classes: 'dotted' },
+
+            { data: { id: 'ed-deploy', source: 'p02deploy', target: 'eb', label: 'deploys' }, classes: 'thick' },
+            { data: { id: 'ed-host', source: 'eb', target: 'srv-app', label: 'hosts' }, classes: 'thick' },
+            { data: { id: 'ed-eb-svc', source: 'eb', target: 'iam-eb-svc', label: 'assumes' }, classes: 'thick' },
+            { data: { id: 'ed-eb-ec2', source: 'eb', target: 'iam-eb-ec2', label: 'assumes' }, classes: 'thick' },
+
+            { data: { id: 'eo-utils', source: 'utils', target: 'aws', label: 'operates on' }, classes: 'dotted' },
+            { data: { id: 'eo-docker', source: 'docker', target: 'code', label: 'runtime' }, classes: 'dotted' },
+          ]
+        }
+      },
+
+      // ==========================================================
+      // P02 SPRINT — RUNTIME ARCHITECTURE
+      //
+      // What the DEPLOYED system IS — not how it gets built or
+      // how the lab walks you through deploying it. Components,
+      // trust relationships, runtime data flows. No `eb create`
+      // steps, no "copy this file there" arrows, no Gradescope
+      // submission flow. For the procedural how-to, read
+      // project02-part02-EB.pdf. For the codebase/repo map,
+      // switch to the Project Structure view.
+      // ==========================================================
+
+      'p02-sprint': {
+
+        // --------------------------------------------------------
+        overview: {
+          nodes: [
+            { data: { id: 'local', label: '💾 Local' }, classes: 'zone zone-local' },
+            { data: { id: 'client', label: '🖥 Python Client\nphotoapp.py + photoapp-client-config.ini', parent: 'local' }, classes: 'historical' },
+
+            { data: { id: 'aws', label: '☁️ AWS (us-east-2)' }, classes: 'zone zone-aws' },
+            { data: { id: 'eb', label: '🚀 Elastic Beanstalk Environment\nphotoapp-web-service-env\n(EC2 t3.micro · Node.js 24)\nrunning Express server', parent: 'aws' }, classes: 'active' },
+            { data: { id: 'iam', label: '🔐 IAM Roles\nservice-role + ec2-role', parent: 'aws' }, classes: 'active' },
+            { data: { id: 'backbone', label: 'Backbone\nRDS MySQL 8 · S3 bucket · Rekognition', parent: 'aws' }, classes: 'cloud' },
+          ],
+          edges: [
+            { data: { id: 'e-client-eb', source: 'client', target: 'eb', label: 'HTTP (via CNAME)' }, classes: 'thick' },
+            { data: { id: 'e-eb-iam', source: 'eb', target: 'iam', label: 'assumes' } },
+            { data: { id: 'e-eb-bb', source: 'eb', target: 'backbone', label: 'reads / writes / labels' }, classes: 'thick' },
+          ]
+        },
+
+        // --------------------------------------------------------
+        standard: {
+          nodes: [
+            // ----- LOCAL: client side -----
+            { data: { id: 'local', label: '💾 Local' }, classes: 'zone zone-local' },
+            { data: { id: 'client', label: 'projects/project02/client/', parent: 'local' } },
+            { data: { id: 'cli-py', label: 'photoapp.py\nHTTP client to deployed server', parent: 'client' }, classes: 'historical' },
+            { data: { id: 'cli-gui', label: 'gui.py\nStreamlit GUI (host)', parent: 'client' }, classes: 'historical' },
+            { data: { id: 'cli-cfg', label: 'photoapp-client-config.ini\nwebservice = http://CNAME', parent: 'client' }, classes: 'active' },
+
+            // ----- AWS -----
+            { data: { id: 'aws', label: '☁️ AWS (us-east-2)' }, classes: 'zone zone-aws' },
+
+            // IAM (trust relationships)
+            { data: { id: 'iam', label: '🔐 IAM', parent: 'aws' }, classes: 'cloud-zone' },
+            { data: { id: 'role-svc', label: 'aws-elasticbeanstalk-service-role\nassumed by EB platform\n(env management + health)', parent: 'iam' }, classes: 'active' },
+            { data: { id: 'role-ec2', label: 'aws-elasticbeanstalk-ec2-role\nassumed by EC2 instance\n(runtime AWS access)', parent: 'iam' }, classes: 'active' },
+
+            // EB
+            { data: { id: 'eb', label: '🚀 Elastic Beanstalk', parent: 'aws' }, classes: 'cloud-zone' },
+            { data: { id: 'eb-app', label: 'Application:\nphotoapp-web-service', parent: 'eb' }, classes: 'active' },
+            { data: { id: 'eb-env', label: 'Environment: photoapp-web-service-env\nbasic health monitoring · single-instance', parent: 'eb' }, classes: 'active-zone' },
+            { data: { id: 'cname', label: 'CNAME (DNS endpoint)\nphotoapp-web-service-env...elasticbeanstalk.com', parent: 'eb-env' }, classes: 'active' },
+            { data: { id: 'eb-env-props', label: 'EB env properties:\nPHOTOAPP_CONFIG_PATH = /var/app/current/photoapp-config.ini\nPORT (set by EB) · NODE_ENV = production', parent: 'eb-env' }, classes: 'active' },
+            { data: { id: 'ec2', label: 'EC2 t3.micro\nNode.js 24 / AL2023', parent: 'eb-env' }, classes: 'active-zone' },
+            { data: { id: 'srv', label: 'Express server\nserver.js · app.js · routes/v1/\nmiddleware · services · observability\nschemas · src/photoapp-core/', parent: 'ec2' }, classes: 'active' },
+            { data: { id: 'srv-cfg', label: 'photoapp-config.ini\nAWS creds · RDS endpoint', parent: 'ec2' }, classes: 'active' },
+            { data: { id: 'srv-pkg', label: 'package.json\nnpm dependencies', parent: 'ec2' }, classes: 'active' },
+
+            // Backbone (existing AWS resources the server talks to at runtime)
+            { data: { id: 'backbone', label: 'Backbone (existing)', parent: 'aws' }, classes: 'cloud-zone' },
+            { data: { id: 'rds', label: 'RDS MySQL 8\nphotoapp schema', parent: 'backbone' }, classes: 'cloud' },
+            { data: { id: 's3', label: 'S3 image bucket', parent: 'backbone' }, classes: 'cloud' },
+            { data: { id: 'rek', label: 'Rekognition\nDetectLabels API', parent: 'backbone' }, classes: 'cloud' },
+          ],
+          edges: [
+            // Client → server (HTTP via CNAME)
+            { data: { id: 'a-cli-cname', source: 'cli-py', target: 'cname', label: 'HTTP requests' }, classes: 'thick' },
+            { data: { id: 'a-gui-cname', source: 'cli-gui', target: 'cname', label: 'HTTP requests' }, classes: 'thick' },
+            { data: { id: 'a-clicfg-cli', source: 'cli-cfg', target: 'cli-py', label: 'configures' } },
+            { data: { id: 'a-clicfg-gui', source: 'cli-cfg', target: 'cli-gui', label: 'configures' } },
+
+            // CNAME → server
+            { data: { id: 'a-cname-srv', source: 'cname', target: 'srv', label: 'routes to' } },
+
+            // Trust relationships
+            { data: { id: 'a-eb-svc', source: 'eb-env', target: 'role-svc', label: 'assumes' } },
+            { data: { id: 'a-ec2-role', source: 'ec2', target: 'role-ec2', label: 'assumes' } },
+
+            // EB env properties point the server at its config
+            { data: { id: 'a-props-srv', source: 'eb-env-props', target: 'srv-cfg', label: 'PHOTOAPP_CONFIG_PATH locates' }, classes: 'dotted' },
+
+            // Server reads its config + deps
+            { data: { id: 'a-cfg-srv', source: 'srv-cfg', target: 'srv', label: 'configures' } },
+            { data: { id: 'a-pkg-srv', source: 'srv-pkg', target: 'srv', label: 'declares deps' } },
+
+            // Server → backbone (runtime data flows)
+            { data: { id: 'a-srv-rds', source: 'srv', target: 'rds', label: 'reads / writes' }, classes: 'thick' },
+            { data: { id: 'a-srv-s3', source: 'srv', target: 's3', label: 'stores images' }, classes: 'thick' },
+            { data: { id: 'a-srv-rek', source: 'srv', target: 'rek', label: 'labels images' }, classes: 'thick' },
+          ]
+        },
+
+        // --------------------------------------------------------
+        detailed: {
+          nodes: [
+            // ----- LOCAL: client side -----
+            { data: { id: 'local', label: '💾 Local' }, classes: 'zone zone-local' },
+            { data: { id: 'client', label: 'projects/project02/client/', parent: 'local' } },
+            { data: { id: 'cli-py', label: 'photoapp.py\nHTTP client', parent: 'client' }, classes: 'historical' },
+            { data: { id: 'cli-gui', label: 'gui.py\nStreamlit GUI (host)', parent: 'client' }, classes: 'historical' },
+            { data: { id: 'cli-cfg', label: 'photoapp-client-config.ini\nwebservice = http://CNAME', parent: 'client' }, classes: 'active' },
+            { data: { id: 'cli-tests', label: 'tests.py\nHTTP test harness', parent: 'client' }, classes: 'historical' },
+
+            // ----- AWS -----
+            { data: { id: 'aws', label: '☁️ AWS (us-east-2)' }, classes: 'zone zone-aws' },
+
+            // IAM (with managed policies as children)
+            { data: { id: 'iam', label: '🔐 IAM', parent: 'aws' }, classes: 'cloud-zone' },
+            { data: { id: 'role-svc', label: 'aws-elasticbeanstalk-service-role\n(EB platform trust)', parent: 'iam' }, classes: 'active-zone' },
+            { data: { id: 'pol-svc-1', label: 'AWSElasticBeanstalk\nEnhancedHealth', parent: 'role-svc' }, classes: 'cloud' },
+            { data: { id: 'pol-svc-2', label: 'AWSElasticBeanstalk\nManagedUpdates\nCustomerRolePolicy', parent: 'role-svc' }, classes: 'cloud' },
+            { data: { id: 'role-ec2', label: 'aws-elasticbeanstalk-ec2-role\n(EC2 trust)', parent: 'iam' }, classes: 'active-zone' },
+            { data: { id: 'pol-ec2-1', label: 'AWSElasticBeanstalk\nWebTier', parent: 'role-ec2' }, classes: 'cloud' },
+            { data: { id: 'pol-ec2-2', label: 'AWSElasticBeanstalk\nWorkerTier', parent: 'role-ec2' }, classes: 'cloud' },
+            { data: { id: 'pol-ec2-3', label: 'AWSElasticBeanstalk\nMulticontainerDocker', parent: 'role-ec2' }, classes: 'cloud' },
+
+            // EB
+            { data: { id: 'eb', label: '🚀 Elastic Beanstalk', parent: 'aws' }, classes: 'cloud-zone' },
+            { data: { id: 'eb-app', label: 'Application:\nphotoapp-web-service', parent: 'eb' }, classes: 'active' },
+            { data: { id: 'eb-env', label: 'Environment: photoapp-web-service-env\nbasic health monitoring · single-instance', parent: 'eb' }, classes: 'active-zone' },
+            { data: { id: 'cname', label: 'CNAME\n(DNS endpoint)', parent: 'eb-env' }, classes: 'active' },
+            { data: { id: 'eb-env-props', label: 'EB env properties:\nPHOTOAPP_CONFIG_PATH = /var/app/current/photoapp-config.ini\nPORT (set by EB) · NODE_ENV = production', parent: 'eb-env' }, classes: 'active' },
+            { data: { id: 'ec2', label: 'EC2 t3.micro\nNode.js 24 / AL2023', parent: 'eb-env' }, classes: 'active-zone' },
+            { data: { id: 'srv', label: 'Express server\n(server.js · app.js)', parent: 'ec2' }, classes: 'active-zone' },
+
+            // Routes — the API surface (what's architecturally exposed)
+            { data: { id: 'r-ping', label: 'GET /ping', parent: 'srv' }, classes: 'active' },
+            { data: { id: 'r-users', label: 'GET /users', parent: 'srv' }, classes: 'active' },
+            { data: { id: 'r-images', label: 'GET /images', parent: 'srv' }, classes: 'active' },
+            { data: { id: 'r-img-get', label: 'GET /image/:assetid', parent: 'srv' }, classes: 'active' },
+            { data: { id: 'r-img-post', label: 'POST /image/:userid', parent: 'srv' }, classes: 'active' },
+            { data: { id: 'r-img-labels', label: 'GET /image_labels/:assetid', parent: 'srv' }, classes: 'active' },
+            { data: { id: 'r-img-with', label: 'GET /images_with_label/:label', parent: 'srv' }, classes: 'active' },
+            { data: { id: 'r-img-del', label: 'DELETE /images', parent: 'srv' }, classes: 'active' },
+
+            // Local PhotoApp core (replaces the deprecated @mbai460/photoapp-server)
+            { data: { id: 'src-core', label: 'src/photoapp-core/\nservices · repositories\nmiddleware · schemas · config', parent: 'srv' }, classes: 'active' },
+
+            // Server config + deps (architectural artifacts in the runtime)
+            { data: { id: 'srv-cfg', label: 'photoapp-config.ini\nAWS creds · RDS endpoint', parent: 'ec2' }, classes: 'active' },
+            { data: { id: 'srv-pkg', label: 'package.json\nnpm dependencies', parent: 'ec2' }, classes: 'active' },
+
+            // Backbone (existing AWS resources the server talks to at runtime)
+            { data: { id: 'backbone', label: 'Backbone (existing)', parent: 'aws' }, classes: 'cloud-zone' },
+            { data: { id: 'rds', label: 'RDS MySQL 8\nphotoapp schema\n(users · assets · labels)', parent: 'backbone' }, classes: 'cloud' },
+            { data: { id: 's3', label: 'S3 image bucket\n(image binaries)', parent: 'backbone' }, classes: 'cloud' },
+            { data: { id: 'rek', label: 'Rekognition\nDetectLabels API', parent: 'backbone' }, classes: 'cloud' },
+          ],
+          edges: [
+            // Client → server (HTTP via CNAME)
+            { data: { id: 'a-cli-cname', source: 'cli-py', target: 'cname', label: 'HTTP requests' }, classes: 'thick' },
+            { data: { id: 'a-gui-cname', source: 'cli-gui', target: 'cname', label: 'HTTP requests' }, classes: 'thick' },
+            { data: { id: 'a-tests-cname', source: 'cli-tests', target: 'cname', label: 'HTTP tests' }, classes: 'dotted' },
+            { data: { id: 'a-clicfg-cli', source: 'cli-cfg', target: 'cli-py', label: 'configures' } },
+            { data: { id: 'a-clicfg-gui', source: 'cli-cfg', target: 'cli-gui', label: 'configures' } },
+
+            // CNAME → server
+            { data: { id: 'a-cname-srv', source: 'cname', target: 'srv', label: 'routes to' } },
+
+            // Trust relationships
+            { data: { id: 'a-eb-svc', source: 'eb-env', target: 'role-svc', label: 'assumes' } },
+            { data: { id: 'a-ec2-role', source: 'ec2', target: 'role-ec2', label: 'assumes' } },
+
+            // EB env properties point the server at its config
+            { data: { id: 'a-props-srv', source: 'eb-env-props', target: 'srv-cfg', label: 'PHOTOAPP_CONFIG_PATH locates' }, classes: 'dotted' },
+
+            // Routes call into the local PhotoApp core (services / repositories)
+            { data: { id: 'a-routes-core-1', source: 'r-img-post', target: 'src-core', label: 'use' }, classes: 'dotted' },
+            { data: { id: 'a-routes-core-2', source: 'r-images', target: 'src-core', label: 'use' }, classes: 'dotted' },
+
+            // Server config + deps
+            { data: { id: 'a-cfg-srv', source: 'srv-cfg', target: 'srv', label: 'configures' } },
+            { data: { id: 'a-pkg-srv', source: 'srv-pkg', target: 'srv', label: 'declares deps' } },
+
+            // Per-route runtime data flows (the architecture's interaction matrix)
+            { data: { id: 'r1', source: 'r-users', target: 'rds', label: 'SELECT users' } },
+            { data: { id: 'r2', source: 'r-images', target: 'rds', label: 'SELECT assets' } },
+            { data: { id: 'r3a', source: 'r-img-get', target: 'rds', label: 'SELECT asset' } },
+            { data: { id: 'r3b', source: 'r-img-get', target: 's3', label: 'GET object' } },
+            { data: { id: 'r4a', source: 'r-img-post', target: 'rds', label: 'INSERT asset+labels' }, classes: 'thick' },
+            { data: { id: 'r4b', source: 'r-img-post', target: 's3', label: 'PUT object' }, classes: 'thick' },
+            { data: { id: 'r4c', source: 'r-img-post', target: 'rek', label: 'DetectLabels' }, classes: 'thick' },
+            { data: { id: 'r5', source: 'r-img-labels', target: 'rds', label: 'SELECT labels' } },
+            { data: { id: 'r6', source: 'r-img-with', target: 'rds', label: 'SELECT by label' } },
+            { data: { id: 'r7', source: 'r-img-del', target: 'rds', label: 'TRUNCATE + reset' } },
+          ]
+        }
+      }
+
+    };
+
+    // ============================================================
+    // STYLE
+    // ============================================================
+
+    const STYLE = [
+      {
+        selector: 'node',
+        style: {
+          'background-color': '#fff',
+          'border-color': '#999',
+          'border-width': 1,
+          'shape': 'round-rectangle',
+          'label': 'data(label)',
+          'text-wrap': 'wrap',
+          'text-max-width': '200px',
+          'text-valign': 'center',
+          'text-halign': 'center',
+          'font-size': 11,
+          'width': 'label',
+          'height': 'label',
+          'padding': '12px',
+          'color': '#1a1a1a',
+        }
+      },
+      {
+        selector: ':parent',
+        style: {
+          'background-opacity': 0.04,
+          'border-color': '#888',
+          'border-width': 1.5,
+          'shape': 'round-rectangle',
+          'text-valign': 'top',
+          'text-halign': 'center',
+          'padding': '24px',
+          'font-weight': 'bold',
+          'font-size': 12,
+          'text-margin-y': -8,
+        }
+      },
+      {
+        selector: '.zone-local',
+        style: {
+          'background-color': '#f5f5f5',
+          'background-opacity': 0.5,
+          'border-color': '#555',
+          'border-width': 3,
+          'border-style': 'solid',
+          'font-size': 14,
+        }
+      },
+      {
+        selector: '.zone-aws',
+        style: {
+          'background-color': '#fff5e6',
+          'background-opacity': 0.6,
+          'border-color': '#ff6600',
+          'border-width': 3,
+          'border-style': 'dashed',
+          'font-size': 14,
+        }
+      },
+      {
+        selector: '.zone-external',
+        style: {
+          'background-color': '#f0e6ff',
+          'background-opacity': 0.5,
+          'border-color': '#9933cc',
+          'border-width': 3,
+          'border-style': 'dotted',
+          'font-size': 14,
+        }
+      },
+      {
+        selector: '.coord-zone',
+        style: {
+          'background-color': '#e6ffe6',
+          'background-opacity': 0.4,
+          'border-color': '#00aa00',
+          'border-width': 2,
+        }
+      },
+      {
+        selector: '.library-zone',
+        style: {
+          'background-color': '#cce5ff',
+          'background-opacity': 0.3,
+          'border-color': '#0066cc',
+          'border-width': 2,
+        }
+      },
+      {
+        selector: '.active-zone',
+        style: {
+          'background-color': '#fff4cc',
+          'background-opacity': 0.4,
+          'border-color': '#cc9900',
+          'border-width': 2,
+        }
+      },
+      {
+        selector: '.cloud-zone',
+        style: {
+          'background-color': '#ffe6cc',
+          'background-opacity': 0.4,
+          'border-color': '#ff6600',
+          'border-width': 2,
+        }
+      },
+      {
+        selector: 'node.active',
+        style: {
+          'background-color': '#fff4cc',
+          'border-color': '#cc9900',
+          'border-width': 2,
+        }
+      },
+      {
+        selector: 'node.library',
+        style: {
+          'background-color': '#cce5ff',
+          'border-color': '#0066cc',
+          'border-width': 2,
+        }
+      },
+      {
+        selector: 'node.cloud',
+        style: {
+          'background-color': '#ffe6cc',
+          'border-color': '#ff6600',
+          'border-width': 2,
+        }
+      },
+      {
+        selector: 'node.coord',
+        style: {
+          'background-color': '#e6ffe6',
+          'border-color': '#00aa00',
+          'border-width': 1.5,
+        }
+      },
+      {
+        selector: 'node.historical',
+        style: {
+          'background-color': '#f0f0f0',
+          'border-color': '#888',
+          'border-width': 1,
+          'color': '#666',
+        }
+      },
+      {
+        selector: 'node.external',
+        style: {
+          'background-color': '#f0e6ff',
+          'border-color': '#9933cc',
+          'border-width': 2,
+          'color': '#1a1a1a',
+        }
+      },
+      {
+        selector: 'edge',
+        style: {
+          'width': 1.5,
+          'line-color': '#888',
+          'target-arrow-color': '#888',
+          'target-arrow-shape': 'triangle',
+          'curve-style': 'bezier',
+          'label': 'data(label)',
+          'font-size': 9,
+          'color': '#444',
+          'text-background-color': '#fff',
+          'text-background-opacity': 0.9,
+          'text-background-padding': 2,
+          'text-background-shape': 'round-rectangle',
+        }
+      },
+      {
+        selector: 'edge.dotted',
+        style: {
+          'line-style': 'dashed',
+          'line-color': '#aaa',
+          'target-arrow-color': '#aaa',
+        }
+      },
+      {
+        selector: 'edge.thick',
+        style: {
+          'width': 3,
+          'line-color': '#cc6600',
+          'target-arrow-color': '#cc6600',
+          'font-weight': 'bold',
+        }
+      },
+      {
+        selector: 'node:grabbed',
+        style: {
+          'border-color': '#0066cc',
+          'border-width': 3,
+          'overlay-color': '#0066cc',
+          'overlay-opacity': 0.1,
+          'overlay-padding': 4,
+        }
+      },
+    ];
+
+    // ============================================================
+    // STATE + RENDER
+    // ============================================================
+
+    let cy = null;
+    let currentView = 'project-structure';
+    let currentLod = 'standard';
+    let pendingRestore = null;
+    const STORAGE_KEY = 'mbai460-viz-layouts-v1';
+    const statusPill = document.getElementById('status-pill');
+    const lodGroup = document.getElementById('lod-group');
+    const viewSelect = document.getElementById('view-select');
+
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    function viewLabel(v) {
+      return v === 'project-structure' ? 'Project Structure' : 'P02 Sprint';
+    }
+
+    function lodLabel(l) {
+      return l === 'default' ? 'Architecture' : capitalize(l);
+    }
+
+    function updateStatus() {
+      const z = cy ? cy.zoom() : 1;
+      statusPill.textContent =
+        viewLabel(currentView) + ' · ' + lodLabel(currentLod) +
+        ' · zoom ' + z.toFixed(2) + '×';
+    }
+
+    function syncControlsForView() {
+      // Show LOD segments only when the current view supports >1 LOD level
+      const lods = Object.keys(DIAGRAMS[currentView]);
+      if (lods.length > 1) {
+        lodGroup.classList.remove('hidden');
+      } else {
+        lodGroup.classList.add('hidden');
+      }
+      // If current LOD doesn't exist in this view, fall back to first
+      if (!DIAGRAMS[currentView][currentLod]) {
+        currentLod = lods[0];
+      }
+      // Update LOD button active state
+      document.querySelectorAll('.segments button').forEach((b) => {
+        b.classList.toggle('active', b.dataset.lod === currentLod);
+      });
+    }
+
+    function render() {
+      const data = DIAGRAMS[currentView][currentLod];
+      if (!data) {
+        console.error('No diagram for', currentView, currentLod);
+        return;
+      }
+
+      if (cy) { cy.destroy(); cy = null; }
+
+      cy = cytoscape({
+        container: document.getElementById('cy'),
+        elements: { nodes: data.nodes, edges: data.edges },
+        style: STYLE,
+        layout: {
+          name: 'dagre',
+          rankDir: 'LR',
+          ranker: 'tight-tree',
+          nodeSep: 30,
+          edgeSep: 12,
+          rankSep: 90,
+          padding: 24,
+          animate: false,
+        },
+        wheelSensitivity: 0.2,
+        minZoom: 0.15,
+        maxZoom: 5,
+        boxSelectionEnabled: false,
+      });
+
+      cy.on('zoom pan', updateStatus);
+      cy.on('drag', 'node', updateStatus);
+      cy.ready(() => {
+        if (pendingRestore) {
+          applyPendingRestore();
+        } else {
+          cy.fit(undefined, 30);
+        }
+        updateStatus();
+      });
+    }
+
+    // ============================================================
+    // SAVED LAYOUTS (localStorage)
+    //
+    // A saved layout captures: view, LOD, every leaf node's (x,y),
+    // current zoom, and current pan. Compound parents derive from
+    // their children so we don't need to save them.
+    // ============================================================
+
+    function getSavedLayouts() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+      catch (e) { return {}; }
+    }
+
+    function setSavedLayouts(layouts) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(layouts));
+    }
+
+    function saveCurrentLayout(name) {
+      if (!cy) return false;
+      const positions = {};
+      cy.nodes().forEach((n) => {
+        if (!n.isParent()) {
+          const p = n.position();
+          positions[n.id()] = { x: p.x, y: p.y };
+        }
+      });
+      const layouts = getSavedLayouts();
+      layouts[name] = {
+        view: currentView,
+        lod: currentLod,
+        positions: positions,
+        zoom: cy.zoom(),
+        pan: cy.pan(),
+        savedAt: new Date().toISOString(),
+      };
+      setSavedLayouts(layouts);
+      refreshSavedDropdown(name);
+      return true;
+    }
+
+    function restoreLayout(name) {
+      const layouts = getSavedLayouts();
+      const layout = layouts[name];
+      if (!layout) return;
+
+      // Switch view + LOD to the saved ones
+      currentView = layout.view;
+      currentLod = layout.lod;
+      document.getElementById('view-select').value = currentView;
+      syncControlsForView();
+
+      // Queue the position+zoom+pan restore so render() applies it
+      // after dagre lays out the new diagram.
+      pendingRestore = layout;
+      render();
+    }
+
+    function applyPendingRestore() {
+      if (!pendingRestore || !cy) return;
+      const layout = pendingRestore;
+      pendingRestore = null;
+
+      cy.batch(() => {
+        Object.entries(layout.positions || {}).forEach(([id, pos]) => {
+          const n = cy.getElementById(id);
+          if (n && n.length > 0 && !n.isParent()) {
+            n.position(pos);
+          }
+        });
+      });
+
+      if (typeof layout.zoom === 'number') cy.zoom(layout.zoom);
+      if (layout.pan && typeof layout.pan.x === 'number') cy.pan(layout.pan);
+    }
+
+    function deleteLayout(name) {
+      const layouts = getSavedLayouts();
+      delete layouts[name];
+      setSavedLayouts(layouts);
+      refreshSavedDropdown();
+    }
+
+    function refreshSavedDropdown(selectName) {
+      const select = document.getElementById('saved-layouts');
+      const layouts = getSavedLayouts();
+      const names = Object.keys(layouts).sort();
+      select.innerHTML = '';
+
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = names.length === 0
+        ? '— No saved layouts —'
+        : '— Restore saved layout —';
+      select.appendChild(placeholder);
+
+      names.forEach((name) => {
+        const layout = layouts[name];
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name + '  (' + viewLabel(layout.view) + ' · ' + capitalize(layout.lod) + ')';
+        select.appendChild(opt);
+      });
+
+      if (selectName && layouts[selectName]) {
+        select.value = selectName;
+      }
+    }
+
+    // ============================================================
+    // CONTROL HANDLERS
+    // ============================================================
+
+    viewSelect.addEventListener('change', (e) => {
+      currentView = e.target.value;
+      syncControlsForView();
+      render();
+    });
+
+    document.querySelectorAll('.segments button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.segments button').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentLod = btn.dataset.lod;
+        render();
+      });
+    });
+
+    document.getElementById('btn-zoom-in').addEventListener('click', () => {
+      if (!cy) return;
+      cy.zoom({ level: cy.zoom() * 1.25, renderedPosition: { x: cy.width()/2, y: cy.height()/2 } });
+    });
+    document.getElementById('btn-zoom-out').addEventListener('click', () => {
+      if (!cy) return;
+      cy.zoom({ level: cy.zoom() / 1.25, renderedPosition: { x: cy.width()/2, y: cy.height()/2 } });
+    });
+    document.getElementById('btn-fit').addEventListener('click', () => {
+      if (!cy) return;
+      cy.fit(undefined, 30);
+    });
+    document.getElementById('btn-relayout').addEventListener('click', () => {
+      if (!cy) return;
+      cy.layout({
+        name: 'dagre', rankDir: 'LR', ranker: 'tight-tree',
+        nodeSep: 30, edgeSep: 12, rankSep: 90, padding: 24, animate: true, animationDuration: 400
+      }).run();
+    });
+
+    // Saved-layout handlers
+    document.getElementById('btn-save-layout').addEventListener('click', () => {
+      const suggested = (currentView === 'p02-sprint' ? 'sprint' : 'structure') + '-' + currentLod;
+      const name = prompt('Save current layout as:', suggested);
+      if (!name) return;
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      const existing = getSavedLayouts()[trimmed];
+      if (existing && !confirm('Overwrite existing layout "' + trimmed + '"?')) return;
+      saveCurrentLayout(trimmed);
+    });
+
+    document.getElementById('saved-layouts').addEventListener('change', (e) => {
+      const name = e.target.value;
+      if (name) restoreLayout(name);
+    });
+
+    document.getElementById('btn-delete-layout').addEventListener('click', () => {
+      const select = document.getElementById('saved-layouts');
+      const name = select.value;
+      if (!name) {
+        alert('Pick a saved layout from the dropdown first.');
+        return;
+      }
+      if (confirm('Delete saved layout "' + name + '"?')) {
+        deleteLayout(name);
+      }
+    });
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+      if (!cy) return;
+      switch (e.key) {
+        case '+': case '=':
+          cy.zoom({ level: cy.zoom() * 1.2, renderedPosition: { x: cy.width()/2, y: cy.height()/2 } });
+          break;
+        case '-': case '_':
+          cy.zoom({ level: cy.zoom() / 1.2, renderedPosition: { x: cy.width()/2, y: cy.height()/2 } });
+          break;
+        case '0': cy.fit(undefined, 30); break;
+        case '1':
+          if (DIAGRAMS[currentView]['overview']) {
+            currentLod = 'overview';
+            syncControlsForView();
+            render();
+          }
+          break;
+        case '2':
+          if (DIAGRAMS[currentView]['standard']) {
+            currentLod = 'standard';
+            syncControlsForView();
+            render();
+          }
+          break;
+        case '3':
+          if (DIAGRAMS[currentView]['detailed']) {
+            currentLod = 'detailed';
+            syncControlsForView();
+            render();
+          }
+          break;
+      }
+    });
+
+    // Initial render
+    syncControlsForView();
+    refreshSavedDropdown();
+    render();
+  </script>
+</body>
+</html>

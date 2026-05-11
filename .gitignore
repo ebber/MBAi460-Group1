@@ -53,6 +53,21 @@ MetaFiles/plans/
 scratch/
 
 # ============================================================
+# Per-collaborator agent directive — local-only, not shared via VCS
+# (each contributor maintains their own CLAUDE.md; canonical
+#  shared agent guidance lives in CONTRIBUTING.md and
+#  MetaFiles/RESEARCH-RESOURCES.md)
+# ============================================================
+CLAUDE.md
+
+# ============================================================
+# Claude Code agent-managed worktrees — per-machine, ephemeral
+# (created by the Agent tool with isolation: "worktree";
+#  must not propagate to the team's repo)
+# ============================================================
+.claude/worktrees/
+
+# ============================================================
 # Node / npm ignores — applies to any node_modules/ at any depth
 # (Project 01 Part 03 has its own; future labs/projects may add more)
 # ============================================================
