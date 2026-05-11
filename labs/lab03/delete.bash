@@ -34,4 +34,4 @@ echo "2. deleting app"
 
 rm -f *.zip &> /dev/null
 
-eb terminate --all $APP_NAME
+eb terminate --all $APP_NAME --force

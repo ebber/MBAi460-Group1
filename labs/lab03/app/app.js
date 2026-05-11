@@ -64,9 +64,27 @@ app.get("/incr/:x", (request, response) => {
 // add x and y:
 app.get("/add/:x/:y", (request, response) => {
 
-  response.send("TODO");
+  try {
+    console.log("**SERVER: call to /add");
+    let x = parseInt(request.params.x);
+    let y = parseInt(request.params.y);
+    if (isNaN(x) || isNaN(y))
+      throw new Error("expecting numeric values for x and y");
 
-  return;
+    console.log(`received: ${x}, ${y}`);
+
+    let result = x + y;
+
+    console.log(`responding with: ${result}`);
+    response.send(result.toString());
+
+    console.log("**DONE");
+    return;
+  }
+  catch(err) {
+    console.log(`**ERROR: "${err.message}"`);
+    response.status(400).send(err.message);
+  }
 });
 
 
