@@ -1,7 +1,9 @@
 // GET /ping — service-module ping (S3 object count + DB user count)
 //
 // PDF spec response: { message: 'success', M: <s3_object_count>, N: <user_count> }
-// (Verified against cloned reference at images/mbai460-server/projects/project02/client/photoapp.py:83-84:
+// (Verified against the cloned instructor reference; archived in Phase 1.5 to
+// `submission artifacts/images/archieve_mbai460-server/projects/project02/client/photoapp.py`
+// lines 83-84:
 //   M = # of items in the photoapp bucket
 //   N = # of users in the photoapp.users table)
 //

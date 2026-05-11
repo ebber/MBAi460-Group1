@@ -1,5 +1,25 @@
 # Existing local deployment architecture view
 
+> **HISTORICAL SNAPSHOT (pre-Phase-1.5).** This document captures the local
+> deployment state as observed before the `docker-native-deployment` plan
+> landed. Several specifics here are no longer accurate:
+>
+> - The `friendly_herschel` instructor container has been stopped and is
+>   not part of any current workflow.
+> - `images/mbai460-server/` was archived to
+>   `submission artifacts/images/archieve_mbai460-server/` in commit `9bac3aa`.
+> - `dist/` was archived to `submission artifacts/dist/` in the same commit.
+> - The Compose stack is now lane-aware via profiles; `make up` and
+>   `make down` aliases were removed in commit `edb18bc`. The canonical
+>   commands are `make docker-up-aws`, `make docker-up-localstack`, and
+>   `make docker-down`.
+>
+> For the current state, see `projects/project02/README.md`,
+> `projects/project02/tools/DEPRECATED.md`, and
+> `projects/project02/scratch/project02-core-structure-vizualizer.md`.
+> This file is preserved as the pre-cleanup baseline; do not treat it
+> as authoritative for current behavior.
+
 Snapshots: **`docker`** / **`docker compose`** inspected read-only · **no compose stack was started** during this exercise.
 
 ---

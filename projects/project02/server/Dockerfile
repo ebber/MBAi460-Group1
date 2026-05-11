@@ -10,8 +10,9 @@
 #
 # This Dockerfile is the canonical Project02 app image. It is the build target
 # for both local Compose (docker-compose.yml) and the planned Elastic Beanstalk
-# deployment. The instructor/class container under projects/project02/images/
-# mbai460-server is reference-only (see tools/DEPRECATED.md).
+# deployment. The instructor/class container source has been archived under
+# `submission artifacts/images/archieve_mbai460-server/` (see tools/DEPRECATED.md
+# for the full archive inventory and rationale).
 
 FROM node:24-alpine AS base
 WORKDIR /app
