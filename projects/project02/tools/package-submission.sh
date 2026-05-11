@@ -1,5 +1,19 @@
 #!/usr/bin/env bash
 #
+# DEPRECATED IN PROJECT02 PHASE 1 (docker-native-deployment plan)
+# ----------------------------------------------------------------
+# This script remains executable so historical Gradescope reproductions
+# still work. It is no longer the canonical Project02 deploy path. The
+# canonical deploy path is the Docker image built by
+# `projects/project02/server/Dockerfile`.
+#
+# Phase 1.5 will decide whether to remove this file. Until then:
+#   - Do NOT extend it.
+#   - Do NOT use it as authority for what Project02 does.
+#   - See projects/project02/scratch/phase1-strays-inventory.md (Class B)
+#     and projects/project02/tools/DEPRECATED.md.
+# ----------------------------------------------------------------
+#
 # package-submission.sh — produce a self-contained submission directory + tarball
 # for Project 02 web service Gradescope submission (60/60).
 #
