@@ -209,7 +209,7 @@ Similarly, test_06 (`get_image`) used `findById` which doesn't query `kind` — 
 | Schema | `projects/project01/create-photoapp.sql`, `projects/project01/create-photoapp-labels.sql` (yes, in project01 — they're shared) |
 | Live RDS configs | `projects/project01/client/photoapp-config.ini` (read-write user; gitignored), `infra/config/photoapp-config.ini` (read-only user; gitignored) |
 | Plan + retrospective + TODO tracking | `projects/project02/client/MetaFiles/Approach/Plan.md`, `projects/project02/MetaFiles/refactor-log.md`, `MBAi460-Group1/MetaFiles/TODO.md` |
-| Cloned reference (Northwestern's assignment template) | `projects/project02/images/mbai460-server/projects/project02/client/{photoapp.py,tests.py}` |
+| Cloned reference (Northwestern's assignment template) | `projects/project02/images/mbai460-server/projects/project02/client/{photoapp.py,tests.py}` (archived in Phase 1.5 to `submission artifacts/images/archieve_mbai460-server/projects/project02/client/{photoapp.py,tests.py}`) |
 
 ### The toggle-based packaging architecture (CRITICAL TO UNDERSTAND)
 
