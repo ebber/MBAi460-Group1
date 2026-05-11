@@ -70,17 +70,20 @@ module "cloudwatch" {
 }
 
 # Elastic Beanstalk infrastructure for Project 02 Part 02 (EB deployment).
-# Phase 1 (current): IAM roles + instance profile.
-# Phase 2 (pending): aws_elastic_beanstalk_application + environment, with
-# vpc_id / subnet_ids / instance_type / solution_stack_name / etc. wired in
-# via additional variables in this env stack.
-# See modules/eb/README.md for the import workflow if these IAM roles
+# Phase 1: IAM roles + instance profile.
+# Phase 2: aws_elastic_beanstalk_application + environment.
+# See modules/eb/README.md for the import workflow if the IAM roles
 # already exist in the lab account (per PDF §1 NOTE).
 module "eb" {
   source = "../../modules/eb"
 
+  vpc_id        = var.eb_vpc_id
+  subnet_ids    = var.eb_subnet_ids
+  instance_type = var.eb_instance_type
+
   tags = local.common_tags
-  # Defaults match the PDF role names (aws-elasticbeanstalk-service-role,
-  # aws-elasticbeanstalk-ec2-role); override here only if a parallel team
-  # workflow requires distinct names.
+  # Role names, app/env names, solution stack regex, health type, and
+  # PHOTOAPP_CONFIG_PATH all default to PDF-conformant values; override
+  # in module call here only if a parallel team workflow requires
+  # distinct values.
 }

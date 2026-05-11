@@ -8,3 +8,16 @@ bucket_name        = "photoapp-YOURNETID"   # globally unique; lowercase; start 
 db_identifier      = "photoapp-dev"
 db_master_username = "admin"
 db_master_password = "CHANGE_ME_strong_password_here"
+
+# ── Elastic Beanstalk (Phase 2) ─────────────────────────────────────────────
+# Source of truth for these IDs: Pranav's labs/lab03/create.bash on the
+# feat/lab03-eb-scripting branch (commit ffa6424). If the lab's VPC/subnet
+# changes, update both Pranav's branch and this file together.
+
+eb_vpc_id     = "vpc-05985f11095f56e76"
+eb_subnet_ids = [
+  "subnet-00792fcc8564ed59c",
+  "subnet-08039669d9b47e5b1",
+  "subnet-072ab646df9b64a88",
+]
+eb_instance_type = "t3.micro"

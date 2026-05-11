@@ -9,7 +9,7 @@ giving us one `terraform apply` + one `terraform destroy` lifecycle.
 
 ## What this module owns
 
-### Phase 1 — IAM (current; in `iam.tf`)
+### Phase 1 — IAM (`iam.tf`)
 
 - `aws-elasticbeanstalk-service-role` — assumed by the EB platform for
   environment management + health monitoring. Attached managed policies:
@@ -23,16 +23,31 @@ giving us one `terraform apply` + one `terraform destroy` lifecycle.
 - `aws_iam_instance_profile` wrapping the EC2 role (referenced by the EB
   env's `IamInstanceProfile` setting in Phase 2)
 
-### Phase 2 — EB Application + Environment (pending)
+### Phase 2 — EB Application + Environment (`main.tf`)
 
-- `aws_elastic_beanstalk_application.photoapp` — application: `photoapp-web-service`
+- `aws_elastic_beanstalk_application.photoapp` — application:
+  `photoapp-web-service`
 - `aws_elastic_beanstalk_environment.photoapp_env` — environment with
-  `setting` blocks for VPC, subnets, instance type, service role,
-  instance profile, basic health monitoring, `PHOTOAPP_CONFIG_PATH`,
-  Node.js 24 platform
-- (Optional) `aws_s3_bucket` for application versions, plus
-  `aws_elastic_beanstalk_application_version` if we go pure-Terraform on
-  bundle deployment (vs hybrid `eb deploy`)
+  `setting` blocks for:
+  - `aws:autoscaling:launchconfiguration` → `IamInstanceProfile`,
+    `InstanceType` (default `t3.micro`)
+  - `aws:elasticbeanstalk:environment` → `EnvironmentType` =
+    `SingleInstance` (PDF `--single`), `ServiceRole` = our service role ARN
+  - `aws:ec2:vpc` → `VPCId`, `Subnets`, `AssociatePublicIpAddress=true`
+  - `aws:elasticbeanstalk:healthreporting:system` → `SystemType=basic`
+    (PDF §11 overload tolerance)
+  - `aws:elasticbeanstalk:application:environment` →
+    `PHOTOAPP_CONFIG_PATH=/var/app/current/photoapp-config.ini`,
+    `NODE_ENV=production`
+- `data "aws_elastic_beanstalk_solution_stack"` — resolves the latest
+  Node.js 24 / AL2023 platform at apply time
+
+### Phase 3 (pending) — Application bundle delivery
+
+- Decision: hybrid (Terraform owns shell; `eb deploy` pushes the zip)
+  vs pure Terraform (`aws_s3_object` + `aws_elastic_beanstalk_application_version`).
+- Either path needs a `tools/build-eb-bundle.sh` that produces
+  `dist/eb-bundle.zip` per `MetaFiles/Hosting_Plan.md` §2.
 
 ## What this module does NOT own
 

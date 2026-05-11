@@ -31,3 +31,21 @@ variable "db_master_password" {
   type        = string
   sensitive   = true
 }
+
+# ── Elastic Beanstalk (Phase 2) ──────────────────────────────────────────────
+
+variable "eb_vpc_id" {
+  description = "VPC ID for the EB environment. Must match the photoapp RDS VPC. Source of truth: Pranav's labs/lab03/create.bash on feat/lab03-eb-scripting."
+  type        = string
+}
+
+variable "eb_subnet_ids" {
+  description = "Subnet IDs (one per AZ in us-east-2) for the EB environment. Same VPC as the photoapp RDS."
+  type        = list(string)
+}
+
+variable "eb_instance_type" {
+  description = "EC2 instance type for the EB environment."
+  type        = string
+  default     = "t3.micro"
+}
