@@ -29,3 +29,17 @@ client/.venv/
 client/.pytest_cache/
 **/__pycache__/
 **/*.pyc
+
+# ============================================================
+# Phase 1.5 archived artifacts (submission artifacts/)
+# ============================================================
+# When deprecated content was moved out of dist/ and images/ into
+# submission artifacts/ during Phase 1.5, those items left the scope of
+# the monorepo-root .gitignore (which only matched the original paths).
+# Re-cover them here so we don't accidentally commit ~15 MB of submission
+# tarballs or the vendored instructor repo's own .git directory.
+#
+# Tracked archive items (the two packaging scripts) are NOT matched by
+# these patterns and remain visible to git.
+submission artifacts/dist/
+submission artifacts/images/
