@@ -19,7 +19,7 @@ History of what was deprecated and removed/archived during Phases 1 and 1.5 of t
 | `submission artifacts/dist/archieve_p02-client-submission-20260505T073104Z(.tar.gz)` | ARCHIVED | 1.5 Group A | Submitted client artifact (30/30). Equals server submission + `photoapp.py`. |
 | `submission artifacts/images/archieve_mbai460-server/` | ARCHIVED | 1.5 Group C | Vendored copy of the instructor course repo with its own `.git/`. Used by the deprecated `gs submit` workflow. |
 | `Makefile` targets `submit-server`, `submit-client`, `submit-server-autograder`, `submit-client-autograder`, `clean-dist` | REMOVED | 1.5 Group B | Removed in commit `9fa8bd8`. Reachable via `git log -p Makefile`. |
-| `Makefile` aliases `up`, `down` | DEPRECATED | (Group E) | Aliases for `docker-up-aws` / `docker-down`. Kept for muscle memory; removal queued for Group E. |
+| `Makefile` aliases `up`, `down`, `up-logs` | REMOVED | 1.5 Group E | Aliases for `docker-up-aws` / `docker-down`. Removed once operators converged on the canonical names. Reachable via `git log -p Makefile`. |
 | `server/api_*.js` (8 files) | NOT YET DEPRECATED | (Phase 2 P2.A) | Gradescope filename-compatibility wrappers. Phase 2 retires them after canonical route tests prove parity. |
 
 ## What is canonical (kept and prominent)

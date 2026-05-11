@@ -14,7 +14,7 @@ SHELL := /bin/bash
 SERVER_DIR := server
 CLIENT_DIR := client
 
-.PHONY: help install test test-unit test-integration test-contract test-smoke test-happy test-live lint format clean clean-workspace up down up-logs docker-up docker-up-aws docker-up-localstack docker-down bootstrap-localstack
+.PHONY: help install test test-unit test-integration test-contract test-smoke test-happy test-live lint format clean clean-workspace docker-up docker-up-aws docker-up-localstack docker-down bootstrap-localstack
 
 help: ## List available targets
 	@awk 'BEGIN {FS = ":.*?## "}; /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -113,14 +113,11 @@ docker-down: ## Stop and remove all containers + volumes (both lanes)
 	docker compose --profile localstack down -v
 	@echo "[docker-down] stack stopped and volumes removed"
 
-# ── Backwards-compat aliases (operator muscle memory) ────────────────────────
-up: docker-up-aws ## DEPRECATED alias for docker-up-aws (kept for muscle memory)
-
-down: docker-down ## DEPRECATED alias for docker-down (kept for muscle memory)
-
-up-logs: docker-up-aws ## docker-up-aws + follow logs
-	docker compose logs -f server
-
-# Submission packaging targets removed in Phase 1.5. The deprecated
-# scripts still exist (read-only) under submission artifacts/tools/ for
-# historical reference. See submission artifacts/ + tools/DEPRECATED.md.
+# Removed in Phase 1.5 Group E:
+#   up, down, up-logs (deprecated aliases for docker-up-aws / docker-down)
+# Removed in Phase 1.5 Group B:
+#   submit-server, submit-client, submit-server-autograder,
+#   submit-client-autograder, clean-dist (submission packaging targets;
+#   the underlying scripts now live read-only under
+#   submission artifacts/tools/ for historical reference).
+# See tools/DEPRECATED.md for the full removal/archive history.
