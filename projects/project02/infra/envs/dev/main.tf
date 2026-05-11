@@ -68,3 +68,19 @@ module "cloudwatch" {
   retention_days   = 7
   tags             = local.common_tags
 }
+
+# Elastic Beanstalk infrastructure for Project 02 Part 02 (EB deployment).
+# Phase 1 (current): IAM roles + instance profile.
+# Phase 2 (pending): aws_elastic_beanstalk_application + environment, with
+# vpc_id / subnet_ids / instance_type / solution_stack_name / etc. wired in
+# via additional variables in this env stack.
+# See modules/eb/README.md for the import workflow if these IAM roles
+# already exist in the lab account (per PDF §1 NOTE).
+module "eb" {
+  source = "../../modules/eb"
+
+  tags = local.common_tags
+  # Defaults match the PDF role names (aws-elasticbeanstalk-service-role,
+  # aws-elasticbeanstalk-ec2-role); override here only if a parallel team
+  # workflow requires distinct names.
+}
