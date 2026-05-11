@@ -1,0 +1,31 @@
+# Project02-local .gitignore.
+#
+# Scope discipline: this file only covers paths inside projects/project02/.
+# Patterns affecting other monorepo projects belong in the monorepo-root
+# .gitignore. See projects/project02/scratch/phase1-strays-inventory.md for
+# the rationale behind keeping Project02 changes self-contained.
+#
+# ============================================================
+# AWS / RDS credentials — NEVER commit
+# ============================================================
+# Real photoapp-config.ini holds [rds] endpoint + user_pwd and the
+# [s3readwrite]/[s3readonly] aws_access_key_id pairs. The .example
+# template (committed) is provisioned per operator into the real file
+# below, which must stay out of git.
+client/photoapp-config.ini
+
+# Defense in depth: any other credential-shaped file inside project02.
+**/*-credentials.ini
+**/aws-credentials*
+**/.env
+**/.env.*
+
+# ============================================================
+# Local Python / venv artifacts (Project02 client uses Python)
+# ============================================================
+# These are also covered indirectly by other ignores, but spelling out
+# inside Project02 makes intent obvious to readers of this directory.
+client/.venv/
+client/.pytest_cache/
+**/__pycache__/
+**/*.pyc
