@@ -8,3 +8,43 @@ bucket_name        = "photoapp-YOURNETID"   # globally unique; lowercase; start 
 db_identifier      = "photoapp-dev"
 db_master_username = "admin"
 db_master_password = "CHANGE_ME_strong_password_here"
+
+# Set false when reusing existing lab RDS/S3/IAM values already present in
+# client/photoapp-config.ini. This is the recommended EB-only path for
+# Project02 Part 02 when the app infrastructure already exists.
+enable_core_infra = true
+
+# Elastic Beanstalk lane: optional until you are ready to deploy Project02 Part 02.
+# First stage a bundle, for example:
+#   cd projects/project02
+#   ./tools/stage-eb-bundle.sh \
+#     --config-file client/photoapp-config.ini \
+#     --output-dir build/eb \
+#     --bundle-name project02-photoapp-dev
+#
+# Then set the values below and run terraform plan/apply.
+enable_elastic_beanstalk = false
+eb_application_name      = "project02-photoapp"
+eb_environment_name      = "project02-photoapp-dev"
+# Verify with:
+#   aws elasticbeanstalk list-available-solution-stacks --region us-east-2 | grep -i "Node.js"
+#
+# Project02's package.json declares node >=24. If EB does not offer Node 24,
+# use the newest available Node.js platform and confirm the app smoke tests pass.
+eb_solution_stack_name = "64bit Amazon Linux 2023 v6.5.1 running Node.js 20"
+eb_instance_type         = "t3.micro"
+eb_vpc_id                = "vpc-REPLACE_ME"
+eb_subnet_ids            = ["subnet-REPLACE_ME_A", "subnet-REPLACE_ME_B"]
+eb_artifact_bucket_name  = "project02-photoapp-eb-artifacts-YOURNETID"
+eb_bundle_path           = "../../../build/eb/project02-photoapp-dev.zip"
+eb_version_label         = "project02-photoapp-dev"
+
+# Course/lab accounts often already have these roles. Leave false to use
+# existing names; set true only if the active AWS identity can manage IAM.
+eb_create_iam_roles                    = false
+eb_existing_service_role_name         = "aws-elasticbeanstalk-service-role"
+eb_existing_ec2_instance_profile_name = "aws-elasticbeanstalk-ec2-role"
+
+# Optional when eb_create_iam_roles=true. While app reads explicit AWS keys from
+# photoapp-config.ini, this can remain empty.
+eb_app_policy_arns = []

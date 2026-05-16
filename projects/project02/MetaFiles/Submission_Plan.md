@@ -90,6 +90,19 @@ After editing, **run client / tests** against EB to confirm before upload.
 | **`photoapp-config.ini`** references the **same AWS account’s** RDS + S3 the EB app uses | Avoid “server up but wrong backend” failures. |
 | Server INI uses **cloud** endpoints, not `mysql` / `test` keys | Matches production, not LocalStack dev. |
 
+## Repo-native pre-submit smoke
+
+After Terraform deploys EB and outputs `elastic_beanstalk_url`, run from
+`projects/project02/`:
+
+```bash
+make eb-smoke EB_URL=http://YOUR-EB-CNAME.elasticbeanstalk.com
+```
+
+This checks `/healthz`, `/readyz`, `/ping`, `/users`, and `/images` with the
+same cURL-only posture expected from the autograder. If `/readyz` fails, inspect
+RDS/S3/credentials before submitting.
+
 ---
 
 ## After submission (handout housekeeping)

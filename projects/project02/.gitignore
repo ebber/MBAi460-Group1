@@ -31,6 +31,18 @@ client/.pytest_cache/
 **/*.pyc
 
 # ============================================================
+# Generated EB bundles
+# ============================================================
+build/eb/
+
+# Terraform working directories (lock files remain tracked intentionally).
+**/.terraform/
+**/terraform.tfvars
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/*.tfplan
+
+# ============================================================
 # Phase 1.5 archived artifacts (submission artifacts/)
 # ============================================================
 # When deprecated content was moved out of dist/ and images/ into

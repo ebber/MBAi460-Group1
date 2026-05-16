@@ -54,6 +54,38 @@ real AWS infra unreachable; investigate AWS state, not Project02 code).
 LocalStack-lane smoke is deliberately not in the Phase 1 gate; design
 notes in `scratch/phase2-codebase-test-alignment-stub.md` (Workstream P2.F).
 
+## Elastic Beanstalk bundle and smoke
+
+Project02 consumes the reusable scaffold in `../../labs/lab03-production-grade/`
+for EB bundle staging and cURL smoke checks.
+
+Dry-run a bundle with safe example config:
+
+```bash
+make eb-bundle-example
+```
+
+Check real deployment prerequisites without printing secrets:
+
+```bash
+make eb-preflight
+```
+
+Stage a deployable bundle with the real gitignored config:
+
+```bash
+make eb-bundle
+```
+
+Smoke a deployed EB CNAME:
+
+```bash
+make eb-smoke EB_URL=http://YOUR-EB-CNAME.elasticbeanstalk.com
+```
+
+Terraform wiring for the EB environment lives under `infra/envs/dev`; see
+`MetaFiles/Hosting_Plan.md` for the full flow.
+
 ## Layout (high-level)
 
 ```

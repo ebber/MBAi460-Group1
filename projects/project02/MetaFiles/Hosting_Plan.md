@@ -79,16 +79,114 @@ This repo does **not** replace those scripts; it supplies **which source tree** 
 
 ---
 
-## 4. How to test locally (same codebase, before or after EB)
+## 4. Terraform-native Project02 flow
+
+The preferred Project02 path consumes the reusable scaffold at
+`labs/lab03-production-grade/` and then lets Terraform own the EB resources.
+
+### 4.1 Stage the EB bundle
+
+From `projects/project02/`:
+
+```bash
+make eb-preflight
+```
+
+If preflight is red, fix the missing local inputs first. It checks for:
+
+- real `client/photoapp-config.ini`
+- `infra/envs/dev/terraform.tfvars`
+- staged EB bundle
+- usable AWS profile
+
+Then stage the bundle:
+
+```bash
+make eb-bundle
+```
+
+This requires the real, gitignored `client/photoapp-config.ini` and writes:
+
+- `build/eb/project02-photoapp-dev.zip`
+- `build/eb/project02-photoapp-dev.manifest.txt`
+
+For a non-secret dry run:
+
+```bash
+make eb-bundle-example
+```
+
+### 4.2 Wire Terraform variables
+
+Copy `infra/envs/dev/terraform.tfvars.example` to `terraform.tfvars`, then set:
+
+- `enable_elastic_beanstalk = true`
+- `eb_solution_stack_name` to the newest Node.js EB platform available in the target region
+- `eb_vpc_id`
+- `eb_subnet_ids`
+- `eb_artifact_bucket_name`
+- `eb_bundle_path = "../../../build/eb/project02-photoapp-dev.zip"`
+- `eb_version_label = "project02-photoapp-dev"`
+- `eb_create_iam_roles = false` unless the active AWS identity can manage IAM
+- `eb_existing_service_role_name = "aws-elasticbeanstalk-service-role"`
+- `eb_existing_ec2_instance_profile_name = "aws-elasticbeanstalk-ec2-role"`
+
+Check available Node platforms with:
+
+```bash
+aws elasticbeanstalk list-available-solution-stacks \
+  --region us-east-2 | grep -i "Node.js"
+```
+
+Project02 currently declares `node >=24` in `server/package.json`; if EB does
+not offer Node 24, use the newest available Node.js platform and rely on
+post-deploy smoke tests to prove compatibility.
+
+If `enable_core_infra = false`, Terraform deploys only the EB lane and reuses
+the RDS/S3/IAM values already referenced by `client/photoapp-config.ini`. This
+is the safer default when the class lab infrastructure already exists.
+
+**IAM caveat:** EB environment creation requires the caller to pass the EB
+service role / EC2 instance profile. If apply fails with `Unable to assign role`,
+switch `aws_profile` to a role-capable identity (for example, an authenticated
+human SSO profile) or grant `iam:PassRole` for the EB roles to the deployment
+identity. `make eb-preflight` verifies AWS authentication, but it does not prove
+`iam:PassRole`.
+
+### 4.3 Plan/apply with operator approval
+
+```bash
+cd infra/envs/dev
+terraform init
+terraform plan
+```
+
+Only run `terraform apply` after reviewing the plan for unexpected RDS/S3
+replacement. EB should add an application, environment, version, artifact bucket,
+service role, and EC2 instance profile.
+
+### 4.4 Smoke the deployed URL
+
+After Terraform outputs `elastic_beanstalk_url`, run:
+
+```bash
+make eb-smoke EB_URL=http://YOUR-EB-CNAME.elasticbeanstalk.com
+```
+
+The smoke helper checks `/healthz`, `/readyz`, `/ping`, `/users`, and `/images`.
+
+---
+
+## 5. How to test locally (same codebase, before or after EB)
 
 Local testing uses **Docker Compose** from **`projects/project02/`**, **not** the EB CLI.
 
-### 4.1 Prerequisites
+### 5.1 Prerequisites
 
 - Docker Desktop (or equivalent).
 - From repo root once: `npm install` at `MBAi460-Group1/` (workspace installs `projects/project02/server`).
 
-### 4.2 AWS lane (closest to EB behavior)
+### 5.2 AWS lane (closest to EB behavior)
 
 **Requires** real `client/photoapp-config.ini` (RDS + S3 + credentials / IAM shape for real AWS).
 
@@ -104,7 +202,7 @@ Logs: `docker compose logs -f server`
 
 Stop: `make docker-down`
 
-### 4.3 LocalStack lane (offline)
+### 5.3 LocalStack lane (offline)
 
 **Uses** `client/photoapp-config.ini.example` + local MySQL + LocalStack (no real AWS).
 
@@ -117,7 +215,7 @@ Same host port **8080**; good for **CI-shaped** validation when AWS is unavailab
 
 Stop: `make docker-down`
 
-### 4.4 Host-only Node (optional, no Docker)
+### 5.4 Host-only Node (optional, no Docker)
 
 From monorepo root:
 
@@ -131,7 +229,7 @@ npm start
 
 Useful for quick debugging; **Compose** better matches “clean room” parity with containerized deps.
 
-### 4.5 Optional automated gate
+### 5.5 Optional automated gate
 
 ```bash
 bash tools/phase1-smoke.sh
@@ -141,7 +239,7 @@ Runs Jest layers plus Compose/AWS-lane checks per project docs; use when validat
 
 ---
 
-## 5. After EB deploy — smoke checks
+## 6. After EB deploy — smoke checks
 
 1. Browser or curl: `http://<CNAME>/users` and/or `/images` (handout).
 2. Confirm **`photoapp-client-config.ini`** uses `webservice=http://<CNAME>` (no trailing slash, `http` per handout).
@@ -151,12 +249,14 @@ Runs Jest layers plus Compose/AWS-lane checks per project docs; use when validat
 
 ---
 
-## 6. Quick reference
+## 7. Quick reference
 
 | Question | Answer |
 |----------|--------|
 | What ships to EB? | `server/` runtime tree + **`photoapp-config.ini`** + **`package.json`** (+ lockfile if `npm ci`). |
 | What sets config path on EB? | **`PHOTOAPP_CONFIG_PATH`** environment property (recommended). |
+| What stages the EB bundle? | `make eb-bundle` via `labs/lab03-production-grade/bin/stage-eb-node-app.sh`. |
+| What smokes the EB CNAME? | `make eb-smoke EB_URL=http://...`. |
 | Does `make docker-up-aws` deploy EB? | **No** — local Compose only. |
 | Entry command | `npm start` → `node server.js` |
 

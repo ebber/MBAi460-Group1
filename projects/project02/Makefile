@@ -14,7 +14,7 @@ SHELL := /bin/bash
 SERVER_DIR := server
 CLIENT_DIR := client
 
-.PHONY: help install test test-unit test-integration test-contract test-smoke test-happy test-live lint format clean clean-workspace docker-up docker-up-aws docker-up-localstack docker-down bootstrap-localstack
+.PHONY: help install test test-unit test-integration test-contract test-smoke test-happy test-live lint format clean clean-workspace eb-preflight eb-bundle eb-bundle-example eb-smoke docker-up docker-up-aws docker-up-localstack docker-down bootstrap-localstack
 
 help: ## List available targets
 	@awk 'BEGIN {FS = ":.*?## "}; /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -66,6 +66,46 @@ clean: ## Remove Project 02 server node_modules + coverage artifacts
 clean-workspace: ## Remove root + Project 02 server node_modules (does not touch Project 01)
 	cd ../.. && rm -rf node_modules projects/project02/server/node_modules
 	rm -rf $(SERVER_DIR)/coverage
+
+eb-preflight: ## Check local EB deploy inputs (no secrets printed; no cloud mutation)
+	./tools/eb-preflight.sh
+
+eb-bundle: ## Stage EB bundle with real gitignored client/photoapp-config.ini
+	@if [ ! -f $(CLIENT_DIR)/photoapp-config.ini ]; then \
+		echo "[eb-bundle] ERROR: $(CLIENT_DIR)/photoapp-config.ini not found."; \
+		echo "            Provision it from your AWS-shaped config before staging a deployable EB bundle."; \
+		exit 1; \
+	fi
+	./tools/stage-eb-bundle.sh \
+	  --config-file $(CLIENT_DIR)/photoapp-config.ini \
+	  --output-dir build/eb \
+	  --bundle-name project02-photoapp-dev
+
+eb-bundle-example: ## Stage EB bundle with LocalStack example config (dry-run only)
+	./tools/stage-eb-bundle.sh \
+	  --config-file $(CLIENT_DIR)/photoapp-config.ini.example \
+	  --output-dir build/eb \
+	  --bundle-name project02-photoapp-example
+
+eb-smoke: ## Smoke-test deployed EB URL; usage: make eb-smoke EB_URL=http://...
+	@if [ -z "$${EB_URL:-}" ]; then \
+		echo "[eb-smoke] ERROR: set EB_URL=http://your-env.elasticbeanstalk.com"; \
+		exit 1; \
+	fi
+	../../labs/lab03-production-grade/bin/smoke-eb-url.sh \
+	  --base-url "$${EB_URL}" \
+	  --path /healthz \
+	  --path /readyz \
+	  --path /ping \
+	  --path /users \
+	  --path /images \
+	  --expect /healthz=200 \
+	  --expect /readyz=200 \
+	  --expect /ping=200 \
+	  --expect /users=200 \
+	  --expect /images=200 \
+	  --retry-count 3 \
+	  --timeout 10
 
 docker-up: docker-up-aws ## Default lane: AWS (alias for docker-up-aws)
 
