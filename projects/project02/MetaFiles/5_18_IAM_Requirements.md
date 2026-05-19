@@ -233,14 +233,14 @@ The executing agent should write the IAM request, response, decision, and final 
 | Field | Value |
 |-------|--------|
 | **Date** | 2026-05-18 |
-| **Request** | Confirm Plane-2 delegation satisfies Lab 04 Lambda IAM (no ad-hoc `lab04-*` policy); roles must be `lab-project-lab04-*` with `LabProjectPermissionsBoundary` |
+| **Request** | Confirm Plane-2 delegation satisfies Lab 04 Lambda IAM (no ad-hoc `lab04-*` policy); roles must be `lab-project04-*` with `LabProjectPermissionsBoundary` |
 | **Identity** | `Claude-Conjurer` + PowerUserAccess + `ClaudeConjurerPlane2IAMDelegation` |
 | **Admin action** | Bootstrap applied: `infra/bootstrap/plane2-iam-delegation/` (state in repo) |
 | **Policy ARNs** | Boundary: `arn:aws:iam::772360735396:policy/LabProjectPermissionsBoundary`; Delegation: `arn:aws:iam::772360735396:policy/ClaudeConjurerPlane2IAMDelegation` |
-| **Lab 04 role names (Terraform)** | `lab-project-lab04-analyze-role`, `lab-project-lab04-weather-role` |
+| **Lab 04 role names (Terraform)** | `lab-project04-analyze-role`, `lab-project04-weather-role`, layer `lab-project04-requests-layer` |
 | **PassRole service** | `lambda.amazonaws.com` (delegation § PassRoleLambda) |
-| **Ground-truth checks** | Bootstrap tfstate **PASS**; `5_18` + `LAB_PROJECT_IAM_CONTRACT.md` aligned; live `aws` CLI **pending** on operator machine |
-| **Next apply** | `labs/lab04/infra/envs/dev` — `terraform apply` after `weather.py` + modules land |
+| **Ground-truth checks** | Bootstrap tfstate **PASS**; Gradescope Lab 04 **100/100**; stack destroyed for cost cleanup (re-apply via `labs/lab04/Makefile`) |
+| **Operator docs** | `labs/lab04/README.md` — preflight, test-api, destroy/re-apply lifecycle |
 
 ### Project 02 EB (template — fill when EB IAM requested)
 

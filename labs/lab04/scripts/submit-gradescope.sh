@@ -7,6 +7,7 @@
 #   - lab04-client-config.ini with live [client] webservice (no trailing slash)
 #
 # Usage (from anywhere):
+#   make -C labs/lab04 submit
 #   labs/lab04/scripts/submit-gradescope.sh
 
 set -euo pipefail

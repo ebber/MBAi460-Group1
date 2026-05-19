@@ -1,31 +1,50 @@
 TF_DIR := infra/envs/dev
+AWS_PROFILE ?= Claude-Conjurer
 
-.PHONY: init validate plan apply output-url config destroy submit
+.PHONY: help preflight test test-api init validate plan apply output-url config destroy submit
 
-submit:
-	@bash scripts/submit-gradescope.sh
+help: ## List Lab 04 operator targets
+	@awk 'BEGIN {FS = ":.*?## "}; /^[a-zA-Z0-9_-]+:.*?## / {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-# Interactive shell in instructor image (from repo root: ./docker/run)
-docker-shell:
-	@echo "Run from MBAi460-Group1 repo root: ../../docker/run"
+preflight: ## Local + optional AWS checks (no cloud mutation)
+	@bash tools/preflight.sh --aws-profile "$(AWS_PROFILE)"
 
-init:
+test: ## Run in-repo contract tests + terraform validate (needs: make init)
+	@bash infra/__tests__/lab04-modules.test.sh
+	@bash tools/__tests__/preflight.test.sh
+	@bash tools/__tests__/test-api.test.sh
+	@if [ -d "$(TF_DIR)/.terraform" ]; then \
+	  $(MAKE) validate; \
+	else \
+	  echo "[test] skip terraform validate (run: make init)"; \
+	fi
+
+test-api: ## cURL smoke against live API (after apply)
+	@bash tools/test-api.sh
+
+init: ## terraform init
 	cd $(TF_DIR) && terraform init
 
-validate:
+validate: ## terraform validate
 	cd $(TF_DIR) && terraform validate
 
-plan:
-	cd $(TF_DIR) && terraform plan
+plan: ## terraform plan
+	cd $(TF_DIR) && terraform plan -var="aws_profile=$(AWS_PROFILE)"
 
-apply:
-	cd $(TF_DIR) && terraform apply
+apply: ## terraform apply (creates Lambda + API Gateway)
+	cd $(TF_DIR) && terraform apply -var="aws_profile=$(AWS_PROFILE)"
 
-output-url:
+output-url: ## Print invoke URL for Gradescope INI
 	@cd $(TF_DIR) && terraform output -raw invoke_url
 
-config:
+config: ## Write lab04-client-config.ini from terraform output
 	@bash infra/scripts/write-client-config.sh
 
-destroy:
-	cd $(TF_DIR) && terraform destroy
+destroy: ## Tear down Lab 04 AWS resources (cost cleanup)
+	cd $(TF_DIR) && terraform destroy -var="aws_profile=$(AWS_PROFILE)"
+
+submit: ## Gradescope submit via instructor Docker image
+	@bash scripts/submit-gradescope.sh
+
+docker-shell: ## Instructor Docker shell (run ./docker/run from repo root)
+	@echo "Run from MBAi460-Group1 repo root: ./docker/run"

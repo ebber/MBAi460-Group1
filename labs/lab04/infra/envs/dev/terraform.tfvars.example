@@ -1,4 +1,6 @@
 aws_region  = "us-east-2"
+# Default lab operator profile (see ../../../claude-workspace/aws-env.sh).
+# Override with ErikTheWizard after: aws sso login --profile ErikTheWizard
 aws_profile = "Claude-Conjurer"
 
 api_stage_name = "prod"
