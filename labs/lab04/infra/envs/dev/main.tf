@@ -10,7 +10,8 @@ locals {
     ManagedBy   = "terraform"
   }
 
-  lab_root = abspath("${path.module}/../../..")
+  lab_root            = abspath("${path.module}/../../..")
+  lambda_common_file  = "${local.lab_root}/lambda_common.py"
 }
 
 module "requests_layer" {
@@ -23,6 +24,7 @@ module "analyze" {
   function_name                        = "analyze"
   role_name                            = "lab-project04-analyze-role"
   source_file                          = "${local.lab_root}/analyze.py"
+  shared_module_file                   = local.lambda_common_file
   handler                              = "analyze.lambda_handler"
   lab_project_permissions_boundary_arn = var.lab_project_permissions_boundary_arn
   managed_policy_arns = [
@@ -38,13 +40,16 @@ module "weather" {
   function_name                        = "weather"
   role_name                            = "lab-project04-weather-role"
   source_file                          = "${local.lab_root}/weather.py"
+  shared_module_file                   = local.lambda_common_file
   handler                              = "weather.lambda_handler"
   lab_project_permissions_boundary_arn = var.lab_project_permissions_boundary_arn
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
   ]
-  layer_arns = [module.requests_layer.layer_arn]
-  tags       = local.common_tags
+  layer_arns   = [module.requests_layer.layer_arn]
+  timeout      = 30
+  memory_size  = 128
+  tags         = local.common_tags
 }
 
 module "api" {

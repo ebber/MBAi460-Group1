@@ -96,6 +96,7 @@ Manual Docker (from lab04 dir) matches `scripts/submit-gradescope.sh`. Activate 
 labs/lab04/
   analyze.py              # instructor Rekognition handler
   weather.py              # student Open Meteo handler
+  lambda_common.py        # shared API Gateway JSON response helper
   infra/
     modules/              # lambda-function, lambda-layer-requests, api-services
     envs/dev/             # Terraform root

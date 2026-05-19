@@ -10,6 +10,11 @@ variable "source_file" {
   type = string
 }
 
+variable "shared_module_file" {
+  description = "Shared Python module packaged alongside the handler (e.g. lambda_common.py)."
+  type        = string
+}
+
 variable "handler" {
   type = string
 }
@@ -36,6 +41,11 @@ variable "runtime" {
 variable "timeout" {
   type    = number
   default = 300
+}
+
+variable "memory_size" {
+  type    = number
+  default = 128
 }
 
 variable "tags" {

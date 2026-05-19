@@ -18,11 +18,32 @@ grep -q 'resource "aws_lambda_function"' "${MODULE_ROOT}/lambda-function/main.tf
 grep -q 'permissions_boundary' "${MODULE_ROOT}/lambda-function/main.tf" \
   || fail "lambda-function must set permissions_boundary"
 
+grep -q 'lambda_common.py' "${DEV_MAIN}" \
+  || fail "dev main must package lambda_common.py with both handlers"
+
 grep -q 'lab-project04-analyze-role' "${DEV_MAIN}" \
   || fail "dev main must use lab-project04-analyze-role"
 
 grep -q 'lab-project04-weather-role' "${DEV_MAIN}" \
   || fail "dev main must use lab-project04-weather-role"
+
+grep -q 'timeout      = 30' "${DEV_MAIN}" \
+  || fail "weather Lambda should use timeout 30"
+
+grep -q 'memory_size  = 128' "${DEV_MAIN}" \
+  || fail "weather Lambda should use memory_size 128"
+
+grep -q 'shared_module_file' "${LAB04}/infra/modules/lambda-function/main.tf" \
+  || fail "lambda-function module must package shared_module_file in zip"
+
+grep -q 'memory_size' "${LAB04}/infra/modules/lambda-function/main.tf" \
+  || fail "lambda-function module must set memory_size"
+
+[ -f "${LAB04}/lambda_common.py" ] \
+  || fail "lambda_common.py must exist at lab04 root"
+
+python3 -m py_compile "${LAB04}/lambda_common.py" "${LAB04}/analyze.py" "${LAB04}/weather.py" \
+  || fail "Python handlers must compile"
 
 grep -q 'resource "aws_api_gateway_rest_api"' "${MODULE_ROOT}/api-services/main.tf" \
   || fail "api-services must define REST API"

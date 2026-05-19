@@ -21,8 +21,17 @@ data "aws_iam_policy_document" "assume" {
 
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  source_file = var.source_file
   output_path = "${path.module}/build/${var.function_name}.zip"
+
+  source {
+    content  = file(var.source_file)
+    filename = basename(var.source_file)
+  }
+
+  source {
+    content  = file(var.shared_module_file)
+    filename = basename(var.shared_module_file)
+  }
 }
 
 resource "aws_iam_role" "this" {
@@ -52,6 +61,7 @@ resource "aws_lambda_function" "this" {
   handler       = var.handler
   runtime       = var.runtime
   timeout       = var.timeout
+  memory_size   = var.memory_size
 
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256

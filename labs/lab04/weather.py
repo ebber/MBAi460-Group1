@@ -1,9 +1,10 @@
 #
 # Lambda function: current weather for a city via Open Meteo.
 #
-import json
 import requests
 from urllib.parse import unquote_plus
+
+from lambda_common import apigw_json
 
 WEATHER = {
     0: "Clear sky",
@@ -44,7 +45,7 @@ def _respond(status_code, message, temperature=None, windspeed=None, winddirecti
         body["windspeed"] = windspeed
         body["winddirection"] = int(winddirection)
         body["synopsis"] = synopsis
-    return {"statusCode": status_code, "body": json.dumps(body)}
+    return apigw_json(status_code, body)
 
 
 def _open_meteo_error(resp):

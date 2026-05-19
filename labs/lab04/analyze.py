@@ -4,17 +4,17 @@
 # The image is passed to the function in the body of the request, in
 # a dictionary-like object in JSON format:
 #
-#   { 
+#   {
 #     "name": "imagefilename.jpg",
-#      "bytes": "base64-encoded image bytes"
+#     "bytes": "base64-encoded image bytes"
 #   }
 #
-# The response is a dictionary-like object in JSON format, with 
+# The response is a dictionary-like object in JSON format, with
 # status code of 200 (success) or 500 (server-side error). The data
-# is 0 or more dictionary-like objects with 2 (key,value) pairs, 
+# is 0 or more dictionary-like objects with 2 (key,value) pairs,
 # the label (e.g. "Boat") and the confidence level (e.g. 97):
 #
-#   { 
+#   {
 #     "message": "...",
 #     "data":    [
 #                  {"label": "...", "confidence": ...},
@@ -22,120 +22,89 @@
 #                ]
 #   }
 #
-#
-import json
-import boto3
 import base64
+import json
+
+import boto3
+
+from lambda_common import apigw_json
+
+rekognition = boto3.client("rekognition")
+
 
 def lambda_handler(event, context):
-  try:
-    print("**Call to analyze...")
+    try:
+        print("**Call to analyze...")
 
-    #
-    # the user has sent us two parameters:
-    #  1. name of their image file
-    #  2. raw file data in base64 encoded string
-    #
-    # The parameters are coming in the body of the
-    # request, in JSON format.
-    #
-    print("**Accessing request body")
-    
-    if "body" not in event:
-      raise Exception("request has no body")
-      
-    body = json.loads(event["body"]) # parse the json
-    
-    if "name" not in body:
-      raise Exception("request has no key 'name'")
-    if "bytes" not in body:
-      raise Exception("request has no key 'bytes'")
+        #
+        # the user has sent us two parameters:
+        #  1. name of their image file
+        #  2. raw file data in base64 encoded string
+        #
+        # The parameters are coming in the body of the
+        # request, in JSON format.
+        #
+        print("**Accessing request body")
 
-    name = body["name"]
-    bytes = body["bytes"]
-    
-    print("name:", name)
-    print("bytes (first 32 chars):", bytes[0:32])
+        if "body" not in event:
+            raise Exception("request has no body")
 
-    #name  = 'gray.jpg'
-    #bytes = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+        body = json.loads(event["body"])
 
-    orig_bytes = base64.b64decode(bytes)
+        if "name" not in body:
+            raise Exception("request has no key 'name'")
+        if "bytes" not in body:
+            raise Exception("request has no key 'bytes'")
 
-    #
-    # okay, let's call Rekognition to analyze the image:
-    #
-    print("**Calling Rekognition")
+        filename = body["name"]
+        image_b64 = body["bytes"]
 
-    rekognition = boto3.client('rekognition')
+        print("name:", filename)
+        print("bytes (first 32 chars):", image_b64[0:32])
 
-    response = rekognition.detect_labels(
-          Image={
-            'Bytes': orig_bytes,
-          },
-          MaxLabels=100,
-          MinConfidence=80,
-    )
+        image_bytes = base64.b64decode(image_b64)
 
-    #
-    # print out the response
-    #
-    print("**Rekognition response:")
+        #
+        # okay, let's call Rekognition to analyze the image:
+        #
+        print("**Calling Rekognition")
 
-    labels = response['Labels']
-    numlabels = len(labels)
+        response = rekognition.detect_labels(
+            Image={"Bytes": image_bytes},
+            MaxLabels=100,
+            MinConfidence=80,
+        )
 
-    data = []
+        #
+        # print out the response
+        #
+        print("**Rekognition response:")
 
-    print(f"# of labels: {numlabels}")
+        labels = response["Labels"]
+        numlabels = len(labels)
 
-    for label in labels:
-      name = label['Name']
-      confidence = int(label['Confidence'])
-      print(f"{name} with {confidence}% confidence")
+        data = []
 
-      data.append({
-        'label': name,
-        'confidence': confidence
-      })
-      
-    print("**Responding to client...")
+        print(f"# of labels: {numlabels}")
 
-    body = {
-      "message": "success",
-      "data": data
-    }
+        for label in labels:
+            label_name = label["Name"]
+            confidence = int(label["Confidence"])
+            print(f"{label_name} with {confidence}% confidence")
 
-    return {
-        'statusCode': 200,
-        'body': json.dumps(body)
-    }
+            data.append({"label": label_name, "confidence": confidence})
 
-  #
-  # exception handling:
-  #
-  except Exception as e:
-    print("**Exception")
-    print("**Message:", str(e))
+        print("**Responding to client...")
 
-    body = {
-      "message": str(e),
-      "data": []
-    }
+        return apigw_json(200, {"message": "success", "data": data})
 
-    if str(e).startswith("request has no"):
-      #
-      # client error as we were not called correctly:
-      #
-      return {
-        'statusCode': 400,
-        'body': json.dumps(body)
-      }
-    else:
-      #
-      # server-side error:
-      #
-      return {
-        'statusCode': 500,
-        'body': json.dumps(body)
-      }
+    except Exception as e:
+        print("**Exception")
+        print("**Message:", str(e))
+
+        body = {"message": str(e), "data": []}
+
+        if str(e).startswith("request has no"):
+            return apigw_json(400, body)
+
+        return apigw_json(500, body)
