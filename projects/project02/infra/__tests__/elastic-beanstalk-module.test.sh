@@ -48,6 +48,18 @@ if grep -q 'arn:aws:iam::aws:policy' "${MODULE_DIR}/main.tf"; then
   fail "module must not hard-code arn:aws:iam::aws:policy/...; use data.aws_partition.current.partition"
 fi
 
+# Blueprint-level guardrails: validation + precondition.
+grep -q 'validation {' "${MODULE_DIR}/variables.tf" \
+  || fail "module variables.tf must include validation { ... } blocks for lab-project-* naming"
+grep -Eq 'startswith\(var\.service_role_name, "lab-project-"\)' "${MODULE_DIR}/variables.tf" \
+  || fail "module must validate service_role_name startswith lab-project-"
+grep -Eq 'startswith\(var\.ec2_role_name, "lab-project-"\)' "${MODULE_DIR}/variables.tf" \
+  || fail "module must validate ec2_role_name startswith lab-project-"
+grep -q 'lab_project_prefix' "${MODULE_DIR}/main.tf" \
+  || fail "module main.tf must define a locals.lab_project_prefix single source"
+grep -q 'precondition {' "${MODULE_DIR}/main.tf" \
+  || fail "module main.tf must include lifecycle.precondition { ... } on the EB roles"
+
 grep -q 'module "elastic_beanstalk"' "$DEV_MAIN" \
   || fail "dev environment must call elastic_beanstalk module"
 grep -q 'enable_core_infra' "${PROJECT_DIR}/envs/dev/variables.tf" \

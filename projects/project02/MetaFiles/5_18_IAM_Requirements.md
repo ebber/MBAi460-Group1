@@ -175,31 +175,24 @@ The `elastic-beanstalk` module then creates `lab-project-eb-service-role` / `lab
 
 **Do not enable both paths at once.** The role names collide and Terraform will fight itself.
 
-### Integration test sequence (manual)
+### Blueprint-level enforcement
 
-Run these in order whenever the EB IAM contract changes:
+The blueprints fail at `terraform plan` time (no apply required) when the contract is violated:
 
-1. Admin: apply `infra/bootstrap/plane2-iam-delegation` with `create_lab_project_eb_roles = true` (Path A) **or** leave at default (Path B).
-2. Conjurer: run `infra/bootstrap/plane2-iam-delegation/scripts/post-apply-negative-tests.sh` — must report all OK / SKIP (no FAIL).
-3. Conjurer: run `make eb-preflight` (or `projects/project02/tools/eb-preflight.sh --check-iam-contract`) — must end **GREEN**.
-4. Conjurer: `terraform plan` in `projects/project02/infra/envs/dev` with `enable_elastic_beanstalk = true` and the staged bundle present — must not raise `Unable to assign role` and must show the EB roles as data-source reads (Path A) or new resources with `permissions_boundary` set (Path B).
-5. Conjurer: `terraform apply` and `make eb-smoke EB_URL=...` against the resulting CNAME.
+- **Variable validation** on `service_role_name` / `ec2_role_name` (module) and `lab_project_eb_service_role_name` / `lab_project_eb_ec2_role_name` (bootstrap) rejects any name that does not start with `lab-project-`.
+- **`lifecycle.precondition`** on the EB role resources re-asserts the prefix using `locals.lab_project_prefix` (single source).
+- **`lifecycle.precondition`** on the service role also fails plan when the lab permissions boundary cannot be resolved, pointing the operator to the bootstrap apply step.
+- **`data "aws_iam_policy" "lab_permissions_boundary"`** in the EB module fails plan with a clear AWS error when the boundary policy is missing — no apply needed to surface the gap.
 
-The preflight command:
+### Runtime validation (pointer)
 
-```bash
-projects/project02/tools/eb-preflight.sh \
-  --aws-profile Claude-Conjurer \
-  --check-iam-contract
-```
+The conjurer-facing runtime checks (post-apply negative tests, `eb-preflight.sh --check-iam-contract`, `terraform apply`, `eb-smoke`) live in:
 
-Override the expected names via env vars when the account uses a documented exception:
+- `infra/bootstrap/plane2-iam-delegation/scripts/post-apply-negative-tests.sh`
+- `projects/project02/tools/eb-preflight.sh --check-iam-contract`
+- `projects/project02/MetaFiles/Hosting_Plan.md` (deploy + smoke flow)
 
-```bash
-EB_SERVICE_ROLE_NAME=custom-eb-service \
-EB_EC2_INSTANCE_PROFILE_NAME=custom-eb-ip \
-  projects/project02/tools/eb-preflight.sh --check-iam-contract
-```
+This document covers the **blueprint** contract; runtime sequencing lives in those scripts and the Hosting_Plan.
 
 ## Current Project02 state
 

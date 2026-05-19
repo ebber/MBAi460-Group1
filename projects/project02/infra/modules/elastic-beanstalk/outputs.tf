@@ -29,11 +29,11 @@ output "artifact_bucket_name" {
 }
 
 output "service_role_name" {
-  description = "Elastic Beanstalk service role name."
+  description = "Elastic Beanstalk service role name. Origin: Path A bootstrap (`existing_service_role_name` when `create_iam_roles=false`) or Path B (`service_role_name` when `create_iam_roles=true`). See infra/bootstrap/LAB_PROJECT_IAM_CONTRACT.md."
   value       = local.service_role_name
 }
 
 output "ec2_instance_profile_name" {
-  description = "Elastic Beanstalk EC2 instance profile name."
+  description = "Elastic Beanstalk EC2 instance profile name. Origin: Path A bootstrap (`existing_ec2_instance_profile_name`) or Path B (`ec2_role_name`, same basename). See infra/bootstrap/LAB_PROJECT_IAM_CONTRACT.md."
   value       = local.ec2_profile_name
 }

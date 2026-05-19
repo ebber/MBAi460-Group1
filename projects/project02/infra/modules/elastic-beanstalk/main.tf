@@ -30,6 +30,15 @@ data "aws_iam_policy" "lab_permissions_boundary" {
 }
 
 locals {
+  # Single-source naming prefix; mirrors LAB_PROJECT_IAM_CONTRACT.md. Used by
+  # plan-time preconditions on the EB roles below.
+  #
+  # MUST match the twin definition in
+  #   infra/bootstrap/plane2-iam-delegation/eb_lab_roles.tf (locals.lab_project_prefix)
+  # because Terraform cannot share locals across roots/modules. The drift guard
+  # is infra/bootstrap/plane2-iam-delegation/__tests__/prefix-twin.test.sh.
+  lab_project_prefix = "lab-project-"
+
   service_role_name = var.create_iam_roles ? aws_iam_role.service_role[0].name : var.existing_service_role_name
   ec2_profile_name  = var.create_iam_roles ? aws_iam_instance_profile.ec2_profile[0].name : var.existing_ec2_instance_profile_name
 
@@ -70,6 +79,17 @@ resource "aws_iam_role" "service_role" {
   permissions_boundary = local.lab_permissions_boundary_arn
 
   tags = merge(var.tags, { Name = var.service_role_name })
+
+  lifecycle {
+    precondition {
+      condition     = startswith(var.service_role_name, local.lab_project_prefix)
+      error_message = "service_role_name must start with \"${local.lab_project_prefix}\" per LAB_PROJECT_IAM_CONTRACT.md."
+    }
+    precondition {
+      condition     = local.lab_permissions_boundary_arn != null && local.lab_permissions_boundary_arn != ""
+      error_message = "lab_permissions_boundary_arn is empty and the data source lookup for \"${var.lab_permissions_boundary_policy_name}\" returned nothing. Apply infra/bootstrap/plane2-iam-delegation first or pass lab_permissions_boundary_arn explicitly."
+    }
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "service_role_enhanced_health" {
@@ -94,6 +114,21 @@ resource "aws_iam_role" "ec2_role" {
   permissions_boundary = local.lab_permissions_boundary_arn
 
   tags = merge(var.tags, { Name = var.ec2_role_name })
+
+  lifecycle {
+    precondition {
+      condition     = startswith(var.ec2_role_name, local.lab_project_prefix)
+      error_message = "ec2_role_name must start with \"${local.lab_project_prefix}\" per LAB_PROJECT_IAM_CONTRACT.md."
+    }
+    # Boundary precondition is duplicated from service_role for visual symmetry;
+    # both roles consume the same local.lab_permissions_boundary_arn, so either
+    # one would surface the gap, but a reader scanning the EC2 role expects the
+    # same shape as the service role.
+    precondition {
+      condition     = local.lab_permissions_boundary_arn != null && local.lab_permissions_boundary_arn != ""
+      error_message = "lab_permissions_boundary_arn is empty and the data source lookup for \"${var.lab_permissions_boundary_policy_name}\" returned nothing. Apply infra/bootstrap/plane2-iam-delegation first or pass lab_permissions_boundary_arn explicitly."
+    }
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_web_tier" {

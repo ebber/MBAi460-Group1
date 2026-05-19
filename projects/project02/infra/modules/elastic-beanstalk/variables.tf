@@ -70,13 +70,13 @@ variable "create_iam_roles" {
 }
 
 variable "existing_service_role_name" {
-  description = "Existing EB service role name used when create_iam_roles is false."
+  description = "Existing EB service role name used when create_iam_roles is false. Intentionally unvalidated: the contract permits documented legacy/exception names (e.g. aws-elasticbeanstalk-service-role) so adding a startswith(\"lab-project-\") check here would close the contract's escape hatch."
   type        = string
   default     = ""
 }
 
 variable "existing_ec2_instance_profile_name" {
-  description = "Existing EB EC2 instance profile name used when create_iam_roles is false."
+  description = "Existing EB EC2 instance profile name used when create_iam_roles is false. Intentionally unvalidated for the same exception-path reason as existing_service_role_name."
   type        = string
   default     = ""
 }
@@ -85,12 +85,22 @@ variable "service_role_name" {
   description = "Name for the EB service role created when create_iam_roles is true. Must match the lab-project-* contract."
   type        = string
   default     = "lab-project-eb-service-role"
+
+  validation {
+    condition     = startswith(var.service_role_name, "lab-project-")
+    error_message = "service_role_name must start with \"lab-project-\" per infra/bootstrap/LAB_PROJECT_IAM_CONTRACT.md."
+  }
 }
 
 variable "ec2_role_name" {
   description = "Name for the EB EC2 role created when create_iam_roles is true. Also used as the instance profile basename so Project02 tfvars and the bootstrap Path A outputs line up."
   type        = string
   default     = "lab-project-eb-ec2-role"
+
+  validation {
+    condition     = startswith(var.ec2_role_name, "lab-project-")
+    error_message = "ec2_role_name must start with \"lab-project-\" per infra/bootstrap/LAB_PROJECT_IAM_CONTRACT.md."
+  }
 }
 
 variable "lab_permissions_boundary_arn" {
