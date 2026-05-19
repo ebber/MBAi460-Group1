@@ -1,0 +1,5 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+# .terraform.lock.hcl intentionally NOT ignored — commit it for reproducible provider versions
