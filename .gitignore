@@ -14,6 +14,13 @@ labs/lab01/Part 01 - AWS Setup/secrets/rds-master-password.txt.enc
 
 # Lab02 shorten app config (contains DB credentials)
 labs/lab02/shorten-config.ini
+labs/lab04/lab04-client-config.ini
+labs/lab04/.venv-gs/
+labs/lab04/infra/**/build/
+labs/lab04/infra/modules/**/build/
+labs/lab04/infra/envs/dev/.terraform/
+labs/lab04/infra/envs/dev/*.tfstate
+labs/lab04/infra/envs/dev/*.tfstate.*
 
 # Gradescope auth token — sensitive credential, never commit
 .gradescope

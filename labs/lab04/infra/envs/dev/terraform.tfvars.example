@@ -1,0 +1,8 @@
+aws_region  = "us-east-2"
+aws_profile = "Claude-Conjurer"
+
+api_stage_name = "prod"
+
+# terraform output -raw lab_project_permissions_boundary_arn
+# (from infra/bootstrap/plane2-iam-delegation)
+lab_project_permissions_boundary_arn = "arn:aws:iam::772360735396:policy/LabProjectPermissionsBoundary"
