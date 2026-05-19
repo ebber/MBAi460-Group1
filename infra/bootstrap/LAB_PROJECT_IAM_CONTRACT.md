@@ -75,6 +75,30 @@ Course PDFs and AWS account wizards often default to names like **`aws-elasticbe
 
 Only one path may own these role names at a time. Mixing both produces a "two owners" failure mode (Terraform fights itself or one side imports the other's resources). Document any deviation as an exception (see Section 7).
 
+```mermaid
+flowchart LR
+  subgraph plane2Bootstrap [plane2_bootstrap_state]
+    PB[LabProjectPermissionsBoundary]
+    DG[ClaudeConjurerPlane2IAMDelegation]
+    EBA["Path_A_EB_roles<br/>create_lab_project_eb_roles=true"]
+  end
+  subgraph project02 [project02_dev_state]
+    EBMod["elastic_beanstalk_module"]
+    EBB["Path_B_EB_roles<br/>create_iam_roles=true"]
+  end
+  Conjurer[Claude_Conjurer_user]
+
+  DG --> Conjurer
+  PB --> EBA
+  PB --> EBB
+  EBA -. "reuse names<br/>eb_create_iam_roles=false" .-> EBMod
+  EBB --> EBMod
+
+  XOR{{"Pick one: Path A XOR Path B"}}
+  EBA --- XOR
+  EBB --- XOR
+```
+
 **Operator identity:** **`Claude-Conjurer`** (or configured `conjurer_user_name`) receives **`ClaudeConjurerPlane2IAMDelegation`**; it does **not** wear **`LabProjectPermissionsBoundary`**—effective caller permissions are **PowerUserAccess + delegation** (and any other attachments).
 
 ---

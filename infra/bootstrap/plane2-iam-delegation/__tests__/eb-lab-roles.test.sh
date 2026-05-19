@@ -54,4 +54,16 @@ grep -qi 'mutex\|only one path\|do not.*both' "$CONTRACT" \
 grep -q 'create_lab_project_eb_roles' "${BOOTSTRAP_DIR}/README.md" \
   || fail "bootstrap README must mention create_lab_project_eb_roles"
 
+# Blueprint-level guardrails: validation + precondition.
+grep -q 'validation {' "${BOOTSTRAP_DIR}/variables.tf" \
+  || fail "bootstrap variables.tf must include validation { ... } blocks for lab-project-* naming"
+grep -Eq 'startswith\(var\.lab_project_eb_service_role_name, "lab-project-"\)' "${BOOTSTRAP_DIR}/variables.tf" \
+  || fail "bootstrap must validate lab_project_eb_service_role_name startswith lab-project-"
+grep -Eq 'startswith\(var\.lab_project_eb_ec2_role_name, "lab-project-"\)' "${BOOTSTRAP_DIR}/variables.tf" \
+  || fail "bootstrap must validate lab_project_eb_ec2_role_name startswith lab-project-"
+grep -q 'lab_project_prefix' "$EB_FILE" \
+  || fail "eb_lab_roles.tf must define a locals.lab_project_prefix single source"
+grep -q 'precondition {' "$EB_FILE" \
+  || fail "eb_lab_roles.tf must include lifecycle.precondition { ... } on the EB roles"
+
 echo "PASS plane2 bootstrap EB roles contract"

@@ -26,10 +26,20 @@ variable "lab_project_eb_service_role_name" {
   description = "Name for the shared EB service role created when create_lab_project_eb_roles=true. Must match lab-project-* and the EB module reuse default."
   type        = string
   default     = "lab-project-eb-service-role"
+
+  validation {
+    condition     = startswith(var.lab_project_eb_service_role_name, "lab-project-")
+    error_message = "lab_project_eb_service_role_name must start with \"lab-project-\" per LAB_PROJECT_IAM_CONTRACT.md."
+  }
 }
 
 variable "lab_project_eb_ec2_role_name" {
   description = "Name for the shared EB EC2 role created when create_lab_project_eb_roles=true. Must match lab-project-* and be the instance profile basename."
   type        = string
   default     = "lab-project-eb-ec2-role"
+
+  validation {
+    condition     = startswith(var.lab_project_eb_ec2_role_name, "lab-project-")
+    error_message = "lab_project_eb_ec2_role_name must start with \"lab-project-\" per LAB_PROJECT_IAM_CONTRACT.md."
+  }
 }

@@ -13,6 +13,17 @@
 # — that would put two Terraform states in charge of the same role names.
 ###############################################################################
 
+locals {
+  # Single-source naming prefix; mirrors LAB_PROJECT_IAM_CONTRACT.md. Used by
+  # plan-time preconditions on the EB role resources below.
+  #
+  # MUST match the twin definition in
+  #   projects/project02/infra/modules/elastic-beanstalk/main.tf (locals.lab_project_prefix)
+  # because Terraform cannot share locals across roots/modules. The drift guard
+  # is infra/bootstrap/plane2-iam-delegation/__tests__/prefix-twin.test.sh.
+  lab_project_prefix = "lab-project-"
+}
+
 data "aws_iam_policy_document" "eb_service_assume_role" {
   count = var.create_lab_project_eb_roles ? 1 : 0
 
@@ -53,6 +64,13 @@ resource "aws_iam_role" "lab_project_eb_service" {
     Plane       = "bootstrap-plane2"
     Purpose     = "eb-service-role"
   }
+
+  lifecycle {
+    precondition {
+      condition     = startswith(var.lab_project_eb_service_role_name, local.lab_project_prefix)
+      error_message = "lab_project_eb_service_role_name must start with \"${local.lab_project_prefix}\" per LAB_PROJECT_IAM_CONTRACT.md."
+    }
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "lab_project_eb_service_enhanced_health" {
@@ -84,6 +102,13 @@ resource "aws_iam_role" "lab_project_eb_ec2" {
     ManagedBy   = "terraform"
     Plane       = "bootstrap-plane2"
     Purpose     = "eb-ec2-role"
+  }
+
+  lifecycle {
+    precondition {
+      condition     = startswith(var.lab_project_eb_ec2_role_name, local.lab_project_prefix)
+      error_message = "lab_project_eb_ec2_role_name must start with \"${local.lab_project_prefix}\" per LAB_PROJECT_IAM_CONTRACT.md."
+    }
   }
 }
 
