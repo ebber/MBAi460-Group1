@@ -111,19 +111,19 @@ variable "eb_app_policy_arns" {
 }
 
 variable "eb_create_iam_roles" {
-  description = "When true, create EB IAM roles. When false, use existing course/lab role names."
+  description = "When true, create EB IAM roles. When false, use existing names (Plane-2 contract: lab-project-*; legacy: aws-elasticbeanstalk-*)."
   type        = bool
   default     = false
 }
 
 variable "eb_existing_service_role_name" {
-  description = "Existing EB service role name when eb_create_iam_roles is false."
+  description = "Existing EB service role name when eb_create_iam_roles is false. Default matches LAB_PROJECT_IAM_CONTRACT.md (Plane-2)."
   type        = string
-  default     = "aws-elasticbeanstalk-service-role"
+  default     = "lab-project-eb-service-role"
 }
 
 variable "eb_existing_ec2_instance_profile_name" {
-  description = "Existing EB EC2 instance profile name when eb_create_iam_roles is false."
+  description = "Existing EB EC2 instance profile name when eb_create_iam_roles is false. Default matches LAB_PROJECT_IAM_CONTRACT.md (Plane-2)."
   type        = string
-  default     = "aws-elasticbeanstalk-ec2-role"
+  default     = "lab-project-eb-ec2-role"
 }

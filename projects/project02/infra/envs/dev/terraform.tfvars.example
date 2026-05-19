@@ -39,11 +39,12 @@ eb_artifact_bucket_name  = "project02-photoapp-eb-artifacts-YOURNETID"
 eb_bundle_path           = "../../../build/eb/project02-photoapp-dev.zip"
 eb_version_label         = "project02-photoapp-dev"
 
-# Course/lab accounts often already have these roles. Leave false to use
-# existing names; set true only if the active AWS identity can manage IAM.
+# Plane-2 lab: roles/instance profile must be lab-project-* (see
+# infra/bootstrap/LAB_PROJECT_IAM_CONTRACT.md). Use aws-elasticbeanstalk-* only
+# for legacy accounts with an admin-documented exception.
 eb_create_iam_roles                    = false
-eb_existing_service_role_name         = "aws-elasticbeanstalk-service-role"
-eb_existing_ec2_instance_profile_name = "aws-elasticbeanstalk-ec2-role"
+eb_existing_service_role_name         = "lab-project-eb-service-role"
+eb_existing_ec2_instance_profile_name = "lab-project-eb-ec2-role"
 
 # Optional when eb_create_iam_roles=true. While app reads explicit AWS keys from
 # photoapp-config.ini, this can remain empty.

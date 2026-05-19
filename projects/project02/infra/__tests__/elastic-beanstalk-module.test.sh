@@ -33,6 +33,21 @@ grep -q 'SystemType' "${MODULE_DIR}/main.tf" \
 grep -q 'PHOTOAPP_CONFIG_PATH' "${MODULE_DIR}/main.tf" \
   || fail "module must expose PHOTOAPP_CONFIG_PATH to EB"
 
+# Lab IAM contract alignment (see infra/bootstrap/LAB_PROJECT_IAM_CONTRACT.md).
+grep -q 'default     = "lab-project-eb-service-role"' "${MODULE_DIR}/variables.tf" \
+  || fail "module service_role_name default must be lab-project-eb-service-role"
+grep -q 'default     = "lab-project-eb-ec2-role"' "${MODULE_DIR}/variables.tf" \
+  || fail "module ec2_role_name default must be lab-project-eb-ec2-role"
+grep -q 'permissions_boundary = local.lab_permissions_boundary_arn' "${MODULE_DIR}/main.tf" \
+  || fail "module must wire permissions_boundary on the EB roles"
+grep -q 'data "aws_iam_policy" "lab_permissions_boundary"' "${MODULE_DIR}/main.tf" \
+  || fail "module must look up LabProjectPermissionsBoundary when no ARN is supplied"
+grep -q 'data "aws_partition" "current"' "${MODULE_DIR}/main.tf" \
+  || fail "module must use partition-aware managed-policy ARNs"
+if grep -q 'arn:aws:iam::aws:policy' "${MODULE_DIR}/main.tf"; then
+  fail "module must not hard-code arn:aws:iam::aws:policy/...; use data.aws_partition.current.partition"
+fi
+
 grep -q 'module "elastic_beanstalk"' "$DEV_MAIN" \
   || fail "dev environment must call elastic_beanstalk module"
 grep -q 'enable_core_infra' "${PROJECT_DIR}/envs/dev/variables.tf" \

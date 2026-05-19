@@ -1,3 +1,5 @@
+data "aws_partition" "current" {}
+
 data "aws_iam_policy_document" "eb_service_assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -20,9 +22,20 @@ data "aws_iam_policy_document" "eb_ec2_assume_role" {
   }
 }
 
+# Lookup the lab permissions boundary by name when no ARN is supplied. Requires
+# the Plane-2 bootstrap to have been applied in this account.
+data "aws_iam_policy" "lab_permissions_boundary" {
+  count = var.create_iam_roles && var.lab_permissions_boundary_arn == "" ? 1 : 0
+  name  = var.lab_permissions_boundary_policy_name
+}
+
 locals {
   service_role_name = var.create_iam_roles ? aws_iam_role.service_role[0].name : var.existing_service_role_name
   ec2_profile_name  = var.create_iam_roles ? aws_iam_instance_profile.ec2_profile[0].name : var.existing_ec2_instance_profile_name
+
+  lab_permissions_boundary_arn = var.create_iam_roles ? (
+    var.lab_permissions_boundary_arn != "" ? var.lab_permissions_boundary_arn : data.aws_iam_policy.lab_permissions_boundary[0].arn
+  ) : null
 }
 
 resource "aws_s3_bucket" "artifacts" {
@@ -52,40 +65,42 @@ resource "aws_s3_object" "app_bundle" {
 resource "aws_iam_role" "service_role" {
   count = var.create_iam_roles ? 1 : 0
 
-  name               = "${var.application_name}-eb-service-role"
-  assume_role_policy = data.aws_iam_policy_document.eb_service_assume_role.json
+  name                 = var.service_role_name
+  assume_role_policy   = data.aws_iam_policy_document.eb_service_assume_role.json
+  permissions_boundary = local.lab_permissions_boundary_arn
 
-  tags = merge(var.tags, { Name = "${var.application_name}-eb-service-role" })
+  tags = merge(var.tags, { Name = var.service_role_name })
 }
 
 resource "aws_iam_role_policy_attachment" "service_role_enhanced_health" {
   count = var.create_iam_roles ? 1 : 0
 
   role       = aws_iam_role.service_role[0].name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth"
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth"
 }
 
 resource "aws_iam_role_policy_attachment" "service_role_managed_updates" {
   count = var.create_iam_roles ? 1 : 0
 
   role       = aws_iam_role.service_role[0].name
-  policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkManagedUpdatesCustomerRolePolicy"
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AWSElasticBeanstalkManagedUpdatesCustomerRolePolicy"
 }
 
 resource "aws_iam_role" "ec2_role" {
   count = var.create_iam_roles ? 1 : 0
 
-  name               = "${var.application_name}-eb-ec2-role"
-  assume_role_policy = data.aws_iam_policy_document.eb_ec2_assume_role.json
+  name                 = var.ec2_role_name
+  assume_role_policy   = data.aws_iam_policy_document.eb_ec2_assume_role.json
+  permissions_boundary = local.lab_permissions_boundary_arn
 
-  tags = merge(var.tags, { Name = "${var.application_name}-eb-ec2-role" })
+  tags = merge(var.tags, { Name = var.ec2_role_name })
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_web_tier" {
   count = var.create_iam_roles ? 1 : 0
 
   role       = aws_iam_role.ec2_role[0].name
-  policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier"
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AWSElasticBeanstalkWebTier"
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_app_policies" {
@@ -95,13 +110,15 @@ resource "aws_iam_role_policy_attachment" "ec2_app_policies" {
   policy_arn = each.value
 }
 
+# Instance profile basename matches the EC2 role name so the value lines up with
+# Path A outputs and Project02 reuse defaults.
 resource "aws_iam_instance_profile" "ec2_profile" {
   count = var.create_iam_roles ? 1 : 0
 
-  name = "${var.application_name}-eb-ec2-profile"
+  name = var.ec2_role_name
   role = aws_iam_role.ec2_role[0].name
 
-  tags = merge(var.tags, { Name = "${var.application_name}-eb-ec2-profile" })
+  tags = merge(var.tags, { Name = var.ec2_role_name })
 }
 
 resource "aws_elastic_beanstalk_application" "app" {

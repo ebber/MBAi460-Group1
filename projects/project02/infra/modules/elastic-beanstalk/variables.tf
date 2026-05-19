@@ -64,7 +64,7 @@ variable "app_policy_arns" {
 }
 
 variable "create_iam_roles" {
-  description = "When true, create EB service role and EC2 instance profile. When false, use existing names."
+  description = "When true, create EB service role and EC2 instance profile (Path B). When false, reuse names produced by Path A (bootstrap) or a documented exception."
   type        = bool
   default     = true
 }
@@ -79,6 +79,30 @@ variable "existing_ec2_instance_profile_name" {
   description = "Existing EB EC2 instance profile name used when create_iam_roles is false."
   type        = string
   default     = ""
+}
+
+variable "service_role_name" {
+  description = "Name for the EB service role created when create_iam_roles is true. Must match the lab-project-* contract."
+  type        = string
+  default     = "lab-project-eb-service-role"
+}
+
+variable "ec2_role_name" {
+  description = "Name for the EB EC2 role created when create_iam_roles is true. Also used as the instance profile basename so Project02 tfvars and the bootstrap Path A outputs line up."
+  type        = string
+  default     = "lab-project-eb-ec2-role"
+}
+
+variable "lab_permissions_boundary_arn" {
+  description = "ARN of the LabProjectPermissionsBoundary policy. Required when create_iam_roles=true. If empty, the module looks up the policy by name (LabProjectPermissionsBoundary) via data source — the Plane-2 bootstrap must already be applied in that account."
+  type        = string
+  default     = ""
+}
+
+variable "lab_permissions_boundary_policy_name" {
+  description = "Name used for the data-source fallback when lab_permissions_boundary_arn is empty."
+  type        = string
+  default     = "LabProjectPermissionsBoundary"
 }
 
 variable "health_system_type" {

@@ -8,7 +8,7 @@ Derived from **`project02-part02-EB.pdf`** plus concrete **config file** edits f
 
 1. **Project 02 web service is complete** — working **Node/Express** PhotoApp (Part 01 programming).
 2. **Gradescope — “Project 02 – web service”** — handout states your score should be **60/60** to **receive full credit** on the overall Project 02 story (Part 02 builds on Part 01).
-3. **AWS + Lab 03** — IAM roles for EB (e.g. `aws-elasticbeanstalk-service-role`, `aws-elasticbeanstalk-ec2-role`), **create / update / delete** scripts from Lab 03, **`eb`** / **`aws`** CLI usage as in the handout.
+3. **AWS + Lab 03** — IAM roles for EB per the handout (often named like `aws-elasticbeanstalk-service-role`, `aws-elasticbeanstalk-ec2-role`). **This repo’s Plane-2 lab account** standardizes on **`lab-project-*`** — see **`infra/bootstrap/LAB_PROJECT_IAM_CONTRACT.md`** and **`MetaFiles/5_18_IAM_Requirements.md`**. You still need **create / update / delete** scripts from Lab 03, **`eb`** / **`aws`** CLI usage as in the handout.
 4. **Deployable EB bundle** — `app` (or equivalent) folder containing **all `.js` web service files** + **`photoapp-config.ini`**, plus **`package.json`** suitable for EB (handout references a Dropbox **`package.json`** for EB).
 5. **Live Elastic Beanstalk environment** — deploy so you have a **CNAME**, e.g. `http://your-env….elasticbeanstalk.com`.
 6. **Smoke test** — browser (or curl) to e.g. **`/users`** or **`/images`** on that URL returns expected JSON; optionally **`/image/1001`** if you have data.

@@ -12,6 +12,20 @@ The **Python / Streamlit client** and **`make client-*`** flows are **not** part
 
 **Not in the classic course EB bundle:** Docker image from `server/Dockerfile` (that path is for local Compose). Part 02 per the handout is a **directory of `.js` + `photoapp-config.ini` + `package.json`** run by the **Node** platform on EB, unless you deliberately adopt a container-based EB variant (out of scope for the PDF flow).
 
+### 1.1 Lab IAM naming (Plane-2)
+
+For the shared lab account where **`Claude-Conjurer`** uses **`ClaudeConjurerPlane2IAMDelegation`**, **new** EB/Lambda **roles**, **instance profiles**, and **customer** IAM policies **must** follow the **`lab-project-*`** prefix and **`LabProjectPermissionsBoundary`** on roles. **Canonical rules:** **`infra/bootstrap/LAB_PROJECT_IAM_CONTRACT.md`**. EB-focused detail and acceptance criteria: **`MetaFiles/5_18_IAM_Requirements.md`**. Terraform examples in this doc use **`lab-project-eb-service-role`** / **`lab-project-eb-ec2-role`** for that reason; course PDFs may still say **`aws-elasticbeanstalk-*`** — treat PDF names as generic assignment text, not this account’s enforced prefix.
+
+**First-time account setup (Path A — recommended):** an admin runs the bootstrap with `create_lab_project_eb_roles = true` so the shared EB service role, EC2 role, and instance profile exist before any Project02 apply. **Path B** (Project02 module creates the roles) is supported but reserved for accounts that should not have a shared bootstrap state — never enable both. See **`5_18_IAM_Requirements.md` § Path A vs Path B**.
+
+**IAM contract preflight:** before `terraform apply`, run
+
+```bash
+projects/project02/tools/eb-preflight.sh --aws-profile <profile> --check-iam-contract
+```
+
+to verify the EB role and instance profile exist under the expected names (override with `EB_SERVICE_ROLE_NAME` / `EB_EC2_INSTANCE_PROFILE_NAME` for documented exceptions).
+
 ---
 
 ## 2. Files and directories to include in the EB `app/` bundle
@@ -70,7 +84,7 @@ Copy everything required for **`npm install`** (or `npm ci`) and **`npm start`**
 
 Official steps live in **`project02-part02-EB.pdf`** and **Lab 03** materials:
 
-- IAM roles (`aws-elasticbeanstalk-service-role`, `aws-elasticbeanstalk-ec2-role` or equivalents).
+- IAM roles: course materials often reference **`aws-elasticbeanstalk-service-role`** and **`aws-elasticbeanstalk-ec2-role`**. **This repo / Plane-2 lab account** standard is **`lab-project-*`** (see **`MetaFiles/5_18_IAM_Requirements.md`** and **`infra/bootstrap/LAB_PROJECT_IAM_CONTRACT.md`**).
 - Copy of Lab **create / update / delete** scripts; **`app/`** filled with the bundle above.
 - **`eb create`** with correct service role and instance profile; health reporting **basic** per handout.
 - **`eb status`** → CNAME for `http://…elasticbeanstalk.com`.
@@ -98,6 +112,7 @@ If preflight is red, fix the missing local inputs first. It checks for:
 - `infra/envs/dev/terraform.tfvars`
 - staged EB bundle
 - usable AWS profile
+- (with `--check-iam-contract`) the existence of `lab-project-eb-service-role` and the `lab-project-eb-ec2-role` instance profile in the caller's account
 
 Then stage the bundle:
 
@@ -127,9 +142,11 @@ Copy `infra/envs/dev/terraform.tfvars.example` to `terraform.tfvars`, then set:
 - `eb_artifact_bucket_name`
 - `eb_bundle_path = "../../../build/eb/project02-photoapp-dev.zip"`
 - `eb_version_label = "project02-photoapp-dev"`
-- `eb_create_iam_roles = false` unless the active AWS identity can manage IAM
-- `eb_existing_service_role_name = "aws-elasticbeanstalk-service-role"`
-- `eb_existing_ec2_instance_profile_name = "aws-elasticbeanstalk-ec2-role"`
+- `eb_create_iam_roles = false` unless the active AWS identity can manage IAM **and** respects **`lab-project-*`** + permissions boundary (see contract).
+- `eb_existing_service_role_name = "lab-project-eb-service-role"`
+- `eb_existing_ec2_instance_profile_name = "lab-project-eb-ec2-role"`
+
+Use **`aws-elasticbeanstalk-service-role`** / **`aws-elasticbeanstalk-ec2-role`** only if the account still uses legacy wizard names and an **admin** exception is documented—not the default for Plane-2 contract accounts.
 
 Check available Node platforms with:
 
@@ -147,10 +164,8 @@ the RDS/S3/IAM values already referenced by `client/photoapp-config.ini`. This
 is the safer default when the class lab infrastructure already exists.
 
 **IAM caveat:** EB environment creation requires the caller to pass the EB
-service role / EC2 instance profile. If apply fails with `Unable to assign role`,
-switch `aws_profile` to a role-capable identity (for example, an authenticated
-human SSO profile) or grant `iam:PassRole` for the EB roles to the deployment
-identity. `make eb-preflight` verifies AWS authentication, but it does not prove
+service role / EC2 instance profile. Names **must** match **`lab-project-*`** for **`Claude-ConjurerPlane2IAMDelegation`** (`PassRole` is scoped that way). If apply fails with `Unable to assign role`,
+confirm the role ARNs in tfvars match the contract, switch `aws_profile` to a capable identity, or use an **admin** path for legacy **`aws-elasticbeanstalk-*`** roles. `make eb-preflight` verifies AWS authentication, but it does not prove
 `iam:PassRole`.
 
 ### 4.3 Plan/apply with operator approval
@@ -258,6 +273,7 @@ Runs Jest layers plus Compose/AWS-lane checks per project docs; use when validat
 | What stages the EB bundle? | `make eb-bundle` via `labs/lab03-production-grade/bin/stage-eb-node-app.sh`. |
 | What smokes the EB CNAME? | `make eb-smoke EB_URL=http://...`. |
 | Does `make docker-up-aws` deploy EB? | **No** — local Compose only. |
+| IAM names (Plane-2 lab)? | **`lab-project-*`** per **`infra/bootstrap/LAB_PROJECT_IAM_CONTRACT.md`**; EB examples **`lab-project-eb-service-role`**, **`lab-project-eb-ec2-role`**. |
 | Entry command | `npm start` → `node server.js` |
 
 Related: **`MetaFiles/Submission_Plan.md`** (Gradescope INIs for Part 02), **`README.md`** (Compose lanes), **`server/README.md`** (config + layout).
