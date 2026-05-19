@@ -2,4 +2,6 @@
 *.tfstate
 *.tfstate.*
 *.tfplan
+# `terraform plan -out=tfplan` produces a file with no extension; cover both.
+tfplan
 # .terraform.lock.hcl intentionally NOT ignored — commit it for reproducible provider versions
