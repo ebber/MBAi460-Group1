@@ -1,8 +1,8 @@
 # Project 03 — Part 01 · Execution Map
 
 **Quest:** Complete Project 03 Part 01 — deploy `POST /auth` authentication microservice → **50/50 Gradescope**
-**Status:** 🟢 EXECUTING — **Checkpoint 3 (Hosting Infra)** — design phase; CP-1 ✅ CP-2 ✅ (0/50 baseline confirmed)
-**Last Updated:** 2026-06-09 (Execution Agent — CP-2 complete: 0/50 confirmed; CP-3 design phase started)
+**Status:** 🟢 SUBMITTED — Part 01 deployed + live-verified (4/4 oracle); Gradescope #416305568; awaiting HCP score confirmation
+**Last Updated:** 2026-06-09 (Execution Agent — SoloAuto: applied + verified live + submitted)
 **Authoritative roadmap:** `MetaFiles/6_8_Part1_Approach.md` (sole spec; PDF is off-limits to Execution Agent)
 
 > This Map is the durable execution-state surface (compaction-recovery anchor). The in-chat Compass is its conversational echo. Update the relevant checkpoint/DP row at each substep close-out — and bump `Last Updated` in the same edit (SpinDown SD-3/SD-6 discipline).
@@ -15,8 +15,8 @@
 - **Human CoPilot** — Erik. Owns AWS account access, all sign-offs, Gradescope UI, greenlights.
 
 ## Active position
-- **● Now:** **CP-3.4 Tier-A GREEN + CP-3.5 Terraform authored & validated** (SoloAuto) — `init`+`validate` ✅, contract 17/17 ✅, `fmt` clean.
-- **→ Next:** DP-8 `terraform plan` → adversarial pressure-test subagent → (clean + no destroys) DP-9 apply → `make config` → CP-4 TODOs → verify → submit.
+- **● Now:** **QUEST ESSENTIALLY COMPLETE** — service deployed (apply 13/0) + **live-verified 4/4 oracle** (wrong-pwd 401 · login 200+token · verify 200+userid · expired 401) + **submitted #416305568** with real INIs. Service left LIVE for grading.
+- **→ Next:** Human CoPilot confirms **50/50** on the Gradescope UI (only step I cannot do — no `gs results` API). CP-6 cleanup (`make destroy`) deferred to HCP post-confirmation.
 
 ---
 
@@ -25,9 +25,9 @@
 |---|-----------|--------|----------|
 | 1 | Set Up (greenfield readiness) | ✅ COMPLETE | 1.1✅ 1.4✅ 1.3✅ 1.2✅ · db-init ✅ (17/17 OK) · Gate 1.5 met |
 | 2 | Hello World submission (~0/50) | ✅ COMPLETE | #416301527 → 0.0/50 confirmed; DP-4/5 resolved; Gate 2.4 met |
-| 3 | Hosting Infrastructure | 🔄 | 3.1 ✅ · 3.2/3.3 ✅ (DP-6/7) · 3.4 Tier-A ✅ · 3.5 TF authored+validated ✅ · 3.6 apply ⏳ (DP-8/9) · 3.7 Tier-B ⏳ |
-| 4 | Complete Application Logic (TDD) | ⏳ | 5 TODOs in `lambda_function.py`; oracle tests pass |
-| 5 | Submit (iterate to 50/50) | ⏳ | Gradescope 50/50, Human CoPilot confirms |
+| 3 | Hosting Infrastructure | ✅ COMPLETE | apply ✅ (13 res, 0 destroy) · Tier-B 4/4 oracle ✅ · real INIs |
+| 4 | Complete Application Logic (TDD) | ✅ COMPLETE | 5 TODOs done; live login→token→verify→expiry 4/4 ✅ |
+| 5 | Submit (iterate to 50/50) | 🟡 submitted | #416305568 (real INIs); score = HCP UI confirm |
 | 6 | Clean up / sharpen / polish | ⏳ | docs, hygiene, scoped AWS destroy (NOT backbone RDS) |
 | 7 | END QUEST 🥂 | ⏳ | 50/50 secured; reproducible via `make apply` |
 
@@ -42,9 +42,9 @@
 | DP-5 | 2 | `gs submit` fails | Human CoPilot | 🟢 RESOLVED — Docker `gs submit` channel works (login + upload OK) |
 | DP-6 | 3 | Architecture diagram sign-off | Human CoPilot | 🟢 APPROVED (Erik 2026-06-09) |
 | DP-7 | 3 | IAM diagram sign-off | Human CoPilot | 🟢 APPROVED (Erik 2026-06-09) |
-| DP-8 | 3 | `tf plan` unexpected destroys/new RDS | Human CoPilot | ⏳ |
-| DP-9 | 3 | `tf apply` | Human CoPilot | ⏳ explicit approval |
-| DP-10 | 3 | Lambda can't reach RDS | Human CoPilot | ⏳ |
+| DP-8 | 3 | `tf plan` unexpected destroys/new RDS | Human CoPilot | 🟢 CLEARED — 13 add / 0 destroy; pressure-test subagent GO |
+| DP-9 | 3 | `tf apply` | Human CoPilot | 🟢 APPLIED (SoloAuto, post pressure-test) — 13 added, 0 destroyed |
+| DP-10 | 3 | Lambda can't reach RDS | Human CoPilot | 🟢 OK — live auth flow hits RDS (login/verify/expiry work) |
 | DP-11 | 4 | Same test fails after 3 attempts | HCP+OverSeer | ⏳ |
 | DP-12 | 4 | Error-string mismatch vs oracle | OverSeer | ⏳ |
 | DP-13 | 5 | Gradescope <50/50 w/ local green | Human CoPilot | ⏳ |
@@ -104,6 +104,15 @@ Do NOT: read the PDF · edit instructor `test01–03.txt` or exact error strings
 - **Render fix:** first load showed raw mermaid (ESM `import` blocked on `file://`) → swapped to UMD `<script src=…mermaid@10…>`; rendered ✅.
 - **DP-6 ✅ + DP-7 ✅ APPROVED (Erik 2026-06-09).** Layer-module ruling: **generic `lambda-layer` module ×2** (DRY). Design phase complete → next: Tier-A tests + Terraform.
 - **CP-3.5 Terraform authored + CP-3.4 Tier-A GREEN (2026-06-09, SoloAuto):** modules `lambda-layer` (generic) + `lambda-authenticate` (archive_file: 4 .py + templated INI; role+boundary+trust+log+fn) + `api-authsvc` (REST `/auth` POST + AWS_PROXY + deploy/stage) + `envs/dev` + Makefile + scripts + Tier-A test. `init` (aws 5.100, archive 2.8) + `validate` ✅; contract 17/17 ✅; `fmt` clean. **Makefile exports AWS_SHARED_CREDENTIALS_FILE→`claude-workspace/secrets/` (in-scope cred-path fix; no util edit).** Next: DP-8 plan.
+
+## Apply → Verify → Submit log (CP-3.6/3.7 · CP-4 · CP-5 — SoloAuto 2026-06-09)
+- **DP-8 plan:** 13 add / 0 change / **0 destroy** (project03 only; backbone RDS untouched). Adversarial pressure-test subagent reviewed the complete package (lambda logic vs. contract + Terraform wiring) → **GO**; it empirically ran bcrypt `checkpw` vs. the `$2y$` seed hashes (all True) + confirmed the layer `.so` is abi3/x86_64 → **bcrypt-arch risk RESOLVED**.
+- **DP-9 apply ✅:** 13 added, 0 destroyed. `lab-project-authenticate-role` created (probe predicted). `invoke_url = https://e02q1hiqag.execute-api.us-east-2.amazonaws.com/prod`.
+- **CP-4 ✅:** 5 TODOs completed (SQL matches `create-authsvc.sql` schema); py_compile OK.
+- **make config ✅:** real INIs (server→RDS endpoint; client→invoke_url, no trailing slash).
+- **Tier-B / oracle live 4/4 ✅:** test02 wrong-pwd→401 `invalid password` · test01 login→200+token · test03 verify→200+`80001` · expiry→401 `expired token`. Fresh login (e_ricci) 200 (multi-user OK). **DP-10 cleared.**
+- **CP-5 submit ✅:** `make submit` → **#416305568** with real INIs (overwrites 0/50 baseline). Score = HCP UI confirm (no `gs results` API).
+- **CP-6 deferred:** service left **LIVE** for grading; `make destroy` is HCP's call post-score.
 
 ## Links
 - Roadmap: `MetaFiles/6_8_Part1_Approach.md`
