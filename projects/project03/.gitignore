@@ -1,0 +1,15 @@
+# --- Project 03 Part 01 ---
+# Generated server config (carries DB creds + live RDS endpoint) — never commit
+# Ignored at any depth (project03 root for submission; lambda/ for deploy-templated copy)
+authsvc-config.ini
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+
+# Python
+__pycache__/
+*.pyc
