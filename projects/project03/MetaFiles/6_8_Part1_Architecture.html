@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project 03 Part 01 — authsvc Architecture (DP-6)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background: radial-gradient(1400px 700px at 50% -8%, #1e293b, #0b1120); color:#e2e8f0; padding: 2rem 1.5rem 3rem; }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  .status { display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+    color:#fbbf24; border:1px solid rgba(251,191,36,.4); border-radius:999px; padding:.3rem .7rem; }
+  h1 { margin:.6rem 0 .2rem; font-size:1.7rem; } h1 .f { color:#38bdf8; }
+  .sub { color:#94a3b8; margin:0 0 1.2rem; font-size:.95rem; }
+  h2 { font-size:1.05rem; color:#7dd3fc; margin:1.6rem 0 .6rem; }
+  .diagram { background: rgba(15,23,42,.6); border:1px solid rgba(148,163,184,.2); border-radius:16px; padding:1rem; margin:.6rem 0 1rem; }
+  .mermaid { display:flex; justify-content:center; }
+  .note { background: rgba(15,23,42,.55); border:1px solid rgba(148,163,184,.2); border-radius:14px; padding:1rem 1.3rem; font-size:.88rem; line-height:1.55; color:#cbd5e1; }
+  .note b { color:#e2e8f0; }
+  code { background:rgba(56,189,248,.12); color:#7dd3fc; padding:.05rem .35rem; border-radius:5px; font-family:ui-monospace,Menlo,monospace; font-size:.85em; }
+  .foot { margin-top:1.4rem; font-size:.78rem; color:#64748b; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="status">● Design — DP-6 review (pre-Terraform)</span>
+  <h1>Project 03 · Part 01 — <span class="f">authsvc</span> Architecture</h1>
+  <p class="sub">POST /auth authentication microservice · Lambda + API Gateway REST + backbone RDS (Path A)</p>
+
+  <h2>Runtime — request path</h2>
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart LR
+  client["Client / Gradescope autograder"]
+  apigw["API Gateway REST: authsvc-api"]
+  lambda["Lambda: authenticate (py3.12, x86_64, 300s)"]
+  bcrypt["layer: authsvc-bcrypt-layer"]
+  pymysql["layer: authsvc-pymysql-layer"]
+  ini["packaged authsvc-config.ini (rds_address injected)"]
+  rds[("RDS MySQL: authsvc (public)")]
+  users["users table"]
+  tokens["tokens table"]
+  client -->|"JSON: token OR user/pwd"| apigw
+  apigw -->|"POST /auth · prod · AWS_PROXY"| lambda
+  bcrypt -.-> lambda
+  pymysql -.-> lambda
+  ini -.-> lambda
+  lambda -->|"pymysql (authsvc-read-write)"| rds
+  rds --- users
+  rds --- tokens
+    </pre>
+  </div>
+
+  <h2>Build / deploy — Terraform composition</h2>
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart TB
+  tfvars["terraform.tfvars: rds_address, aws_profile, boundary_arn"]
+  env["infra/envs/dev (terraform apply)"]
+  modLayer["module lambda-layer x2 (bcrypt, pymysql)"]
+  modLambda["module lambda-authenticate"]
+  modApi["module api-authsvc"]
+  zipsrc["lambda/*.py + templated authsvc-config.ini"]
+  bczip[("layers/bcrypt-layer.zip")]
+  pyzip[("layers/pymysql-layer.zip")]
+  role["lab-project-authenticate-role + boundary"]
+  tfvars --> env
+  env --> modLayer
+  env --> modLambda
+  env --> modApi
+  bczip --> modLayer
+  pyzip --> modLayer
+  zipsrc --> modLambda
+  role --> modLambda
+  modLayer -->|"layer ARNs"| modLambda
+  modLambda -->|"fn name + invoke ARN"| modApi
+    </pre>
+  </div>
+
+  <div class="note">
+    <b>Notes for DP-6 review</b><br>
+    • <b>RDS = Path A</b> — existing backbone <code>photoapp-db</code> (public); the <code>authsvc</code> DB was created in CP-1. No new RDS, no VPC-attached Lambda.<br>
+    • <b>Config is file-based</b> — the Lambda reads a packaged <code>authsvc-config.ini</code>; the deploy templates <code>rds_address</code> into it (not env-vars).<br>
+    • <b>Layers</b> = the committed zips (plain <code>aws_lambda_layer_version</code>; no Docker build).<br>
+    • Client config = <code>trimsuffix(invoke_url,"/")</code> → autograder hits <code>{invoke_url}/auth</code>.
+  </div>
+  <p class="foot">Renders via mermaid.js (needs internet to load the lib). If a diagram doesn't render, its mermaid source is visible in the box. · Project 03 Part 01 · 2026-06-09</p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+</script>
+</body>
+</html>

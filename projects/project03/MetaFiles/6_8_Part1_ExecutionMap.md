@@ -15,8 +15,8 @@
 - **Human CoPilot** — Erik. Owns AWS account access, all sign-offs, Gradescope UI, greenlights.
 
 ## Active position
-- **● Now:** **CP-3.1 Hosting Plan ✅ authored** (`6_8_Part1_Hosting_Plan.md`) — decisions + module layout + approved names. Next: build the two diagrams.
-- **→ Next:** build architecture + IAM diagrams as **standalone HTML** (mermaid.js; live companion server not required — the .html is the artifact) → present Hosting Plan + diagrams for **DP-6/DP-7** sign-off → Tier-A → Terraform → DP-8 → DP-9 → Tier-B.
+- **● Now:** **CP-3 design SIGNED OFF** — DP-6 ✅ + DP-7 ✅ approved (Erik 2026-06-09); UMD-loader fix rendered the diagrams. Layer-module ruling: **generic `lambda-layer` ×2** (confirmed). Design phase complete; CP-3 artifacts committed.
+- **→ Next:** CP-3.4 Tier-A contract tests → CP-3.5 Terraform modules → DP-8 plan → DP-9 apply → CP-3.7 Tier-B smoke. **(Holding for go to continue.)**
 
 ---
 
@@ -25,7 +25,7 @@
 |---|-----------|--------|----------|
 | 1 | Set Up (greenfield readiness) | ✅ COMPLETE | 1.1✅ 1.4✅ 1.3✅ 1.2✅ · db-init ✅ (17/17 OK) · Gate 1.5 met |
 | 2 | Hello World submission (~0/50) | ✅ COMPLETE | #416301527 → 0.0/50 confirmed; DP-4/5 resolved; Gate 2.4 met |
-| 3 | Hosting Infrastructure | ⏳ | plan → arch viz → IAM viz → Tier-A tests → Terraform → apply → Tier-B smoke |
+| 3 | Hosting Infrastructure | 🔄 | 3.1 plan ✅ · 3.2/3.3 diagrams ✅ (DP-6/7 approved) · 3.4 Tier-A ⏳ · 3.5 TF ⏳ · 3.6 apply ⏳ (DP-8/9) · 3.7 Tier-B ⏳ |
 | 4 | Complete Application Logic (TDD) | ⏳ | 5 TODOs in `lambda_function.py`; oracle tests pass |
 | 5 | Submit (iterate to 50/50) | ⏳ | Gradescope 50/50, Human CoPilot confirms |
 | 6 | Clean up / sharpen / polish | ⏳ | docs, hygiene, scoped AWS destroy (NOT backbone RDS) |
@@ -40,8 +40,8 @@
 | DP-3 | 1 | Move Part 02 files to scratch/ | Human CoPilot | ⏳ default: leave in place |
 | DP-4 | 2 | Gradescope assignment ID ≠ 8159384 | HCP+OverSeer | 🟢 RESOLVED — assignment 8159384 accepted the submission (valid ID) |
 | DP-5 | 2 | `gs submit` fails | Human CoPilot | 🟢 RESOLVED — Docker `gs submit` channel works (login + upload OK) |
-| DP-6 | 3 | Architecture diagram sign-off | Human CoPilot | ⏳ (Visual Companion) |
-| DP-7 | 3 | IAM diagram sign-off | Human CoPilot | ⏳ (Visual Companion) |
+| DP-6 | 3 | Architecture diagram sign-off | Human CoPilot | 🟢 APPROVED (Erik 2026-06-09) |
+| DP-7 | 3 | IAM diagram sign-off | Human CoPilot | 🟢 APPROVED (Erik 2026-06-09) |
 | DP-8 | 3 | `tf plan` unexpected destroys/new RDS | Human CoPilot | ⏳ |
 | DP-9 | 3 | `tf apply` | Human CoPilot | ⏳ explicit approval |
 | DP-10 | 3 | Lambda can't reach RDS | Human CoPilot | ⏳ |
@@ -100,6 +100,9 @@ Do NOT: read the PDF · edit instructor `test01–03.txt` or exact error strings
 - **Naming APPROVED (Erik 2026-06-09):** API `authsvc-api` · layers `authsvc-bcrypt-layer` + `authsvc-pymysql-layer` · stage `prod`.
 - **3.1 Hosting Plan ✅** (`6_8_Part1_Hosting_Plan.md`): decisions table, module layout (generic `lambda-layer` ×2 — *deviation* from approach's 2 modules, flagged for review), config-templating design, IAM, Tier-A/B test plan, Makefile surface.
 - **Visual Companion approach:** `.superpowers/` is brainstorm-skill-scoped + no live server → diagrams produced as **standalone HTML** (mermaid.js, mirroring `FinalProject/architecture.html`); `mermaid_gotchas` applied (strip nested-subgraph `direction`). Fallback = embedded mermaid (Erik's call) if HTML render fails.
+- **3.2/3.3 diagrams ✅ built (standalone HTML):** `6_8_Part1_Architecture.html` (runtime request path + Terraform composition) + `6_8_Part1_IAM.html` (role/boundary/trust + DB-auth-is-NOT-IAM). Dark theme, mermaid.js render.
+- **Render fix:** first load showed raw mermaid (ESM `import` blocked on `file://`) → swapped to UMD `<script src=…mermaid@10…>`; rendered ✅.
+- **DP-6 ✅ + DP-7 ✅ APPROVED (Erik 2026-06-09).** Layer-module ruling: **generic `lambda-layer` module ×2** (DRY). Design phase complete → next: Tier-A tests + Terraform.
 
 ## Links
 - Roadmap: `MetaFiles/6_8_Part1_Approach.md`

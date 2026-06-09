@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project 03 Part 01 — authsvc IAM (DP-7)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background: radial-gradient(1400px 700px at 50% -8%, #1e293b, #0b1120); color:#e2e8f0; padding: 2rem 1.5rem 3rem; }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+  .status { display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+    color:#fbbf24; border:1px solid rgba(251,191,36,.4); border-radius:999px; padding:.3rem .7rem; }
+  h1 { margin:.6rem 0 .2rem; font-size:1.7rem; } h1 .f { color:#38bdf8; }
+  .sub { color:#94a3b8; margin:0 0 1.2rem; font-size:.95rem; }
+  .diagram { background: rgba(15,23,42,.6); border:1px solid rgba(148,163,184,.2); border-radius:16px; padding:1rem; margin:.6rem 0 1rem; }
+  .mermaid { display:flex; justify-content:center; }
+  .note { background: rgba(15,23,42,.55); border:1px solid rgba(148,163,184,.2); border-radius:14px; padding:1rem 1.3rem; font-size:.88rem; line-height:1.55; color:#cbd5e1; }
+  .note b { color:#e2e8f0; }
+  code { background:rgba(56,189,248,.12); color:#7dd3fc; padding:.05rem .35rem; border-radius:5px; font-family:ui-monospace,Menlo,monospace; font-size:.85em; }
+  .foot { margin-top:1.4rem; font-size:.78rem; color:#64748b; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="status">● Design — DP-7 review (pre-Terraform)</span>
+  <h1>Project 03 · Part 01 — <span class="f">authsvc</span> IAM model</h1>
+  <p class="sub">Plane-2 delegated role creation · permissions boundary · Lambda trust · DB auth is NOT IAM</p>
+
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart TB
+  operator["Claude-Conjurer (PowerUserAccess + Plane-2 delegation)"]
+  apply["terraform apply"]
+  boundary["LabProjectPermissionsBoundary"]
+  role["lab-project-authenticate-role"]
+  trust["trust policy: lambda.amazonaws.com"]
+  basic["AWSLambdaBasicExecutionRole"]
+  lambda["authenticate Lambda"]
+  logs["CloudWatch Logs"]
+  apigw["API Gateway: authsvc-api"]
+  perm["aws_lambda_permission (principal: apigateway.amazonaws.com)"]
+  rds[("RDS MySQL: authsvc")]
+  dbcreds["DB auth: authsvc-read-write (in packaged INI) -- NOT IAM"]
+  operator --> apply
+  apply -->|"creates (within boundary)"| role
+  boundary -.->|"caps effective perms"| role
+  trust --> role
+  basic --> role
+  role -->|"assumed by"| lambda
+  lambda --> logs
+  apigw --> perm
+  perm -->|"lambda:InvokeFunction"| lambda
+  lambda -->|"pymysql user/pwd"| dbcreds
+  dbcreds --> rds
+    </pre>
+  </div>
+
+  <div class="note">
+    <b>Notes for DP-7 review</b><br>
+    • Role <code>lab-project-authenticate-role</code> matches the contract glob <code>lab-project-*</code>; created WITH <code>permissions_boundary = arn:aws:iam::772360735396:policy/LabProjectPermissionsBoundary</code>.<br>
+    • Trust = <code>lambda.amazonaws.com</code>; managed policy = <code>AWSLambdaBasicExecutionRole</code> (CloudWatch logs only). No VPC policy (public RDS).<br>
+    • <b>Lambda → RDS uses NO IAM</b> — MySQL username/password (<code>authsvc-read-write</code>) carried in the packaged <code>authsvc-config.ini</code>.<br>
+    • <code>Claude-Conjurer</code> (PowerUserAccess + <code>ClaudeConjurerPlane2IAMDelegation</code>) is permitted to create <code>lab-project-*</code> roles + PassRole to <code>lambda.amazonaws.com</code> per the IAM contract.
+  </div>
+  <p class="foot">Renders via mermaid.js (needs internet to load the lib). · Project 03 Part 01 · 2026-06-09</p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+</script>
+</body>
+</html>
