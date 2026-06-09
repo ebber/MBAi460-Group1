@@ -115,9 +115,8 @@ def lambda_handler(event, context):
       #
       # lookup token in the database, get back the userid and expiration_utc.
       #
-      # sql = "???"
-      #
-      # row = datatier.retrieve_one_row(...)
+      sql = "SELECT userid, expiration_utc FROM tokens WHERE token = %s;"
+      row = datatier.retrieve_one_row(dbConn, sql, [token])
       #
       
       if row == () or row is None:
@@ -127,8 +126,8 @@ def lambda_handler(event, context):
       #
       # TODO #2 of 5:
       #
-      # userid = ???
-      # expiration_utc = ???
+      userid = row[0]
+      expiration_utc = row[1]
       #
       
       print("userid", userid)
@@ -193,9 +192,8 @@ def lambda_handler(event, context):
     #
     # lookup the username in the database, retrieve userid and pwdhash:
     #
-    # sql = "???"
-    #
-    # row = datatier.retrieve_one_row(...)
+    sql = "SELECT userid, pwdhash FROM users WHERE username = %s;"
+    row = datatier.retrieve_one_row(dbConn, sql, [username])
 
     if row == () or row is None:
       print("**No such user, returning...**")
@@ -204,8 +202,8 @@ def lambda_handler(event, context):
     #
     # TODO #4 of 5:
     #    
-    # userid = ???
-    # pwdhash = ???
+    userid = row[0]
+    pwdhash = row[1]
     #
       
     print("userid", userid)
@@ -240,14 +238,12 @@ def lambda_handler(event, context):
     #
     # Insert the token, userid, and expiration_utc into the database:
     #
-    # sql = "???"
-    #
-    # modified = datatier.perform_action(???)
-    #
-    # if modified != 1:
-    #   print("**INTERNAL ERROR: insert into database failed...**")
-    #   return api_utils.error(500, "INTERNAL ERROR: insert failed to modify database")
-    #
+    sql = "INSERT INTO tokens(token, userid, expiration_utc) VALUES(%s, %s, %s);"
+    modified = datatier.perform_action(dbConn, sql, [token, userid, expiration_utc])
+
+    if modified != 1:
+      print("**INTERNAL ERROR: insert into database failed...**")
+      return api_utils.error(500, "INTERNAL ERROR: insert failed to modify database")
     
     #
     # success, done!
