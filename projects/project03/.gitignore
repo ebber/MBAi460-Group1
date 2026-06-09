@@ -2,6 +2,8 @@
 # Generated server config (carries DB creds + live RDS endpoint) — never commit
 # Ignored at any depth (project03 root for submission; lambda/ for deploy-templated copy)
 authsvc-config.ini
+# Generated client config (live invoke URL) — regenerate with `make config`
+/authsvc-client-config.ini
 
 # Terraform
 **/.terraform/*
