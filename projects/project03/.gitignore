@@ -9,6 +9,8 @@ authsvc-config.ini
 *.tfstate.*
 *.tfplan
 crash.log
+# archive_file build output (generated lambda zip)
+**/build/
 
 # Python
 __pycache__/

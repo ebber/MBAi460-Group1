@@ -15,8 +15,8 @@
 - **Human CoPilot** — Erik. Owns AWS account access, all sign-offs, Gradescope UI, greenlights.
 
 ## Active position
-- **● Now:** **CP-3 design SIGNED OFF** — DP-6 ✅ + DP-7 ✅ approved (Erik 2026-06-09); UMD-loader fix rendered the diagrams. Layer-module ruling: **generic `lambda-layer` ×2** (confirmed). Design phase complete; CP-3 artifacts committed.
-- **→ Next:** CP-3.4 Tier-A contract tests → CP-3.5 Terraform modules → DP-8 plan → DP-9 apply → CP-3.7 Tier-B smoke. **(Holding for go to continue.)**
+- **● Now:** **CP-3.4 Tier-A GREEN + CP-3.5 Terraform authored & validated** (SoloAuto) — `init`+`validate` ✅, contract 17/17 ✅, `fmt` clean.
+- **→ Next:** DP-8 `terraform plan` → adversarial pressure-test subagent → (clean + no destroys) DP-9 apply → `make config` → CP-4 TODOs → verify → submit.
 
 ---
 
@@ -25,7 +25,7 @@
 |---|-----------|--------|----------|
 | 1 | Set Up (greenfield readiness) | ✅ COMPLETE | 1.1✅ 1.4✅ 1.3✅ 1.2✅ · db-init ✅ (17/17 OK) · Gate 1.5 met |
 | 2 | Hello World submission (~0/50) | ✅ COMPLETE | #416301527 → 0.0/50 confirmed; DP-4/5 resolved; Gate 2.4 met |
-| 3 | Hosting Infrastructure | 🔄 | 3.1 plan ✅ · 3.2/3.3 diagrams ✅ (DP-6/7 approved) · 3.4 Tier-A ⏳ · 3.5 TF ⏳ · 3.6 apply ⏳ (DP-8/9) · 3.7 Tier-B ⏳ |
+| 3 | Hosting Infrastructure | 🔄 | 3.1 ✅ · 3.2/3.3 ✅ (DP-6/7) · 3.4 Tier-A ✅ · 3.5 TF authored+validated ✅ · 3.6 apply ⏳ (DP-8/9) · 3.7 Tier-B ⏳ |
 | 4 | Complete Application Logic (TDD) | ⏳ | 5 TODOs in `lambda_function.py`; oracle tests pass |
 | 5 | Submit (iterate to 50/50) | ⏳ | Gradescope 50/50, Human CoPilot confirms |
 | 6 | Clean up / sharpen / polish | ⏳ | docs, hygiene, scoped AWS destroy (NOT backbone RDS) |
@@ -56,7 +56,7 @@
 ## Pre-flight findings carried from this session's AWS verification
 1. **Cred-path caveat (affects DP-0 + `_run_sql.py`/`make db-init`).** `Claude-Conjurer` auth WORKS, but only with `AWS_SHARED_CREDENTIALS_FILE` → `claude-workspace/secrets/aws-credentials`. The repo-documented path (`MBAi460-Group1/secrets/`) **does not exist** — the logged util cred-path bug (`claude-workspace/TODO.md` line-21). Any Project 03 script reading the documented path will silently fail the same way.
 2. **Backbone RDS is UP (Path A viable).** `photoapp-db` — MySQL 8.0, db.t3.micro, **available**, public=True, endpoint `photoapp-db.c5q4s860smqq.us-east-2.rds.amazonaws.com`. BUT `terraform state list` returns empty locally (not init'd) → the Approach's `terraform output rds_address` preflight will likely fail; endpoint is available via `aws rds describe` or `infra/config/photoapp-config.ini` instead.
-3. **`ClaudeConjurerPlane2IAMDelegation` policy exists** (seen in live inventory) → Plane-2 IAM delegation likely permits scoped creation of `lab-project-*` roles under the boundary, *despite* Claude-Conjurer being PowerUserAccess (which normally denies IAM). To verify when Checkpoint 3 IAM creation runs.
+3. **`ClaudeConjurerPlane2IAMDelegation` — VERIFIED ✅ (2026-06-09 probe):** created + cleanly deleted a throwaway `lab-project-conjurer-access-test` role (lambda trust + `LabProjectPermissionsBoundary`). Claude-Conjurer CAN create/delete `lab-project-*` roles with the boundary → **`lab-project-authenticate-role` will apply fine; DP-9 IAM risk CLEARED** (no residue left). *(First probe run hit a zsh false-negative — unquoted timeout var parse error, not AccessDenied — caught + re-run.)*
 
 ## Default path (v1)
 Path A backbone RDS · committed `layers/*.zip` · `make db-init` via `utils/_run_sql.py` · Terraform scoped to **Lambda + layers + API Gateway only** (no new RDS, no VPC-Lambda, no TF-managed SQL).
@@ -103,6 +103,7 @@ Do NOT: read the PDF · edit instructor `test01–03.txt` or exact error strings
 - **3.2/3.3 diagrams ✅ built (standalone HTML):** `6_8_Part1_Architecture.html` (runtime request path + Terraform composition) + `6_8_Part1_IAM.html` (role/boundary/trust + DB-auth-is-NOT-IAM). Dark theme, mermaid.js render.
 - **Render fix:** first load showed raw mermaid (ESM `import` blocked on `file://`) → swapped to UMD `<script src=…mermaid@10…>`; rendered ✅.
 - **DP-6 ✅ + DP-7 ✅ APPROVED (Erik 2026-06-09).** Layer-module ruling: **generic `lambda-layer` module ×2** (DRY). Design phase complete → next: Tier-A tests + Terraform.
+- **CP-3.5 Terraform authored + CP-3.4 Tier-A GREEN (2026-06-09, SoloAuto):** modules `lambda-layer` (generic) + `lambda-authenticate` (archive_file: 4 .py + templated INI; role+boundary+trust+log+fn) + `api-authsvc` (REST `/auth` POST + AWS_PROXY + deploy/stage) + `envs/dev` + Makefile + scripts + Tier-A test. `init` (aws 5.100, archive 2.8) + `validate` ✅; contract 17/17 ✅; `fmt` clean. **Makefile exports AWS_SHARED_CREDENTIALS_FILE→`claude-workspace/secrets/` (in-scope cred-path fix; no util edit).** Next: DP-8 plan.
 
 ## Links
 - Roadmap: `MetaFiles/6_8_Part1_Approach.md`

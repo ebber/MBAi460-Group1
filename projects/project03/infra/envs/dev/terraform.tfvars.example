@@ -1,0 +1,3 @@
+# Copy to terraform.tfvars to override; defaults in variables.tf work for the lab.
+aws_profile = "Claude-Conjurer"
+rds_address = "photoapp-db.c5q4s860smqq.us-east-2.rds.amazonaws.com"
