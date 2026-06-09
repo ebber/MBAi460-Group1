@@ -1,8 +1,8 @@
 # Project 03 — Part 01 · Execution Map
 
 **Quest:** Complete Project 03 Part 01 — deploy `POST /auth` authentication microservice → **50/50 Gradescope**
-**Status:** 🟢 EXECUTING — **Checkpoint 2: Gradescope pipe PROVEN** (submission accepted); awaiting HCP UI score check
-**Last Updated:** 2026-06-09 (Execution Agent — CP-2: submission #416301527 landed; DP-4/DP-5 resolved)
+**Status:** 🟢 EXECUTING — **Checkpoint 3 (Hosting Infra)** — design phase; CP-1 ✅ CP-2 ✅ (0/50 baseline confirmed)
+**Last Updated:** 2026-06-09 (Execution Agent — CP-2 complete: 0/50 confirmed; CP-3 design phase started)
 **Authoritative roadmap:** `MetaFiles/6_8_Part1_Approach.md` (sole spec; PDF is off-limits to Execution Agent)
 
 > This Map is the durable execution-state surface (compaction-recovery anchor). The in-chat Compass is its conversational echo. Update the relevant checkpoint/DP row at each substep close-out — and bump `Last Updated` in the same edit (SpinDown SD-3/SD-6 discipline).
@@ -15,8 +15,8 @@
 - **Human CoPilot** — Erik. Owns AWS account access, all sign-offs, Gradescope UI, greenlights.
 
 ## Active position
-- **● Now:** **Checkpoint 2 — Gradescope pipe PROVEN.** Placeholder INIs submitted via Docker `gs` → accepted (submission #416301527). DP-4/DP-5 resolved. Awaiting HCP UI check for the ~0/50 baseline score + autograder error strings (oracle for CP-4/5).
-- **→ Next:** Checkpoint 3 — Hosting infra: plan → architecture viz + IAM viz (Visual Companion; DP-6/DP-7 sign-offs) → Tier-A tests → Terraform → apply → Tier-B smoke.
+- **● Now:** **CP-3.1 Hosting Plan ✅ authored** (`6_8_Part1_Hosting_Plan.md`) — decisions + module layout + approved names. Next: build the two diagrams.
+- **→ Next:** build architecture + IAM diagrams as **standalone HTML** (mermaid.js; live companion server not required — the .html is the artifact) → present Hosting Plan + diagrams for **DP-6/DP-7** sign-off → Tier-A → Terraform → DP-8 → DP-9 → Tier-B.
 
 ---
 
@@ -24,7 +24,7 @@
 | # | Checkpoint | Status | One-line |
 |---|-----------|--------|----------|
 | 1 | Set Up (greenfield readiness) | ✅ COMPLETE | 1.1✅ 1.4✅ 1.3✅ 1.2✅ · db-init ✅ (17/17 OK) · Gate 1.5 met |
-| 2 | Hello World submission (~0/50) | ✅ pipe proven | INIs submitted (#416301527); DP-4/5 resolved; baseline score = HCP UI check |
+| 2 | Hello World submission (~0/50) | ✅ COMPLETE | #416301527 → 0.0/50 confirmed; DP-4/5 resolved; Gate 2.4 met |
 | 3 | Hosting Infrastructure | ⏳ | plan → arch viz → IAM viz → Tier-A tests → Terraform → apply → Tier-B smoke |
 | 4 | Complete Application Logic (TDD) | ⏳ | 5 TODOs in `lambda_function.py`; oracle tests pass |
 | 5 | Submit (iterate to 50/50) | ⏳ | Gradescope 50/50, Human CoPilot confirms |
@@ -82,7 +82,24 @@ Do NOT: read the PDF · edit instructor `test01–03.txt` or exact error strings
 ## CP-2 progress log
 - **Placeholder INIs ✅** — `authsvc-config.ini` + `authsvc-client-config.ini` (assignment-shaped placeholders; local, not committed — real values generated at CP-3). `scripts/submit-gradescope.sh` created (mirrors lab04; submits BOTH INIs; course 1288073 / assignment 8159384).
 - **Gradescope pipe PROVEN ✅ (2026-06-09):** Docker `gs submit` → logged in (erik.beitel@…), both files uploaded, **accepted**. **Submission #416301527** → `https://www.gradescope.com/courses/1288073/assignments/8159384/submissions/416301527`. DP-4 (valid ID) + DP-5 (channel) resolved.
-- **Gate 2.4 remaining:** baseline **score + autograder error strings** require the Gradescope **UI** (`gs results` doesn't exist) → **Human CoPilot** check. Expect ~0/50; capture autograder messages as oracle for CP-4/5.
+- **Gate 2.4 MET ✅ (HCP UI, 2026-06-09):** baseline **0.0/50.0** as expected. Autograder **oracle captured:** *"Test 1: unit test set 01 — program ran but output is incorrect."* → autograder runs the client against the `webservice` URL; live deployment must make set-01 pass. **CP-2 COMPLETE.**
+
+## CP-3 progress log
+- **3.1 grounding ✅ (audit subagent — Domain-B):** one read-only general-purpose subagent digested lab04 infra (~18 signal files), `LAB_PROJECT_IAM_CONTRACT.md`, backbone `infra/terraform/outputs.tf`. Main-agent verification:
+  - 🔧 **CORRECTION:** subagent suggested Lambda **env-var** RDS injection — but starter `lambda_function.py` reads a packaged **`authsvc-config.ini` file** (`configur.read(...)`), not env vars. → **template the INI into the zip** with real `rds_address` (approach §3.5). No `environment {}` block.
+  - ✅ **subagent catch:** lab04 `lab-project04-*` role names don't cleanly match contract glob `lab-project-*` → use **`lab-project-authenticate-role`**.
+- **Locked design decisions (verified vs. backbone reality):**
+  - Config = templated `authsvc-config.ini` packaged in zip (file-based, `rds_address` injected).
+  - **No VPC config** — backbone `photoapp-db` is **public=True** (verified this session; TCP 3306 reachable) → public endpoint.
+  - `rds_address` via Terraform **input variable** (from `photoapp-config.ini` / verified endpoint), NOT `terraform_remote_state` (backbone tf not init'd locally).
+  - Layers = committed `layers/*.zip` → plain `aws_lambda_layer_version` (filename + filebase64sha256); drop null/Docker.
+  - IAM: role `lab-project-authenticate-role` + boundary `arn:aws:iam::772360735396:policy/LabProjectPermissionsBoundary` + `lambda.amazonaws.com` trust + `AWSLambdaBasicExecutionRole`. RDS = no IAM (MySQL user/pwd).
+  - API: REST (`aws_api_gateway_*`), one `/auth` POST + AWS_PROXY + lambda_permission + deployment/stage; output `trimsuffix(invoke_url,"/")`.
+  - Lambda `authenticate`: runtime python3.12, **architecture x86_64** (assignment), timeout **300**, both layers.
+- **🚩 Naming decisions pending Erik (operational naming rule + DP-6/DP-7):** fixed = Lambda `authenticate`, role `lab-project-authenticate-role`. **Need Erik's nod:** API Gateway name, two layer names, API stage name.
+- **Naming APPROVED (Erik 2026-06-09):** API `authsvc-api` · layers `authsvc-bcrypt-layer` + `authsvc-pymysql-layer` · stage `prod`.
+- **3.1 Hosting Plan ✅** (`6_8_Part1_Hosting_Plan.md`): decisions table, module layout (generic `lambda-layer` ×2 — *deviation* from approach's 2 modules, flagged for review), config-templating design, IAM, Tier-A/B test plan, Makefile surface.
+- **Visual Companion approach:** `.superpowers/` is brainstorm-skill-scoped + no live server → diagrams produced as **standalone HTML** (mermaid.js, mirroring `FinalProject/architecture.html`); `mermaid_gotchas` applied (strip nested-subgraph `direction`). Fallback = embedded mermaid (Erik's call) if HTML render fails.
 
 ## Links
 - Roadmap: `MetaFiles/6_8_Part1_Approach.md`
