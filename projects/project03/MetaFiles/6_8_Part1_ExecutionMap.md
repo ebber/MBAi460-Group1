@@ -1,8 +1,8 @@
 # Project 03 — Part 01 · Execution Map
 
 **Quest:** Complete Project 03 Part 01 — deploy `POST /auth` authentication microservice → **50/50 Gradescope**
-**Status:** 🟢 EXECUTING — **Checkpoint 1 COMPLETE** (Gate 1.5 met); next: Checkpoint 2
-**Last Updated:** 2026-06-09 (Execution Agent — CP-1 complete: db-init 17/17 OK; DP-0/1/2/3 resolved)
+**Status:** 🟢 EXECUTING — **Checkpoint 2: Gradescope pipe PROVEN** (submission accepted); awaiting HCP UI score check
+**Last Updated:** 2026-06-09 (Execution Agent — CP-2: submission #416301527 landed; DP-4/DP-5 resolved)
 **Authoritative roadmap:** `MetaFiles/6_8_Part1_Approach.md` (sole spec; PDF is off-limits to Execution Agent)
 
 > This Map is the durable execution-state surface (compaction-recovery anchor). The in-chat Compass is its conversational echo. Update the relevant checkpoint/DP row at each substep close-out — and bump `Last Updated` in the same edit (SpinDown SD-3/SD-6 discipline).
@@ -15,8 +15,8 @@
 - **Human CoPilot** — Erik. Owns AWS account access, all sign-offs, Gradescope UI, greenlights.
 
 ## Active position
-- **● Now:** **Checkpoint 1 COMPLETE** — db-init succeeded (17/17 OK; `authsvc` db + `users`/`tokens` + 3 seed users + 2 MySQL users on backbone RDS). Gate 1.5 met; CP-1 artifacts committed.
-- **→ Next:** Checkpoint 2 — Hello-World submission (~0/50): placeholder INIs (autonomous) → Gradescope submit (**DP-4** confirm assignment ID `8159384` + **DP-5** channel — Human CoPilot). Awaiting direction to start CP-2.
+- **● Now:** **Checkpoint 2 — Gradescope pipe PROVEN.** Placeholder INIs submitted via Docker `gs` → accepted (submission #416301527). DP-4/DP-5 resolved. Awaiting HCP UI check for the ~0/50 baseline score + autograder error strings (oracle for CP-4/5).
+- **→ Next:** Checkpoint 3 — Hosting infra: plan → architecture viz + IAM viz (Visual Companion; DP-6/DP-7 sign-offs) → Tier-A tests → Terraform → apply → Tier-B smoke.
 
 ---
 
@@ -24,7 +24,7 @@
 | # | Checkpoint | Status | One-line |
 |---|-----------|--------|----------|
 | 1 | Set Up (greenfield readiness) | ✅ COMPLETE | 1.1✅ 1.4✅ 1.3✅ 1.2✅ · db-init ✅ (17/17 OK) · Gate 1.5 met |
-| 2 | Hello World submission (~0/50) | ⏳ | placeholder INIs → prove Gradescope plumbing |
+| 2 | Hello World submission (~0/50) | ✅ pipe proven | INIs submitted (#416301527); DP-4/5 resolved; baseline score = HCP UI check |
 | 3 | Hosting Infrastructure | ⏳ | plan → arch viz → IAM viz → Tier-A tests → Terraform → apply → Tier-B smoke |
 | 4 | Complete Application Logic (TDD) | ⏳ | 5 TODOs in `lambda_function.py`; oracle tests pass |
 | 5 | Submit (iterate to 50/50) | ⏳ | Gradescope 50/50, Human CoPilot confirms |
@@ -38,8 +38,8 @@
 | DP-1 | 1 | Backbone RDS missing / `tf output` fails | HCP→OverSeer | 🟢 RESOLVED — Path A: RDS `available`, endpoint confirmed via `photoapp-config.ini`; no Path B |
 | DP-2 | 1 | `make db-init` fails | Human CoPilot | 🟡 AT GATE — SQL verified safe (isolated `authsvc` db, no placeholder issue, clean recovery); awaiting go + exec-path choice |
 | DP-3 | 1 | Move Part 02 files to scratch/ | Human CoPilot | ⏳ default: leave in place |
-| DP-4 | 2 | Gradescope assignment ID ≠ 8159384 | HCP+OverSeer | ⏳ |
-| DP-5 | 2 | `gs submit` fails | Human CoPilot | ⏳ |
+| DP-4 | 2 | Gradescope assignment ID ≠ 8159384 | HCP+OverSeer | 🟢 RESOLVED — assignment 8159384 accepted the submission (valid ID) |
+| DP-5 | 2 | `gs submit` fails | Human CoPilot | 🟢 RESOLVED — Docker `gs submit` channel works (login + upload OK) |
 | DP-6 | 3 | Architecture diagram sign-off | Human CoPilot | ⏳ (Visual Companion) |
 | DP-7 | 3 | IAM diagram sign-off | Human CoPilot | ⏳ (Visual Companion) |
 | DP-8 | 3 | `tf plan` unexpected destroys/new RDS | Human CoPilot | ⏳ |
@@ -78,6 +78,11 @@ Do NOT: read the PDF · edit instructor `test01–03.txt` or exact error strings
 - **create-authsvc.sql verified (pre-mutation):** no `${VAR}` placeholders (pwds hardcoded; bcrypt `$2y$` hashes don't match `${...}`) → db-init runs clean. Scope = `CREATE DATABASE authsvc` + `users`/`tokens` tables + 3 seed users + MySQL users `authsvc-read-only`/`-read-write`, GRANTs scoped to `authsvc.*` only. **Does NOT touch `photoapp`/`URL_Shortener`.** Recovery = `DROP DATABASE authsvc; DROP USER 'authsvc-read-only','authsvc-read-write';` (idempotent re-run safe).
 - **db-init = MUTATION GATE (DP-2):** HELD for Human CoPilot go + exec-path choice (Docker `utils/run-sql` vs direct `python3 _run_sql.py`).
 - **db-init ✅ DONE (Path a/Docker, 2026-06-09):** HCP restarted Colima → `utils/run-sql create-authsvc.sql` → **17/17 statements OK**. Ground-truth verified via per-statement DB rowcounts (CREATE DATABASE rows:1 · 3× INSERT rows:1 · CREATE USER ×2 · GRANT ×2). `authsvc` live on backbone RDS. **DP-2 resolved → CP-1 Gate 1.5 met.**
+
+## CP-2 progress log
+- **Placeholder INIs ✅** — `authsvc-config.ini` + `authsvc-client-config.ini` (assignment-shaped placeholders; local, not committed — real values generated at CP-3). `scripts/submit-gradescope.sh` created (mirrors lab04; submits BOTH INIs; course 1288073 / assignment 8159384).
+- **Gradescope pipe PROVEN ✅ (2026-06-09):** Docker `gs submit` → logged in (erik.beitel@…), both files uploaded, **accepted**. **Submission #416301527** → `https://www.gradescope.com/courses/1288073/assignments/8159384/submissions/416301527`. DP-4 (valid ID) + DP-5 (channel) resolved.
+- **Gate 2.4 remaining:** baseline **score + autograder error strings** require the Gradescope **UI** (`gs results` doesn't exist) → **Human CoPilot** check. Expect ~0/50; capture autograder messages as oracle for CP-4/5.
 
 ## Links
 - Roadmap: `MetaFiles/6_8_Part1_Approach.md`
