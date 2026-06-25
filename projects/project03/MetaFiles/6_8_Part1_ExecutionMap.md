@@ -1,8 +1,8 @@
 # Project 03 — Part 01 · Execution Map
 
 **Quest:** Complete Project 03 Part 01 — deploy `POST /auth` authentication microservice → **50/50 Gradescope**
-**Status:** 🟢 SUBMITTED — Part 01 deployed + live-verified (4/4 oracle); Gradescope #416305568; awaiting HCP score confirmation
-**Last Updated:** 2026-06-09 (Execution Agent — SoloAuto: applied + verified live + submitted)
+**Status:** ✅ QUEST COMPLETE — **50/50 confirmed** (Gradescope #416305568); infra destroyed (cost cleanup). 🎉
+**Last Updated:** 2026-06-25 (Execution Agent — 50/50 confirmed by HCP; CP-6 make destroy done, 13 destroyed)
 **Authoritative roadmap:** `MetaFiles/6_8_Part1_Approach.md` (sole spec; PDF is off-limits to Execution Agent)
 
 > This Map is the durable execution-state surface (compaction-recovery anchor). The in-chat Compass is its conversational echo. Update the relevant checkpoint/DP row at each substep close-out — and bump `Last Updated` in the same edit (SpinDown SD-3/SD-6 discipline).
@@ -15,8 +15,8 @@
 - **Human CoPilot** — Erik. Owns AWS account access, all sign-offs, Gradescope UI, greenlights.
 
 ## Active position
-- **● Now:** **QUEST ESSENTIALLY COMPLETE** — service deployed (apply 13/0) + **live-verified 4/4 oracle** (wrong-pwd 401 · login 200+token · verify 200+userid · expired 401) + **submitted #416305568** with real INIs. Service left LIVE for grading.
-- **→ Next:** Human CoPilot confirms **50/50** on the Gradescope UI (only step I cannot do — no `gs results` API). CP-6 cleanup (`make destroy`) deferred to HCP post-confirmation.
+- **● Now:** **QUEST COMPLETE 🎉** — **50/50 confirmed** (HCP, Gradescope #416305568). CP-6 cleanup done: `terraform destroy` removed all 13 project03 resources (endpoint now down); backbone RDS untouched (never in this state). Reproducible via `make apply`.
+- **→ Next:** none — quest closed. (Residual: `authsvc` DB still exists on backbone RDS — not TF-managed, harmless/free; drop later if desired. SD-5 mining of Domain A/B learnings at session SpinDown.)
 
 ---
 
@@ -27,9 +27,9 @@
 | 2 | Hello World submission (~0/50) | ✅ COMPLETE | #416301527 → 0.0/50 confirmed; DP-4/5 resolved; Gate 2.4 met |
 | 3 | Hosting Infrastructure | ✅ COMPLETE | apply ✅ (13 res, 0 destroy) · Tier-B 4/4 oracle ✅ · real INIs |
 | 4 | Complete Application Logic (TDD) | ✅ COMPLETE | 5 TODOs done; live login→token→verify→expiry 4/4 ✅ |
-| 5 | Submit (iterate to 50/50) | 🟡 submitted | #416305568 (real INIs); score = HCP UI confirm |
-| 6 | Clean up / sharpen / polish | ⏳ | docs, hygiene, scoped AWS destroy (NOT backbone RDS) |
-| 7 | END QUEST 🥂 | ⏳ | 50/50 secured; reproducible via `make apply` |
+| 5 | Submit (iterate to 50/50) | ✅ COMPLETE | #416305568 → **50/50 confirmed** |
+| 6 | Clean up / sharpen / polish | ✅ COMPLETE | memo + git sweep (no creds) + pushed; `make destroy` 13 destroyed |
+| 7 | END QUEST 🥂 | ✅ COMPLETE | 50/50 secured; reproducible via `make apply` |
 
 ## Decision-Point register (stop-and-check-in)
 | DP | CP | Trigger | Owner | Status |
@@ -49,7 +49,7 @@
 | DP-12 | 4 | Error-string mismatch vs oracle | OverSeer | ⏳ |
 | DP-13 | 5 | Gradescope <50/50 w/ local green | Human CoPilot | ⏳ |
 | DP-14 | 5 | Best score ≠ last submission | Human CoPilot | ⏳ |
-| DP-15 | 6 | `make destroy` scope | Human CoPilot | ⏳ never destroy backbone RDS w/o approval |
+| DP-15 | 6 | `make destroy` scope | Human CoPilot | 🟢 APPROVED + DONE — 13 project03 resources destroyed; backbone RDS untouched |
 
 ---
 
